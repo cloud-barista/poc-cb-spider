@@ -1,0 +1,33 @@
+//package interface
+package main
+
+import (
+	"fmt"
+)
+
+
+type CloudConnection interface {
+	
+}
+
+type CloudConnecter interface {
+	GetConnection() (CloudConnection, error)
+}
+
+
+type MyCloud struct{}
+func (MyCloud) GetConnection() (CloudConnection, error) {
+	fmt.Println("called func GetConnection!")
+	return nil, nil
+}
+
+
+func main() {
+	var my MyCloud
+	var c CloudConnecter
+
+	c = my
+
+
+	c.GetConnection()
+}
