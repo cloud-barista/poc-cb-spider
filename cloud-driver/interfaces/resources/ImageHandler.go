@@ -1,4 +1,4 @@
-// Proof of Concepts of CB-Spider.
+// Cloud Driver Interface of CB-Spider.
 // The CB-Spider is a sub-Framework of the Cloud-Barista Multi-Cloud Project.
 // The CB-Spider Mission is to connect all the clouds with a single interface.
 //
@@ -10,14 +10,24 @@
 
 
 package resources
+//package image
+
+type ImageReqInfo struct {
+	name string
+	// @todo
+}
+
+type ImageInfo struct {
+	name string
+	id string
+	// @todo
+}
+
 
 type ImageHandler interface {
-	//CreateImage() (ImageInfo, error)
-	CreateImage()
-	RegistImageInfo()
-	GetImageInfoList()
-	GetImageInfo() 
-	RemoveImageInfo() 
-	DeleteImage() 
+	CreateImage(imageReqInfo ImageReqInfo) (ImageInfo, error)
+	ListImage() ([]*ImageInfo, error)
+	GetImage(imageID string) (ImageInfo, error)
+	DeleteImage(imageID string) (bool, error)
 }
 

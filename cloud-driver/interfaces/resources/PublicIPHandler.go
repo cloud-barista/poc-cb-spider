@@ -11,21 +11,21 @@
 
 package resources
 
-type SecurityReqInfo struct {
+type PublicIPReqInfo struct {
 	name string
         // @todo
 }
 
-type SecurityInfo struct {
+type PublicIPInfo struct {
 	name string
 	id string
         // @todo
 }
 
-type SecurityHandler interface {
-	CreateSecurity(securityReqInfo SecurityReqInfo) (SecurityInfo, error)
-	ListSecurity() ([]*SecurityInfo, error)
-	GetSecurity(securityID string) (SecurityInfo, error)
-	DeleteSecurity(securityID string) (bool, error)
+type PublicIPHandler interface {
+	CreatePublicIP(publicIPReqInfo PublicIPReqInfo) (PublicIPInfo, error)
+	ListVNetwork() ([]*PublicIPInfo, error)
+	GetVNetwork(publicIPID string) (PublicIPInfo, error) 
+	DeleteVNetwork(publicIPID string) (bool, error)
 }
 

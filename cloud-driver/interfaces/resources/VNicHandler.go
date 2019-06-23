@@ -10,22 +10,24 @@
 
 
 package resources
+//package image
 
-type SecurityReqInfo struct {
+type VNicReqInfo struct {
 	name string
-        // @todo
+	// @todo
 }
 
-type SecurityInfo struct {
+type VNicInfo struct {
 	name string
 	id string
-        // @todo
+	// @todo
 }
 
-type SecurityHandler interface {
-	CreateSecurity(securityReqInfo SecurityReqInfo) (SecurityInfo, error)
-	ListSecurity() ([]*SecurityInfo, error)
-	GetSecurity(securityID string) (SecurityInfo, error)
-	DeleteSecurity(securityID string) (bool, error)
+
+type VNicHandler interface {
+	CreateVNic(vNicReqInfo VNicReqInfo) (VNicInfo, error)
+	ListVNic() ([]*VNicInfo, error)
+	GetVNic(vNicID string) (VNicInfo, error)
+	DeleteVNic(vNicID string) (bool, error)
 }
 

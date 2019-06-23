@@ -11,21 +11,21 @@
 
 package resources
 
-type SecurityReqInfo struct {
+type VNetworkReqInfo struct {
 	name string
         // @todo
 }
 
-type SecurityInfo struct {
+type VNetworkInfo struct {
 	name string
 	id string
         // @todo
 }
 
-type SecurityHandler interface {
-	CreateSecurity(securityReqInfo SecurityReqInfo) (SecurityInfo, error)
-	ListSecurity() ([]*SecurityInfo, error)
-	GetSecurity(securityID string) (SecurityInfo, error)
-	DeleteSecurity(securityID string) (bool, error)
+type VNetworkHandler interface {
+	CreateVNetwork(vNetworkReqInfo VNetworkReqInfo) (VNetworkInfo, error)
+	ListVNetwork() ([]*VNetworkInfo, error)
+	GetVNetwork(vNetworkID string) (VNetworkInfo, error) 
+	DeleteVNetwork(vNetworkID string) (bool, error)
 }
 

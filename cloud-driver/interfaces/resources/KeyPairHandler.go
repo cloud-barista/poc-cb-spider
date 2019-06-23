@@ -11,21 +11,21 @@
 
 package resources
 
-type SecurityReqInfo struct {
+type KeyPairReqInfo struct {
 	name string
         // @todo
 }
 
-type SecurityInfo struct {
+type KeyPairInfo struct {
 	name string
 	id string
         // @todo
 }
 
-type SecurityHandler interface {
-	CreateSecurity(securityReqInfo SecurityReqInfo) (SecurityInfo, error)
-	ListSecurity() ([]*SecurityInfo, error)
-	GetSecurity(securityID string) (SecurityInfo, error)
-	DeleteSecurity(securityID string) (bool, error)
+type KeyPairHandler interface {
+	CreateKey(keyPairReqInfo KeyPairReqInfo) (KeyPairInfo, error)
+	ListKey() ([]*KeyPairInfo, error)
+	GetKey(keyPairID string) (KeyPairInfo, error)
+	DeleteKey(keyPairID string) (bool, error)
 }
 

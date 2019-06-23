@@ -16,10 +16,11 @@ import (
 )
 
 type CloudConnection interface {
-	CreateVirtualNetworkHandler() (irs.VirtualNetworkHandler, error)
+
 	CreateImageHandler() (irs.ImageHandler, error)	
+	CreateVirtualNetworkHandler() (irs.VirtualNetworkHandler, error)
 	CreateSecurityHandler() (irs.SecurityHandler, error)
-	CreateConnectionKeyHandler() (irs.ConnectionKeyHandler, error)
+	CreateKeyPairHandler() (irs.KeyPairHandler, error)
 
 	IsConnected() (bool, error)
 	Close()	error
