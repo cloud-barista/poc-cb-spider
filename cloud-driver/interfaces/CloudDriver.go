@@ -1,4 +1,4 @@
-// Proof of Concepts of CB-Spider.
+// Cloud Driver Interface of CB-Spider.
 // The CB-Spider is a sub-Framework of the Cloud-Barista Multi-Cloud Project.
 // The CB-Spider Mission is to connect all the clouds with a single interface.
 //
@@ -15,8 +15,13 @@ import (
 )
 
 type DriverCapabilityInfo struct {
-	VirtualNetwork bool // support: true, do not support: false
-	// @todo TBD
+	ImageHandler bool // support: true, do not support: false
+	VNetworkHandler bool // support: true, do not support: false
+	SecurityHandler bool // support: true, do not support: false
+	KeyPairHandler bool // support: true, do not support: false
+	VNicHandler bool // support: true, do not support: false
+	PublicIPHandler bool // support: true, do not support: false
+	VMHandler bool // support: true, do not support: false
 }
 
 type CredentialInfo struct {
@@ -24,10 +29,20 @@ type CredentialInfo struct {
 	// key-value pairs
 }
 
+type RegionInfo struct {
+        Region string
+        Zone string
+}
+
+type ConnectionInfo struct {
+	CredentialInfo CredentialInfo
+	RegionInfo RegionInfo
+}
+
 type CloudDriver interface {
 	GetDriverVersion() string
 	GetDriverCapability() DriverCapabilityInfo
 
-	ConnectCloud(credentialInfo CredentialInfo) (icon.CloudConnection, error)
+	ConnectCloud(connectionInfo ConnectionInfo) (icon.CloudConnection, error)
 }
 

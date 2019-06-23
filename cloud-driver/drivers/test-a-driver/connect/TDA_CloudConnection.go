@@ -18,8 +18,37 @@ import (
 
 type TADCloudConnection struct{}
 
-func (TADCloudConnection) CreateVirtualNetworkHandler() (irs.VirtualNetworkHandler, error) {
-        fmt.Println("TEST A Cloud Driver: called CreateVirtualNetworkHandler()!")
+func (TADCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
+        fmt.Println("TEST A Cloud Driver: called CreateVNetworkHandler()!")
         return nil, nil
+}
+
+
+func (TADCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
+	return nil, nil
+}
+
+func (TADCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
+	return nil, nil
+}
+func (TADCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
+	return nil, nil
+}
+func (TADCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+	return nil, nil
+}
+func (TADCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
+	return nil, nil
+}
+
+func (TADCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
+	return nil, nil
+}
+
+func (TADCloudConnection) IsConnected() (bool, error) {
+	return true, nil
+}
+func (TADCloudConnection) Close() error {
+	return nil
 }
 

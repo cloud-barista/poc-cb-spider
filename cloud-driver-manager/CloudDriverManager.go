@@ -67,5 +67,29 @@ func main() {
 
 	fmt.Printf("%s: %s\n", *driverPath, cloudDriver.GetDriverVersion())
 
+/* in CloudDriver.go
+	type CredentialInfo struct {
+		// @todo TBD
+		// key-value pairs
+	}
+
+	type RegionInfo struct {
+		Region string
+		Zone string
+	}
+
+	type ConnectionInfo struct {
+		CredentialInfo CredentialInfo
+		RegionInfo RegionInfo
+	}
+*/
+	credentialInfo := idrv.CredentialInfo{}
+	regionInfo := idrv.RegionInfo{"testRegion", "TestZone"}
+	connectionInfo := idrv.ConnectionInfo{credentialInfo, regionInfo}
+	
+	
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	cloudConnection.CreateVNetworkHandler()
+
 }
 

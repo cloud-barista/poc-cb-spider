@@ -8,17 +8,47 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
+
 package connect
 
 import (
-	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"fmt"
+	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 )
 
 type TBDCloudConnection struct{}
 
-func (TBDCloudConnection) CreateVirtualNetworkHandler() (irs.VirtualNetworkHandler, error) {
-        fmt.Println("TEST B Cloud Driver: called CreateVirtualNetworkHandler()!")
+func (TBDCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
+        fmt.Println("TEST B Cloud Driver: called CreateVNetworkHandler()!")
         return nil, nil
+}
+
+
+func (TBDCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
+	return nil, nil
+}
+
+func (TBDCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
+	return nil, nil
+}
+func (TBDCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
+	return nil, nil
+}
+func (TBDCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+	return nil, nil
+}
+func (TBDCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
+	return nil, nil
+}
+
+func (TBDCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
+	return nil, nil
+}
+
+func (TBDCloudConnection) IsConnected() (bool, error) {
+	return true, nil
+}
+func (TBDCloudConnection) Close() error {
+	return nil
 }
 

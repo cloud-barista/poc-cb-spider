@@ -14,6 +14,7 @@ import (
 	"C"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
         icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
+        acon "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/test-b-driver/connect"
 )
 
 
@@ -25,17 +26,21 @@ func (TBDCloudDriver) GetDriverVersion() string {
 
 func (TBDCloudDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	var drvCapabilityInfo idrv.DriverCapabilityInfo
-	drvCapabilityInfo.VirtualNetwork = false
+	drvCapabilityInfo.VNetworkHandler = false
+
 	return drvCapabilityInfo
 }
 
-func (TBDCloudDriver) ConnectCloud(credentialInfo idrv.CredentialInfo) (icon.CloudConnection, error){
-	// 1. get info of credential for Test B Cloud.
+func (TBDCloudDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.CloudConnection, error){
+	// 1. get info of credential and region for Test B Cloud from connectionInfo.
 	// 2. create a client object(or service  object) of Test B Cloud with credential info.
 	// 3. create CloudConnection Instance of "connect/TDB_CloudConnection".
 	// 4. return CloudConnection Interface of TDB_CloudConnection.
 
-	return nil, nil // return type: (connect.CloudConnection, error)
+	// sample code, do not user like this^^
+	var iConn icon.CloudConnection
+	iConn = acon.TBDCloudConnection{}
+	return iConn, nil // return type: (icon.CloudConnection, error)
 }
 
 var TestDriver TBDCloudDriver

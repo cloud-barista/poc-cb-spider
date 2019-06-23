@@ -44,9 +44,9 @@ const (
         termiated VMStatus = "TERMINATED"
 )
 
-type Region struct {
-	region string
-	zone string
+type RegionInfo struct {
+        region string
+        zone string
 }
 
 type VMInfo struct {
@@ -54,7 +54,7 @@ type VMInfo struct {
 	id string
 	startTime time.Time 	// Timezone: based on cloud-barista server location.
 	
-	region Region		// ex) {us-east1, us-east1-c} or {ap-northeast-2}
+	region RegionInfo		// ex) {us-east1, us-east1-c} or {ap-northeast-2}
 	imageID string		// ex) ami-047f7b46bd6dd5d84 or projects/gce-uefi-images/global/images/centos-7-v20190326
 	specID string 		// instance type or flavour, etc... ex) t2.micro or f1-micro
 	vNetworkID string 	// ex) vpc-23ed0a4b
