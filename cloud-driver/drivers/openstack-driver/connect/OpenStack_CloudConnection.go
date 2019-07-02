@@ -8,32 +8,30 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package connect
 
 import (
 	"fmt"
+	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
-	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"log"
 )
 
-type OpenStackCloudConnection struct{
-
+type OpenStackCloudConnection struct {
 }
 
 func (OpenStackCloudConnection) connectionTest() {
 
 	scop := gophercloud.AuthScope{
-		ProjectID:"7b50974d16304341975728fb0571851b",
+		ProjectID: "7b50974d16304341975728fb0571851b",
 	}
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "http://182.252.135.150:5000/v3",
-		Username: "admin",
-		Password: "openstack",
-		DomainName: "default",
-		Scope: &scop,
+		IdentityEndpoint: "http://{url}:5000/v3",
+		Username:         "{UserName}",
+		Password:         "{Password}",
+		DomainName:       "default",
+		Scope:            &scop,
 	}
 
 	provider, err := openstack.AuthenticatedClient(opts)
@@ -43,12 +41,10 @@ func (OpenStackCloudConnection) connectionTest() {
 	fmt.Println(provider.GetAuthResult())
 }
 
-
 func (OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
 	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
 	return nil, nil
 }
-
 
 func (OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
 	return nil, nil
@@ -77,4 +73,3 @@ func (OpenStackCloudConnection) IsConnected() (bool, error) {
 func (OpenStackCloudConnection) Close() error {
 	return nil
 }
-
