@@ -11,7 +11,7 @@
 package driver
 
 import (
-        icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
+        icon "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/connect"
 )
 
 type DriverCapabilityInfo struct {

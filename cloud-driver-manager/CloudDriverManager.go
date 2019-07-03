@@ -14,9 +14,7 @@ package main
 
 
 import (
-	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
-	//icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
-
+	idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
 	"flag"
 	"plugin"
 	"fmt"

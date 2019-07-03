@@ -12,9 +12,9 @@ package main
 
 import (
 	"C"
-	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
-	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
-	acon "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/test-a-driver/connect"
+	oscon "github.com/hyokyungk/poc-cb-spider/cloud-driver/drivers/openstack-driver/connect"
+	idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
+	icon "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/connect"
 )
 
 
@@ -39,7 +39,8 @@ func (OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.Cl
 
 	// sample code, do not user like this^^
 	var iConn icon.CloudConnection
-	iConn = acon.TADCloudConnection{}
+	iConn = oscon.OpenStackCloudConnection{}
+
 	return iConn, nil // return type: (icon.CloudConnection, error)
 }
 
