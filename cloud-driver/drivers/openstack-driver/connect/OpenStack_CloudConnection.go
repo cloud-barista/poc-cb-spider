@@ -19,7 +19,7 @@ import (
 
 type OpenStackCloudConnection struct {}
 
-func (OpenStackCloudConnection) TestConnection() {
+func (OpenStackCloudConnection) TestConnection() error {
 
 	// Test OpenStack Connection
 
@@ -35,6 +35,8 @@ func (OpenStackCloudConnection) TestConnection() {
 
 	provider, _ := openstack.AuthenticatedClient(opts)
 	fmt.Println(provider.GetAuthResult())
+
+	return nil
 }
 
 func (OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
