@@ -34,22 +34,29 @@ func main() {
 	credentialInfo := idrv.CredentialInfo{}
 	regionInfo := idrv.RegionInfo{"testRegion", "TestZone"}
 	connectionInfo := idrv.ConnectionInfo{credentialInfo, regionInfo}
-	fmt.Println(connectionInfo)
 
-	// Test openstack driver
+	// Test OpenStack driver
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
 
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
 
 	imageHandler, _ := cloudConnection.CreateImageHandler()
-	imgArr, err := imageHandler.ListImage()
 
+	// Get Image List
+	imgArr, err := imageHandler.ListImage()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	for _, img := range imgArr {
 		fmt.Println(*img)
 	}
+
+	// Get Image
+	img, err := imageHandler.GetImage("c4a92243-3f53-411c-a339-e12af3607eae")
+	if(err != nil) {
+		fmt.Println(err.Error())
+	}
+	fmt.Println(img)
 }
 
