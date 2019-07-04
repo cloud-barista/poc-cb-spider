@@ -37,7 +37,9 @@ func main() {
 	fmt.Println(connectionInfo)
 
 	// Test openstack driver
-	cloudDriver := new(osdrv.OpenStackDriver)
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(osdrv.OpenStackDriver)
+
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
 
 	imageHandler, _ := cloudConnection.CreateImageHandler()
