@@ -12,12 +12,11 @@
 package connect
 
 import (
-	irs "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/resources"
+	//irs "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/resources"
+	irs "poc-cb-spider2/cloud-driver/interfaces/resources"
 )
 
 type CloudConnection interface {
-
-	TestConnection() error
 
 	CreateImageHandler() (irs.ImageHandler, error)	
 	CreateVNetworkHandler() (irs.VNetworkHandler, error)

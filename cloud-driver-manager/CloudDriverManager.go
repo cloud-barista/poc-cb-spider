@@ -12,82 +12,42 @@
 //package drivermanager
 package main
 
-
 import (
-	idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
 	"flag"
-	"plugin"
 	"fmt"
-	"log"
+	osdrv "poc-cb-spider2/cloud-driver/drivers/openstack"
+	//osrsc "poc-cb-spider2/cloud-driver/drivers/openstack/resources"
+	//idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
+	idrv "poc-cb-spider2/cloud-driver/interfaces"
 )
 
 
 var driverPath *string
 func init() {
-        driverPath = flag.String("driver", "none", "select driver: -driver=/tmp/TestADriver.so")
-        flag.Parse()
+	driverPath = flag.String("driver", "none", "select driver: -driver=/tmp/TestADriver.so")
+	flag.Parse()
 }
-
-
-//func GetCloudConnectionInterface(driverPath string) icon.CloudConnection {
-
 
 func main() {
 
-	var plug *plugin.Plugin
-	var err error
-        if *driverPath == "none" {
-		fmt.Println("Usage: CloudDriverManager -driver=/tmp/TestADriver.so")
-		return
-        }
-
-	//fmt.Println("######### driver path:" + *driverPath)
-	plug, err = plugin.Open(*driverPath)
-
-	// fmt.Printf("plug: %#v\n\n", plug)	
-	if err != nil {
-		log.Fatalf("plugin.Open: %v\n", err)	
-		return
-	}
-
-
-	testDriver, err := plug.Lookup("TestDriver")	
-	if err != nil {
-		log.Fatalf("plug.Lookup: %v\n", err)	
-		return
-	}
-
-	cloudDriver, ok := testDriver.(idrv.CloudDriver)
-	if !ok {
-		log.Fatalf("Not CloudDriver interface!!")
-		return
-	}
-
-	fmt.Printf("%s: %s\n", *driverPath, cloudDriver.GetDriverVersion())
-
-/* in CloudDriver.go
-	type CredentialInfo struct {
-		// @todo TBD
-		// key-value pairs
-	}
-
-	type RegionInfo struct {
-		Region string
-		Zone string
-	}
-
-	type ConnectionInfo struct {
-		CredentialInfo CredentialInfo
-		RegionInfo RegionInfo
-	}
-*/
+	// Define credential info
 	credentialInfo := idrv.CredentialInfo{}
 	regionInfo := idrv.RegionInfo{"testRegion", "TestZone"}
 	connectionInfo := idrv.ConnectionInfo{credentialInfo, regionInfo}
-	
-	
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	cloudConnection.CreateVNetworkHandler()
+	fmt.Println(connectionInfo)
 
+	// Test openstack driver
+	cloudDriver := new(osdrv.OpenStackDriver)
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+
+	imageHandler, _ := cloudConnection.CreateImageHandler()
+	imgArr, err := imageHandler.ListImage()
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, img := range imgArr {
+		fmt.Println(*img)
+	}
 }
 

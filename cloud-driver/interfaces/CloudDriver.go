@@ -8,10 +8,11 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-package driver
+package interfaces
 
 import (
-        icon "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/connect"
+	//icon "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/connect"
+	icon "poc-cb-spider2/cloud-driver/interfaces/connect"
 )
 
 type DriverCapabilityInfo struct {

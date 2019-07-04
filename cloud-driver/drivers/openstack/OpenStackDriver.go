@@ -8,13 +8,16 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-package main
+package openstack
 
 import (
-	"C"
-	oscon "github.com/hyokyungk/poc-cb-spider/cloud-driver/drivers/openstack-driver/connect"
-	idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
-	icon "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/connect"
+	//"C"
+	//oscon "github.com/hyokyungk/poc-cb-spider/cloud-driver/drivers/openstack-driver/connect"
+	//idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
+	//icon "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/connect"
+	oscon "poc-cb-spider2/cloud-driver/drivers/openstack/connect"
+	idrv "poc-cb-spider2/cloud-driver/interfaces"
+	icon "poc-cb-spider2/cloud-driver/interfaces/connect"
 )
 
 

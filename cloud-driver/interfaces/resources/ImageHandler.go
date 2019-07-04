@@ -13,21 +13,24 @@ package resources
 //package image
 
 type ImageReqInfo struct {
-	name string
+	Name string
 	// @todo
 }
 
 type ImageInfo struct {
-	name string
-	id string
+	Name string
+	Id string
 	// @todo
 }
 
+var test = new(ImageInfo)
+
+
 
 type ImageHandler interface {
-	CreateImage(imageReqInfo ImageReqInfo) (ImageInfo, error)
+	CreateImage(imageReqInfo ImageReqInfo) (*ImageInfo, error)
 	ListImage() ([]*ImageInfo, error)
-	GetImage(imageID string) (ImageInfo, error)
+	GetImage(imageID string) (*ImageInfo, error)
 	DeleteImage(imageID string) (bool, error)
 }
 
