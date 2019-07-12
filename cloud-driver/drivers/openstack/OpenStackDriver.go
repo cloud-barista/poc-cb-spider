@@ -11,12 +11,10 @@
 package openstack
 
 import (
-	"C"
 	oscon "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/connect"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
 )
-
 
 type OpenStackDriver struct{}
 
@@ -31,7 +29,7 @@ func (OpenStackDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	return drvCapabilityInfo
 }
 
-func (OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.CloudConnection, error){
+func (OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.CloudConnection, error) {
 	// 1. get info of credential and region for Test A Cloud from connectionInfo.
 	// 2. create a client object(or service  object) of Test A Cloud with credential info.
 	// 3. create CloudConnection Instance of "connect/TDA_CloudConnection".

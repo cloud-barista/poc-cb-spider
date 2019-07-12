@@ -8,12 +8,12 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package connect
 
 import (
 	"fmt"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 )
 
 type OpenStackCloudConnection struct{}
@@ -22,7 +22,6 @@ func (OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, er
 	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
 	return nil, nil
 }
-
 
 func (OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
 	return nil, nil
@@ -42,7 +41,9 @@ func (OpenStackCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, er
 }
 
 func (OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
-	return nil, nil
+	var vmHandler irs.VMHandler
+	vmHandler = osrs.OpenStackVMHandler{}
+	return vmHandler, nil
 }
 
 func (OpenStackCloudConnection) IsConnected() (bool, error) {
@@ -51,4 +52,3 @@ func (OpenStackCloudConnection) IsConnected() (bool, error) {
 func (OpenStackCloudConnection) Close() error {
 	return nil
 }
-
