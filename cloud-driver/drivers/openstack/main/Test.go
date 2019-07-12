@@ -8,6 +8,7 @@ import (
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 )
 
+// Test OpenStack Connection
 func TestConnection() {
 	client, err := osrs.GetServiceClient()
 	if err != nil {
@@ -16,6 +17,7 @@ func TestConnection() {
 	fmt.Println(client)
 }
 
+// Test VM Handler Functions (Get VM Info, VM Status)
 func TestVMHandler() {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
@@ -38,8 +40,19 @@ func TestVMHandler() {
 	// Get VM Info
 	vmInfo := vmHandler.GetVM(config.Openstack.ServerId)
 	fmt.Println(vmInfo)
+
+	// Get VM Status List
+	vmStatusList := vmHandler.ListVMStatus()
+	for i, vmStatus := range vmStatusList {
+		fmt.Println("[",i,"] ",*vmStatus)
+	}
+
+	// Get VM Status
+	vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
+	fmt.Println(vmStatus)
 }
 
+// Test VM Deployment
 func CreateVM() {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
@@ -77,6 +90,7 @@ func CreateVM() {
 	fmt.Println("VM_ID=", createdVM.Id)
 }
 
+// Test VM Lifecycle Management (Suspend/Resume/Reboot/Terminate)
 func HandleVM() {
 
 	fmt.Println("VM LifeCycle Management")
@@ -120,8 +134,8 @@ func HandleVM() {
 }
 
 func main() {
-	//TestConnection()
-	//TestVMHandler()
+	TestConnection()
+	TestVMHandler()
 	//CreateVM()
-	HandleVM()
+	//HandleVM()
 }
