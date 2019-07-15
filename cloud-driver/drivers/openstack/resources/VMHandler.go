@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/startstop"
@@ -12,7 +13,7 @@ import (
 type OpenStackVMHandler struct{}
 
 func (OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +48,7 @@ func (OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
 }
 
 func (OpenStackVMHandler) SuspendVM(vmID string) {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +57,7 @@ func (OpenStackVMHandler) SuspendVM(vmID string) {
 }
 
 func (OpenStackVMHandler) ResumeVM(vmID string) {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +66,7 @@ func (OpenStackVMHandler) ResumeVM(vmID string) {
 }
 
 func (OpenStackVMHandler) RebootVM(vmID string) {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
@@ -78,7 +79,7 @@ func (OpenStackVMHandler) RebootVM(vmID string) {
 }
 
 func (OpenStackVMHandler) TerminateVM(vmID string) {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
@@ -87,7 +88,7 @@ func (OpenStackVMHandler) TerminateVM(vmID string) {
 }
 
 func (OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		return nil
 	}
@@ -113,7 +114,7 @@ func (OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
 }
 
 func (OpenStackVMHandler) GetVMStatus(vmID string) irs.VMStatus {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		return irs.VMStatus("")
 	}
@@ -127,7 +128,7 @@ func (OpenStackVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 }
 
 func (OpenStackVMHandler) ListVM() []*irs.VMInfo {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		return nil
 	}
@@ -154,7 +155,7 @@ func (OpenStackVMHandler) ListVM() []*irs.VMInfo {
 }
 
 func (OpenStackVMHandler) GetVM(vmID string) irs.VMInfo {
-	client, err := GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		return irs.VMInfo{}
 	}

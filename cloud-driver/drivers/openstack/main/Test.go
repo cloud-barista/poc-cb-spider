@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	config "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	osdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack"
-	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 )
 
 // Test OpenStack Connection
 func TestConnection() {
-	client, err := osrs.GetServiceClient()
+	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +29,7 @@ func TestVMHandler() {
 		panic(err)
 	}
 
-	config := osrs.ReadConfigFile()
+	config := config.ReadConfigFile()
 
 	// Get VM List
 	vmList := vmHandler.ListVM()
@@ -64,7 +64,7 @@ func CreateVM() {
 		panic(err)
 	}
 
-	config := osrs.ReadConfigFile()
+	config := config.ReadConfigFile()
 
 	// Create VM Server
 	vmReqInfo := irs.VMReqInfo{
@@ -99,7 +99,7 @@ func HandleVM() {
 	fmt.Println("3. Reboot VM")
 	fmt.Println("4. Terminate VM")
 
-	config := osrs.ReadConfigFile()
+	config := config.ReadConfigFile()
 
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)

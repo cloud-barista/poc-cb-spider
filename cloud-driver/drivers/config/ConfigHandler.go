@@ -1,4 +1,4 @@
-package resources
+package config
 
 import (
 	"github.com/gophercloud/gophercloud"
@@ -28,6 +28,7 @@ type Config struct {
 }
 
 func ReadConfigFile() Config {
+	// Set Environment Value of Project Root Path
 	rootPath := os.Getenv("CBSPIDER_PATH")
 	data, err := ioutil.ReadFile(rootPath + "/config/config.yaml")
 	if err != nil {
