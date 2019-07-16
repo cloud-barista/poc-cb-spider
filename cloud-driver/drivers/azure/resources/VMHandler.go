@@ -1,9 +1,8 @@
- resources
+package resources
 
 import (
 	"context"
 	"fmt"
-	_ "github.com/Azure-Samples/azure-sdk-for-go-samples/resources"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -14,24 +13,60 @@ import (
 
 type AzureVMHandler struct{}
 
-//authInfo, err := readJSON(os.Getenv("AZURE_AUTH_LOCATION"))
-// authPath := os.Getenv("AZURE_AUTH_LOCATION")
-// fmt.Println(authPath)
-
 func (AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	fmt.Println("StartVM")
 	config := config.ReadConfigFile()
 
 	ctx, cancle, vmClient := getVMClient()
 	defer cancle()
 
+	vmOpts := compute.VirtualMachine{
+		Location: &config.Azure.Location,
+		VirtualMachineProperties: &compute.VirtualMachineProperties{
+			HardwareProfile: &compute.HardwareProfile{
+				VMSize: config.Azure.VMSize,
+			},
+			StorageProfile: &compute.StorageProfile{
+				ImageReference: &compute.ImageReference{
+					Publisher: &config.Azure.Image.Publisher,
+					Offer: &config.Azure.Image.Offer,
+					Sku: &config.Azure.Image.Sku,
+					Version: &config.Azure.Image.Version,
+				},
+			},
+			OsProfile: &compute.OSProfile{
+				ComputerName: &config.Azure.Os.ComputeName,
+				AdminUsername: &config.Azure.Os.AdminUsername,
+				AdminPassword: &config.Azure.Os.AdminPassword,
+			},
+			NetworkProfile: &compute.NetworkProfile{
+				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
+					{
+						ID: &config.Azure.Network.ID,
+						NetworkInterfaceReferenceProperties: &compute.NetworkInterfaceReferenceProperties{
+							Primary: &config.Azure.Network.Primary,
+						},
+					},
+				},
+			},
+		},
+	}
 
+	future, err := vmClient.CreateOrUpdate(ctx, config.Azure.GroupName, config.Azure.Os.ComputeName, vmOpts)
+	if err != nil {
+		panic(err)
+		return  irs.VMInfo{}, err
+	}
+
+	err = future.WaitForCompletionRef(ctx, vmClient.Client)
+	if err != nil {
+		panic(err)
+		return  irs.VMInfo{}, err
+	}
 
 	return irs.VMInfo{}, nil
 }
 
 func (AzureVMHandler) SuspendVM(vmID string) {
-	fmt.Println("SuspendVM")
 	config := config.ReadConfigFile()
 
 	ctx, cancle, vmClient := getVMClient()
@@ -46,11 +81,9 @@ func (AzureVMHandler) SuspendVM(vmID string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("SuspendVM Finished")
 }
 
 func (AzureVMHandler) ResumeVM(vmID string) {
-	fmt.Println("ResumeVM")
 	config := config.ReadConfigFile()
 
 	ctx, cancle, vmClient := getVMClient()
@@ -65,11 +98,9 @@ func (AzureVMHandler) ResumeVM(vmID string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("ResumeVM Finished")
 }
 
 func (AzureVMHandler) RebootVM(vmID string) {
-	fmt.Println("RebootVM")
 	config := config.ReadConfigFile()
 
 	ctx, cancle, vmClient := getVMClient()
@@ -84,11 +115,9 @@ func (AzureVMHandler) RebootVM(vmID string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("RebootVM Finished")
 }
 
 func (AzureVMHandler) TerminateVM(vmID string) {
-	fmt.Println("TerminateVM")
 	config := config.ReadConfigFile()
 
 	ctx, cancle, vmClient := getVMClient()
@@ -97,6 +126,7 @@ func (AzureVMHandler) TerminateVM(vmID string) {
 
 	//future, err := vmClient.Delete(ctx, config.Azure.GroupName, vmID)
 	future, err := vmClient.Deallocate(ctx, config.Azure.GroupName, vmID)
+
 	if err != nil {
 		panic(err)
 	}
@@ -104,7 +134,6 @@ func (AzureVMHandler) TerminateVM(vmID string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("TerminateVM Finished")
 }
 
 func (AzureVMHandler) ListVMStatus() []*irs.VMStatus {
@@ -122,13 +151,20 @@ func (AzureVMHandler) ListVM() []*irs.VMInfo {
 	defer cancle()
 	//defer resources.Cleanup(ctx)
 
-	/*vm, err := vmClient.Get(ctx, config.Azure.GroupName, config.Azure.VMName, compute.InstanceView)
+	serverList, err := vmClient.List(ctx, config.Azure.GroupName)
+	fmt.Println(serverList.Values())
 	if err != nil {
 		panic(err)
-	}*/
-	vmClient.G
+	}
 
-	return nil
+	var vmList []*irs.VMInfo
+	for _, server := range serverList.Values() {
+		vmInfo := MappingServerInfo(server)
+		fmt.Println(vmInfo)
+		vmList = append(vmList, &vmInfo)
+	}
+
+	return vmList
 }
 
 func (AzureVMHandler) GetVM(vmID string) irs.VMInfo {
@@ -160,11 +196,10 @@ func MappingServerInfo(server compute.VirtualMachine) irs.VMInfo {
 	}
 
 	// Get Spec Info
-	specInfo := server.VirtualMachineProperties.HardwareProfile.VMSize
-	fmt.Println(specInfo)
-
-	imageInfo := server.VirtualMachineProperties.StorageProfile.ImageReference
-	fmt.Println(imageInfo)
+	//specInfo := server.VirtualMachineProperties.HardwareProfile.VMSize
+	//fmt.Println(specInfo)
+	//imageInfo := server.VirtualMachineProperties.StorageProfile.ImageReference
+	//fmt.Println(imageInfo)
 	//vmInfo.SpecID = imageInfo.Publisher + imageInfo.Offer + imageInfo.Sku + imageInfo.Version
 	//vmInfo.ImageID = *imageInfo.ID
 
@@ -173,6 +208,10 @@ func MappingServerInfo(server compute.VirtualMachine) irs.VMInfo {
 
 func getVMClient() (context.Context, context.CancelFunc, compute.VirtualMachinesClient) {
 	config := config.ReadConfigFile()
+
+	// Need to Initialize environment variable (AZURE_AUTH_LOCATION)
+	//azureAuthPath := os.Getenv("AZURE_AUTH_LOCATION")
+	//fmt.Println("AZURE_AUTH_LOCATION=", azureAuthPath)
 
 	authorizer, err := auth.NewAuthorizerFromFile(azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {

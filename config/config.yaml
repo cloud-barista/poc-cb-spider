@@ -1,15 +1,6 @@
 #### Config for CB-Spider PoC ####
 
 ## Config for OpenStack ##
-
-#openstack:
-#  domain_name: {domain_name}
-#  identity_endpoint: http://{ip}:5000/v3
-#  password: {password}
-#  project_id: {project_id}
-#  username: {username}
-#  region: {region}
-
 openstack:
 
   # OpenStack Credential Info
@@ -21,12 +12,38 @@ openstack:
   region: {region}
 
   # OpenStack VM Deployment Info
-  vm_name: mcb-test-vm
-  image_id: 3da11509-cf77-4101-a946-3ab8d4554dd0
-  flavor_id: 2
-  network_id: b0774ac8-3124-4d62-a07a-5cf32f6e3567
-  security_groups: test-sg
-  keypair_name: mcb-key
+  vm_name: {vm_name}
+  image_id: {image_id}
+  flavor_id: {flavor_id}
+  network_id: {network_id}
+  security_groups: {security_groups}
+  keypair_name: {keypair_name}
 
   # OpenStack Test VM Info
-  server_id: 91c7546b-ad1e-4ce3-963d-099ad96145ba
+  server_id: {server_id}
+
+## Config for AZURE ##
+azure:
+
+  # Azure Credential Info
+  subscription_id: {subscription_id}
+
+  # Azure VM Deployment Info
+  location: {location}
+  vm_size: {vm_size}
+  image:
+    publisher: {publisher}
+    offer: {offer}
+    sku: {sku}
+    version: {version}
+  os:
+    compute_name: {compute_name}
+    admin_username: {admin_username}
+    admin_password: {admin_password}
+  network:
+      id: {id}
+      primary: {primary}
+
+  # Azure Test VM Info
+  group_name: {group_name}
+  vm_name: {vm_name}
