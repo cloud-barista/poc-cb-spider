@@ -2,11 +2,46 @@ package main
 
 import (
 	"fmt"
-	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
-	//irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	azdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/azure"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
+	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
+	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 )
+
+// Test VM Handler Functions (Get VM Info, VM Status)
+func TestVMHandler() {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(azdrv.AzureDriver)
+
+	connectionInfo := idrv.ConnectionInfo{}
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	vmHandler, err := cloudConnection.CreateVMHandler()
+	if err != nil {
+		panic(err)
+	}
+
+	config := config.ReadConfigFile()
+
+	// Get VM List
+	vmList := vmHandler.ListVM()
+	for i, vm := range vmList {
+		fmt.Println("[", i, "] ", *vm)
+	}
+
+	// Get VM Info
+	vmInfo := vmHandler.GetVM(config.Azure.ServerId)
+	fmt.Println(vmInfo)
+
+	// Get VM Status List
+	//vmStatusList := vmHandler.ListVMStatus()
+	//for i, vmStatus := range vmStatusList {
+	//	fmt.Println("[",i,"] ",*vmStatus)
+	//}
+
+	// Get VM Status
+	//vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
+	//fmt.Println(vmStatus)
+}
 
 // Test VM Lifecycle Management (Suspend/Resume/Reboot/Terminate)
 func HandleVM() {
@@ -53,6 +88,39 @@ func HandleVM() {
 	}
 }
 
+func CreateVM() {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(azdrv.AzureDriver)
+
+	connectionInfo := idrv.ConnectionInfo{}
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	vmHandler, err := cloudConnection.CreateVMHandler()
+	if err != nil {
+		panic(err)
+	}
+
+	config := config.ReadConfigFile()
+
+	imageId := config.Azure.Image.Publisher + ":" + config.Azure.Image.Offer + ":" + config.Azure.Image.Sku + ":" + config.Azure.Image.Version
+	//specId := config.Azure.VMSize
+	//fmt.Println(imageId)
+
+	vmReqInfo := irs.VMReqInfo{
+		Name: config.Openstack.VMName,
+		ImageInfo: irs.ImageInfo{
+			Id: imageId,
+		},
+		//SpecID: config.Azure.VMSize,
+		VNetworkInfo: irs.VNetworkInfo{
+			Id: config.Azure.Network.ID,
+		},
+	}
+
+	vmHandler.StartVM(vmReqInfo)
+}
+
 func main() {
-	HandleVM()
+	//TestVMHandler()
+	//HandleVM()
+	//CreateVM()
 }

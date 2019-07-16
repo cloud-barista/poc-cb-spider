@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"gopkg.in/yaml.v3"
@@ -25,6 +26,31 @@ type Config struct {
 
 		ServerId string `yaml:"server_id"`
 	} `yaml:"openstack"`
+	Azure struct {
+		SubscriptionID string `yaml:"subscription_id"`
+		GroupName      string `yaml:"group_name"`
+		VMName         string `yaml:"vm_name"`
+
+		Location string                          `yaml:"location"`
+		VMSize   compute.VirtualMachineSizeTypes `yaml:"vm_size"`
+		Image    struct {
+			Publisher string `yaml:"publisher"`
+			Offer     string `yaml:"offer"`
+			Sku       string `yaml:"sku"`
+			Version   string `yaml:"version"`
+		} `yaml:"image"`
+		Os struct {
+			ComputeName   string `yaml:"compute_name"`
+			AdminUsername string `yaml:"admin_username"`
+			AdminPassword string `yaml:"admin_password"`
+		} `yaml:"os"`
+		Network struct{
+			ID string `yaml:"id"`
+			Primary bool `yaml:"primary"`
+		} `yaml:"network"`
+
+		ServerId string `yaml:"server_id"`
+	} `yaml:"azure"`
 }
 
 func ReadConfigFile() Config {
@@ -73,3 +99,16 @@ func GetServiceClient() (*gophercloud.ServiceClient, error) {
 
 	return client, err
 }
+
+/*func getVMClient() (compute.VirtualMachinesClient, autorest.Authorizer) {
+	config := ReadConfigFile()
+
+	vmClient := compute.NewVirtualMachinesClient(config.Azure.SubscriptionID)
+	iam, _ := iam.GetResourceManagementAuthorizer()
+	return vmClient, iam
+}*/
+
+/*func GetAuthorizer() (autorest.Authorizer, error) {
+	authorizer, err := auth.NewAuthorizerFromFile(azure.PublicCloud.ResourceManagerEndpoint)
+	return authorizer, err
+}*/
