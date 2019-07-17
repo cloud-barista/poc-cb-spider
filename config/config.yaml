@@ -41,8 +41,8 @@ azure:
     admin_username: {admin_username}
     admin_password: {admin_password}
   network:
-      id: {id}
-      primary: {primary}
+    id: {id}
+    primary: {primary}
 
   # Azure Test VM Info
   group_name: {group_name}
