@@ -33,14 +33,14 @@ func TestVMHandler() {
 	fmt.Println(vmInfo)
 
 	// Get VM Status List
-	//vmStatusList := vmHandler.ListVMStatus()
-	//for i, vmStatus := range vmStatusList {
-	//	fmt.Println("[",i,"] ",*vmStatus)
-	//}
+	vmStatusList := vmHandler.ListVMStatus()
+	for i, vmStatus := range vmStatusList {
+		fmt.Println("[",i,"] ",*vmStatus)
+	}
 
 	// Get VM Status
-	//vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
-	//fmt.Println(vmStatus)
+	vmStatus := vmHandler.GetVMStatus(config.Azure.VMName)
+	fmt.Println(vmStatus)
 }
 
 // Test VM Lifecycle Management (Suspend/Resume/Reboot/Terminate)
