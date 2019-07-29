@@ -1,0 +1,33 @@
+#### Config for CB-Spider PoC ####
+
+## Config for OpenStack ##
+
+#openstack:
+#  domain_name: {domain_name}
+#  identity_endpoint: http://{ip}:5000/v3
+#  password: {password}
+#  project_id: {project_id}
+#  username: {username}
+#  region: {region}
+
+openstack:
+
+  # OpenStack Credential Info
+  domain_name: default
+  identity_endpoint: http://13.124.245.72/identity
+  #identity_endpoint: http://13.125.38.117::5000/v3
+  password: cbarista
+  project_id: 0042fde2c71b4dd8a88f8b320c45e28f
+  username: admin
+  region: RegionOne
+
+  # OpenStack VM Deployment Info
+  vm_name: mcb-test-vm
+  image_id: 3775e116-e7cd-4a54-b616-2a9f2864326d
+  flavor_id: 2
+  network_id: d5a932fc-c8ec-42bc-9383-4ac001f9af65
+  security_groups: powerkim-sg
+  keypair_name: powerkim-key
+
+  # OpenStack Test VM Info
+  server_id: 91c7546b-ad1e-4ce3-963d-099ad96145ba

@@ -135,7 +135,7 @@ func HandleVM() {
 
 func main() {
 	TestConnection()
-	TestVMHandler()
-	//CreateVM()
+	//TestVMHandler()
+	CreateVM()
 	//HandleVM()
 }
