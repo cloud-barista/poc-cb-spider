@@ -14,20 +14,19 @@ openstack:
 
   # OpenStack Credential Info
   domain_name: default
-  identity_endpoint: http://13.124.245.72/identity
-  #identity_endpoint: http://13.125.38.117::5000/v3
-  password: cbarista
-  project_id: 0042fde2c71b4dd8a88f8b320c45e28f
+  identity_endpoint: http://172.31.13.137/identity
+  password: xxxxxx
+  project_id: f3767f1841b849f987c97aac83762006
   username: admin
   region: RegionOne
-
   # OpenStack VM Deployment Info
   vm_name: mcb-test-vm
-  image_id: 3775e116-e7cd-4a54-b616-2a9f2864326d
-  flavor_id: 2
-  network_id: d5a932fc-c8ec-42bc-9383-4ac001f9af65
+  image_id: ff459d3e-8f4f-4810-83f8-8c785d7ad940
+  flavor_id: 1
+  network_id: 2f4e0c34-a1ae-4a5b-850b-b53ef9d8ec24
   security_groups: powerkim-sg
   keypair_name: powerkim-key
+
 
   # OpenStack Test VM Info
   server_id: 91c7546b-ad1e-4ce3-963d-099ad96145ba

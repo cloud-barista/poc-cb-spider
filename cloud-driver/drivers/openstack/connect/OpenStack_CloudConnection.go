@@ -12,12 +12,16 @@ package connect
 
 import (
 	"fmt"
-	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
+	"github.com/gophercloud/gophercloud"
+	_ "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 )
 
-type OpenStackCloudConnection struct{}
+// modified by powerkim, 2019.07.29
+type OpenStackCloudConnection struct{
+	Client  *gophercloud.ServiceClient
+}
 
 func (OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
 	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
@@ -50,20 +54,20 @@ func (OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
 */
 
 // modified by powerkim, 2019.07.29
-//func (cloudConn *OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
-func (OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
+func (cloudConn *OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
+//func (OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
 //	isConnected, _ := cloudConn.IsConnected()
 //	if(!isConnected) {
 //		return nil, fmt.Errorf("OpenStack Driver is not connected!!")
 //	}
 
-	Client, err := config.GetServiceClient()
-        if err != nil {
-                panic(err)
-        }
+//	Client, err := config.GetServiceClient()
+ //       if err != nil {
+  //              panic(err)
+   //     }
 
         //var vmHandler irs.VMHandler
-        vmHandler := osrs.OpenStackVMHandler{Client}
+        vmHandler := osrs.OpenStackVMHandler{cloudConn.Client}
         return &vmHandler, nil
 }
 
