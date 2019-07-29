@@ -53,6 +53,7 @@ func (OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.Cl
 }
 */
 
+// modifiled by powerkim, 2019.07.29.
 func (driver *OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.CloudConnection, error) {
         // 1. get info of credential and region for Test A Cloud from connectionInfo.
         // 2. create a client object(or service  object) of Test A Cloud with credential info.
@@ -73,7 +74,7 @@ func (driver *OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) 
 }
 
 
-//--------- temporary 
+//--------- temporary  by powerkim, 2019.07.29.
 type Config struct {
         Openstack struct {
                 DomainName       string `yaml:"domain_name"`
@@ -111,6 +112,7 @@ func readConfigFile() Config {
 }
 //--------- temporary 
 
+// moved by powerkim, 2019.07.29.
 func getServiceClient() (*gophercloud.ServiceClient, error) {
 
         // read configuration YAML file
