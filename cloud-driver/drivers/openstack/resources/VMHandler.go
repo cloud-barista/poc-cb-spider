@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
+	"github.com/gophercloud/gophercloud"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/startstop"
@@ -10,13 +11,19 @@ import (
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
-type OpenStackVMHandler struct{}
+// modified by powerkim, 2019.07.29
+type OpenStackVMHandler struct{
+	Client  *gophercloud.ServiceClient
+}
 
-func (OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	client, err := config.GetServiceClient()
+
+// modified by powerkim, 2019.07.29
+func (vmHandler *OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
+	/* client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
+	*/
 
 	// Add Server Create Options
 	serverCreateOpts := servers.CreateOpts{
@@ -29,7 +36,7 @@ func (OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
 		SecurityGroups: []string{
 			vmReqInfo.SecurityInfo.Name,
 		},
-		ServiceClient: client,
+		ServiceClient: vmHandler.Client,
 	}
 
 	// Add KeyPair
@@ -38,7 +45,7 @@ func (OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
 		KeyName:           vmReqInfo.KeyPairInfo.Name,
 	}
 
-	server, err := servers.Create(client, createOpts).Extract()
+	server, err := servers.Create(vmHandler.Client, createOpts).Extract()
 	if err != nil {
 		return irs.VMInfo{}, err
 	}

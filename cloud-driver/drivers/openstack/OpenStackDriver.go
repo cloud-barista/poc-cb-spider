@@ -7,6 +7,7 @@
 // This is a Cloud Driver Example for PoC Test.
 //
 // by powerkim@etri.re.kr, 2019.06.
+// @todo-innogrid to be modified like this: by xxx@innogrid.co.kr, 2019.0x.
 
 package openstack
 
@@ -25,6 +26,8 @@ func (OpenStackDriver) GetDriverVersion() string {
 func (OpenStackDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	var drvCapabilityInfo idrv.DriverCapabilityInfo
 	drvCapabilityInfo.VNetworkHandler = false
+
+//@todo-innogrid add capabilities
 
 	return drvCapabilityInfo
 }
