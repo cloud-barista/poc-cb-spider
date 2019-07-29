@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	_ "fmt"
 	_ "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
@@ -14,6 +15,7 @@ type OpenStackImageHandler struct{}
 
 func (OpenStackImageHandler) CreateImage(imageReqInfo irs.ImageReqInfo) (irs.ImageInfo, error) {
 
+	fmt.Println("Call CreateImage()")
 	return irs.ImageInfo{}, nil
 }
 
