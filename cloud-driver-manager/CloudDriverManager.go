@@ -6,34 +6,25 @@
 //
 // This is PoC of Cloud Driver Manager.
 //
-// by powerkim@etri.re.kr, 2019.06.
+// by powerkim@etri.re.kr, 2019.07.
 
 
-//package drivermanager
-package main
-
+package drivermanager
 
 import (
-	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
-	//icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
-
-	"flag"
-	"plugin"
-	"fmt"
-	"log"
+	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
 )
 
 
-var driverPath *string
-func init() {
-        driverPath = flag.String("driver", "none", "select driver: -driver=/tmp/TestADriver.so")
-        flag.Parse()
+func GetCloudConnectionInterface(driverPath string) icon.CloudConnection {
+	var cloudConn icon.CloudConnection
+
+	// @todo
+
+	return cloudConn
 }
 
-
-//func GetCloudConnectionInterface(driverPath string) icon.CloudConnection {
-
-
+/* only to refer by powerkim
 func main() {
 
 	var plug *plugin.Plugin
@@ -67,29 +58,29 @@ func main() {
 
 	fmt.Printf("%s: %s\n", *driverPath, cloudDriver.GetDriverVersion())
 
-/* in CloudDriver.go
-	type CredentialInfo struct {
+///* in CloudDriver.go
+//	type CredentialInfo struct {
 		// @todo TBD
 		// key-value pairs
-	}
+//	}
 
-	type RegionInfo struct {
-		Region string
-		Zone string
-	}
+//	type RegionInfo struct {
+//		Region string
+//		Zone string
+//	}
 
-	type ConnectionInfo struct {
-		CredentialInfo CredentialInfo
-		RegionInfo RegionInfo
-	}
-*/
-	credentialInfo := idrv.CredentialInfo{}
-	regionInfo := idrv.RegionInfo{"testRegion", "TestZone"}
-	connectionInfo := idrv.ConnectionInfo{credentialInfo, regionInfo}
+//	type ConnectionInfo struct {
+//		CredentialInfo CredentialInfo
+//		RegionInfo RegionInfo
+//	}
+
+//	credentialInfo := idrv.CredentialInfo{}
+//	regionInfo := idrv.RegionInfo{"testRegion", "TestZone"}
+//	connectionInfo := idrv.ConnectionInfo{credentialInfo, regionInfo}
 	
 	
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	cloudConnection.CreateVNetworkHandler()
+//	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+//	cloudConnection.CreateVNetworkHandler()
 
 }
-
+*/

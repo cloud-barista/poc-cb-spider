@@ -8,8 +8,8 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package resources
+
 //package image
 
 type ImageReqInfo struct {
@@ -18,11 +18,10 @@ type ImageReqInfo struct {
 }
 
 type ImageInfo struct {
-	name string
-	id string
+	Name string
+	Id   string
 	// @todo
 }
-
 
 type ImageHandler interface {
 	CreateImage(imageReqInfo ImageReqInfo) (ImageInfo, error)
@@ -30,4 +29,3 @@ type ImageHandler interface {
 	GetImage(imageID string) (ImageInfo, error)
 	DeleteImage(imageID string) (bool, error)
 }
-
