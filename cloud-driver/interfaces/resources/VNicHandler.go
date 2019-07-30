@@ -10,7 +10,6 @@
 
 
 package resources
-//package image
 
 type VNicReqInfo struct {
 	name string
