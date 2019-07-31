@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"gopkg.in/yaml.v3"
@@ -32,7 +31,7 @@ type Config struct {
 		VMName         string `yaml:"vm_name"`
 
 		Location string                          `yaml:"location"`
-		VMSize   compute.VirtualMachineSizeTypes `yaml:"vm_size"`
+		VMSize   string `yaml:"vm_size"`
 		Image    struct {
 			Publisher string `yaml:"publisher"`
 			Offer     string `yaml:"offer"`
