@@ -5,6 +5,8 @@ import (
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	_ "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/gophercloud/gophercloud"
 	_ "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	_ "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/startstop"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/images"
@@ -13,7 +15,9 @@ import (
 	_ "github.com/gophercloud/gophercloud/pagination"
 )
 
-type OpenStackImageHandler struct{}
+type OpenStackImageHandler struct {
+	Client *gophercloud.ServiceClient
+}
 
 type ImageInfo struct {
 	ID                 string
@@ -56,12 +60,12 @@ func (imageInfo *ImageInfo) setter(results images.Image) ImageInfo {
 	imageInfo.owner_id = results.Metadata["owner_id"]
 	imageInfo.owner_project_name = results.Metadata["owner_project_name"]
 	imageInfo.user_id = results.Metadata["user_id"]
-	//Metadata에 어떤 종류 있는지 더 확인해서 추가
+	//TODO: Metadata에 어떤 종류 있는지 더 확인해서 추가
 
 	return *imageInfo
 }
 
-func (imageInfo ImageInfo) printInfo() {
+func (imageInfo *ImageInfo) printInfo() {
 	fmt.Println("Name : ", imageInfo.Name)
 	fmt.Println("Created : ", imageInfo.Created)
 	fmt.Println("ID : ", imageInfo.ID)
@@ -83,20 +87,15 @@ func (imageInfo ImageInfo) printInfo() {
 	fmt.Println("user_id : ", imageInfo.user_id)
 }
 
-func (openStackImageHandler OpenStackImageHandler) CreateImage(imageReqInfo irs.ImageReqInfo) (irs.ImageInfo, error) {
+func (imageHandler *OpenStackImageHandler) CreateImage(imageReqInfo irs.ImageReqInfo) (irs.ImageInfo, error) {
 	fmt.Println("Call CreateImage()")
 	return irs.ImageInfo{}, nil
 }
 
-func (openStackImageHandler OpenStackImageHandler) ListImage() ([]*irs.ImageInfo, error) {
-
-	client, err := config.GetServiceClient()
-	if err != nil {
-		panic(err)
-	}
+func (imageHandler *OpenStackImageHandler) ListImage() ([]*irs.ImageInfo, error) {
 	var infoSlices = make([]ImageInfo, 20)
-	pager := images.ListDetail(client, images.ListOpts{})
-	err = pager.EachPage(func(page pagination.Page) (bool, error) {
+	pager := images.ListDetail(imageHandler.Client, images.ListOpts{})
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		// Get Servers
 		imageList, err := images.ExtractImages(page)
 		if err != nil {
@@ -107,11 +106,14 @@ func (openStackImageHandler OpenStackImageHandler) ListImage() ([]*irs.ImageInfo
 		for _, images := range imageList {
 			image := imageInfo.setter(images)
 			infoSlices = append(infoSlices, image)
-			imageInfo.printInfo()
+			spew.Dump(imageInfo)
 			fmt.Println("##############################")
 		}
 		return true, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 	/*opts := serviceImages.ListOpts{
 	     Owner: "a7509e1ae65945fda83f3e52c6296017",
 	  }
@@ -133,17 +135,17 @@ func (openStackImageHandler OpenStackImageHandler) ListImage() ([]*irs.ImageInfo
 	}*/
 	return nil, nil
 }
-func (openStackImageHandler OpenStackImageHandler) GetImage(imageID string) (irs.ImageInfo, error) {
+func (imageHandler *OpenStackImageHandler) GetImage(imageID string) (irs.ImageInfo, error) {
 	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
 	//image, err := images.IDFromName(client, imageID)
-	image, err := images.Get(client, "39b30620-dd05-4168-b5a9-e18b2d5ba8d1").Extract()
+	image, err := images.Get(client, imageID).Extract()
 
 	var info ImageInfo
 	info.setter(*image)
-	info.printInfo()
+	spew.Dump(info)
 	/*imageId, err := images.IDFromName(client, "hhhh")
 	  if err != nil {
 	  }
@@ -151,16 +153,20 @@ func (openStackImageHandler OpenStackImageHandler) GetImage(imageID string) (irs
 	return irs.ImageInfo{}, nil
 }
 
-func (openStackImageHandler OpenStackImageHandler) DeleteImage(imageID string) (bool, error) {
+func (imageHandler *OpenStackImageHandler) DeleteImage(imageID string) (bool, error) {
 	client, err := config.GetServiceClient()
 	if err != nil {
 		panic(err)
 	}
-	result := images.Delete(client, "8b0bea4d-23e2-4457-b549-7adbbd5e276b")
+	result := images.Delete(client, imageID)
 	fmt.Println("Delete : ", result)
 	return false, nil
 }
 
-//ListImage() ([]*ImageInfo, error)
-//GetImage(imageID string) (ImageInfo, error)
-//DeleteImage(imageID string) (bool, error)
+func mappingImageInfo(image images.Image) irs.ImageInfo {
+	imageInfo := irs.ImageInfo{
+		Id:   image.ID,
+		Name: image.Name,
+	}
+	return imageInfo
+}

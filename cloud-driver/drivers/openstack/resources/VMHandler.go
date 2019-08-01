@@ -57,21 +57,21 @@ func (vmHandler *OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInf
 	return vmInfo, nil
 }
 
-func (vmHandler OpenStackVMHandler) SuspendVM(vmID string) {
+func (vmHandler *OpenStackVMHandler) SuspendVM(vmID string) {
 	err := startstop.Stop(vmHandler.Client, vmID).Err
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (vmHandler OpenStackVMHandler) ResumeVM(vmID string) {
+func (vmHandler *OpenStackVMHandler) ResumeVM(vmID string) {
 	err := startstop.Start(vmHandler.Client, vmID).Err
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (vmHandler OpenStackVMHandler) RebootVM(vmID string) {
+func (vmHandler *OpenStackVMHandler) RebootVM(vmID string) {
 	rebootOpts := servers.RebootOpts{
 		Type: servers.SoftReboot,
 		//Type: servers.HardReboot,
@@ -82,14 +82,14 @@ func (vmHandler OpenStackVMHandler) RebootVM(vmID string) {
 	}
 }
 
-func (vmHandler OpenStackVMHandler) TerminateVM(vmID string) {
+func (vmHandler *OpenStackVMHandler) TerminateVM(vmID string) {
 	err := servers.Delete(vmHandler.Client, vmID).ExtractErr()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (vmHandler OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
+func (vmHandler *OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
 	var vmStatusList []*irs.VMStatus
 
 	pager := servers.List(vmHandler.Client, nil)
@@ -113,7 +113,7 @@ func (vmHandler OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
 	return vmStatusList
 }
 
-func (vmHandler OpenStackVMHandler) GetVMStatus(vmID string) irs.VMStatus {
+func (vmHandler *OpenStackVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 	serverResult, err := servers.Get(vmHandler.Client, vmID).Extract()
 	if err != nil {
 		panic(err)
@@ -121,7 +121,7 @@ func (vmHandler OpenStackVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 	return irs.VMStatus(serverResult.Status)
 }
 
-func (vmHandler OpenStackVMHandler) ListVM() []*irs.VMInfo {
+func (vmHandler *OpenStackVMHandler) ListVM() []*irs.VMInfo {
 	var vmList []*irs.VMInfo
 
 	pager := servers.List(vmHandler.Client, nil)
@@ -145,7 +145,7 @@ func (vmHandler OpenStackVMHandler) ListVM() []*irs.VMInfo {
 	return vmList
 }
 
-func (vmHandler OpenStackVMHandler) GetVM(vmID string) irs.VMInfo {
+func (vmHandler *OpenStackVMHandler) GetVM(vmID string) irs.VMInfo {
 	serverResult, err := servers.Get(vmHandler.Client, vmID).Extract()
 	if err != nil {
 		fmt.Println(err)
