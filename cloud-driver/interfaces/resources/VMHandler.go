@@ -30,6 +30,11 @@ type VMReqInfo struct {
 }
 
 // GO do not support Enum. So, define like this.
+type VMStatusInfo struct {
+	vmID		string
+	vmStatus	VMStatus		
+}
+
 type VMStatus string
 
 const (
@@ -90,7 +95,7 @@ type VMHandler interface {
 	RebootVM(vmID string)
 	TerminateVM(vmID string)
 
-	ListVMStatus() []*VMStatus
+	ListVMStatus() []*VMStatusInfo
 	GetVMStatus(vmID string) VMStatus
 
 	ListVM() []*VMInfo
