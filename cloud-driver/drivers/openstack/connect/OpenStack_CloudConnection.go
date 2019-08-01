@@ -28,7 +28,10 @@ func (OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, er
 }
 
 func (OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
-	return nil, nil
+	var imageHandler irs.ImageHandler
+	imageHandler = osrs.OpenStackImageHandler{}
+
+	return imageHandler, nil
 }
 
 func (OpenStackCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {

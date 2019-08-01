@@ -1,18 +1,8 @@
-// Proof of Concepts of CB-Spider.
-// The CB-Spider is a sub-Framework of the Cloud-Barista Multi-Cloud Project.
-// The CB-Spider Mission is to connect all the clouds with a single interface.
-//
-//      * Cloud-Barista: https://github.com/cloud-barista
-//
-// This is a Cloud Driver Example for PoC Test.
-//
-// by hyokyung.kim@innogrid.co.kr, 2019.07.
-
 package main
 
 import (
 	"fmt"
-	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
+	config "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	osdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
@@ -38,7 +28,7 @@ func getVMInfo() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	// Get VM List
 	vmList := vmHandler.ListVM()
 	for i, vm := range vmList {
@@ -68,20 +58,20 @@ func handleVM() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	fmt.Println("VM LifeCycle Management")
 	fmt.Println("1. Suspend VM")
 	fmt.Println("2. Resume VM")
 	fmt.Println("3. Reboot VM")
 	fmt.Println("4. Terminate VM")
-	
+
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
 		if err != nil {
 			panic(err)
 		}
-		
+
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
@@ -107,6 +97,7 @@ func createVM() {
 	if err != nil {
 		panic(err)
 	}
+
 	config := config.ReadConfigFile()
 
 	// Create VM Server
@@ -126,7 +117,7 @@ func createVM() {
 			Name: config.Openstack.KeypairName,
 		},
 	}
-	
+
 	createdVM, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
@@ -191,6 +182,33 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-
 	return config
 }
+
+/*
+func TestImageHandler() {
+	// Config Driver Info
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(osdrv.OpenStackDriver)
+	// Config Connection
+	connectionInfo := idrv.ConnectionInfo{}
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	// Load Handler (VM, Image, KeyPair ..)
+	imageHandler, err := cloudConnection.CreateImageHandler()
+	if err != nil {
+		panic(err)
+	}
+	config := config.ReadConfigFile()
+	// Use Handler Func
+	//fmt.Println("Call CreateImage()")
+	//reqParams := irs.ImageReqInfo{}
+	//result, err := imageHandler.CreateImage(reqParams)
+	//fmt.Println(result)
+	fmt.Println("Call ListImage()")
+	imageHandler.ListImage()
+	fmt.Println("Call GetImage()")
+	imageHandler.GetImage(config.Openstack.ImageId)
+	//fmt.Println("Call DeleteImage()")
+	//imageHandler.DeleteImage(config.Openstack.ImageId)
+}
+*/
