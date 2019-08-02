@@ -28,4 +28,3 @@ type PublicIPHandler interface {
 	GetVNetwork(publicIPID string) (PublicIPInfo, error) 
 	DeleteVNetwork(publicIPID string) (bool, error)
 }
-
