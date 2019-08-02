@@ -18,7 +18,7 @@ type VMReqInfo struct {
 	// region/zone: Do not specify, this driver already knew these in Connection.
 
 	Name string
-	
+
 	ImageInfo    ImageInfo
 	VNetworkInfo VNetworkInfo
 	SecurityInfo SecurityInfo
@@ -26,15 +26,15 @@ type VMReqInfo struct {
 	SpecID       string // instance type or flavour, etc...
 	vNicInfo     VNicInfo
 	PublicIPInfo PublicIPInfo
-	LoginInfo	 LoginInfo
+	LoginInfo    LoginInfo
+}
+
+type VMStatusInfo struct {
+	VmId     string
+	VmStatus VMStatus
 }
 
 // GO do not support Enum. So, define like this.
-type VMStatusInfo struct {
-	vmID		string
-	vmStatus	VMStatus		
-}
-
 type VMStatus string
 
 const (
@@ -59,7 +59,7 @@ type VMInfo struct {
 	Name      string
 	Id        string
 	StartTime time.Time // Timezone: based on cloud-barista server location.
-	
+
 	Region       RegionInfo // ex) {us-east1, us-east1-c} or {ap-northeast-2}
 	ImageID      string     // ex) ami-047f7b46bd6dd5d84 or projects/gce-uefi-images/global/images/centos-7-v20190326
 	SpecID       string     // instance type or flavour, etc... ex) t2.micro or f1-micro

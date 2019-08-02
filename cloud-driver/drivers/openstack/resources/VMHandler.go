@@ -27,7 +27,7 @@ type OpenStackVMHandler struct {
 
 // modified by powerkim, 2019.07.29
 func (vmHandler *OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	
+
 	// Add Server Create Options
 	serverCreateOpts := servers.CreateOpts{
 		Name:      vmReqInfo.Name,
@@ -89,8 +89,8 @@ func (vmHandler *OpenStackVMHandler) TerminateVM(vmID string) {
 	}
 }
 
-func (vmHandler *OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
-	var vmStatusList []*irs.VMStatus
+func (vmHandler *OpenStackVMHandler) ListVMStatus() []*irs.VMStatusInfo {
+	var vmStatusList []*irs.VMStatusInfo
 
 	pager := servers.List(vmHandler.Client, nil)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
@@ -102,14 +102,18 @@ func (vmHandler *OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
 		// Add to List
 		for _, s := range list {
 			vmStatus := irs.VMStatus(s.Status)
-			vmStatusList = append(vmStatusList, &vmStatus)
+			vmStatusInfo := irs.VMStatusInfo{
+				VmId:     s.ID,
+				VmStatus: vmStatus,
+			}
+			vmStatusList = append(vmStatusList, &vmStatusInfo)
 		}
 		return true, nil
 	})
 	if err != nil {
 		panic(err)
 	}
-	
+
 	return vmStatusList
 }
 
@@ -141,7 +145,7 @@ func (vmHandler *OpenStackVMHandler) ListVM() []*irs.VMInfo {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	return vmList
 }
 
@@ -157,22 +161,22 @@ func (vmHandler *OpenStackVMHandler) GetVM(vmID string) irs.VMInfo {
 }
 
 func mappingServerInfo(server servers.Server) irs.VMInfo {
-	
+
 	// Get Default VM Info
-	vmInfo := irs.VMInfo {
+	vmInfo := irs.VMInfo{
 		Name:      server.Name,
 		Id:        server.ID,
 		StartTime: server.Updated,
 		KeyPairID: server.KeyName,
 	}
-	
+
 	if len(server.Image) != 0 {
 		vmInfo.ImageID = server.Image["id"].(string)
 	}
 	if len(server.Flavor) != 0 {
 		vmInfo.SpecID = server.Flavor["id"].(string)
 	}
-	
+
 	// Get VM Subnet, Address Info
 	for k, subnet := range server.Addresses {
 		vmInfo.SubNetworkID = k
@@ -185,6 +189,6 @@ func mappingServerInfo(server servers.Server) irs.VMInfo {
 			}
 		}
 	}
-	
+
 	return vmInfo
 }

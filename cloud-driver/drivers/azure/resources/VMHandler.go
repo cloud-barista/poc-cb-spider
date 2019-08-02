@@ -31,10 +31,10 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 	imageIdArr := strings.Split(imageId, ":")
 	//sshKeyPath := ""
 	//sshKeyData := ""
-	
+
 	vmName := vmReqInfo.Name
 	vmNameArr := strings.Split(vmName, ":")
-	
+
 	vmOpts := compute.VirtualMachine{
 		Location: &vmHandler.Region.Region,
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
@@ -76,7 +76,7 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 			},
 		},
 	}
-	
+
 	future, err := vmHandler.Client.CreateOrUpdate(vmHandler.Ctx, vmNameArr[0], vmNameArr[1], vmOpts)
 	if err != nil {
 		panic(err)
@@ -88,7 +88,7 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 		panic(err)
 		return irs.VMInfo{}, err
 	}
-	
+
 	vm, err := vmHandler.Client.Get(vmHandler.Ctx, vmNameArr[0], vmNameArr[1], compute.InstanceView)
 	if err != nil {
 		panic(err)
@@ -151,18 +151,22 @@ func (vmHandler *AzureVMHandler) TerminateVM(vmID string) {
 	}
 }
 
-func (vmHandler *AzureVMHandler) ListVMStatus() []*irs.VMStatus {
+func (vmHandler *AzureVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 	serverList, err := vmHandler.Client.ListAll(vmHandler.Ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	var vmStatusList []*irs.VMStatus
+	var vmStatusList []*irs.VMStatusInfo
 	for _, s := range serverList.Values() {
 		if s.InstanceView != nil {
 			statusStr := getVmStatus(*s.InstanceView)
 			status := irs.VMStatus(statusStr)
-			vmStatusList = append(vmStatusList, &status)
+			vmStatusInfo := irs.VMStatusInfo{
+				VmId:     *s.ID,
+				VmStatus: status,
+			}
+			vmStatusList = append(vmStatusList, &vmStatusInfo)
 		}
 	}
 
