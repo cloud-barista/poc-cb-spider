@@ -11,12 +11,13 @@
 package openstack
 
 import (
+	"fmt"
 	oscon "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/connect"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/rackspace/gophercloud"
+	"github.com/rackspace/gophercloud/openstack"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
@@ -122,14 +123,17 @@ func getServiceClient() (*gophercloud.ServiceClient, error) {
 	// read configuration YAML file
 	config := readConfigFile()
 
+	fmt.Println(config)
+
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: config.Openstack.IdentityEndpoint,
 		Username:         config.Openstack.Username,
 		Password:         config.Openstack.Password,
 		DomainName:       config.Openstack.DomainName,
-		Scope: &gophercloud.AuthScope{
+		TenantID:         config.Openstack.ProjectID,
+		/*Scope: &gophercloud.AuthScope{
 			ProjectID: config.Openstack.ProjectID,
-		},
+		},*/
 	}
 
 	provider, err := openstack.AuthenticatedClient(opts)

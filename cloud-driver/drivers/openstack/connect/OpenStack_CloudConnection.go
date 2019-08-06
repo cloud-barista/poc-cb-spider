@@ -14,7 +14,7 @@ import (
 	"fmt"
 	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"github.com/gophercloud/gophercloud"
+	"github.com/rackspace/gophercloud"
 )
 
 // modified by powerkim, 2019.07.29
@@ -35,8 +35,9 @@ func (cloudConn *OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandle
 func (OpenStackCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
 	return nil, nil
 }
-func (OpenStackCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
-	return nil, nil
+func (cloudConn *OpenStackCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
+	keypairHandler := osrs.OpenStackKeyPairHandler{cloudConn.Client}
+	return &keypairHandler, nil
 }
 func (OpenStackCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
 	return nil, nil
