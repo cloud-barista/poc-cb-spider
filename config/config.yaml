@@ -1,0 +1,49 @@
+#### Config for CB-Spider PoC ####
+
+## Config for OpenStack ##
+openstack:
+
+  # OpenStack Credential Info
+  domain_name: {domain_name}
+  identity_endpoint: http://{ip}:5000/v3
+  password: {password}
+  project_id: {project_id}
+  username: {username}
+  region: {region}
+
+  # OpenStack VM Deployment Info
+  vm_name: {vm_name}
+  image_id: {image_id}
+  flavor_id: {flavor_id}
+  network_id: {network_id}
+  security_groups: {security_groups}
+  keypair_name: {keypair_name}
+
+  # OpenStack Test VM Info
+  server_id: {server_id}
+
+## Config for AZURE ##
+azure:
+
+  # Azure Credential Info
+  subscription_id: {subscription_id}
+
+  # Azure VM Deployment Info
+  location: {location}
+  vm_size: {vm_size}
+  image:
+    publisher: {publisher}
+    offer: {offer}
+    sku: {sku}
+    version: {version}
+  os:
+    compute_name: {compute_name}
+    admin_username: {admin_username}
+    admin_password: {admin_password}
+  network:
+    id: {id}
+    primary: {primary}
+
+  # Azure Test VM Info
+  group_name: {group_name}
+  vm_name: {vm_name}

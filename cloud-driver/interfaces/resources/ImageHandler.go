@@ -8,29 +8,24 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package resources
+
 //package image
 
 type ImageReqInfo struct {
-	Name string
+	name string
 	// @todo
 }
 
 type ImageInfo struct {
 	Name string
-	Id string
+	Id   string
 	// @todo
 }
 
-var test = new(ImageInfo)
-
-
-
 type ImageHandler interface {
-	CreateImage(imageReqInfo ImageReqInfo) (*ImageInfo, error)
+	CreateImage(imageReqInfo ImageReqInfo) (ImageInfo, error)
 	ListImage() ([]*ImageInfo, error)
-	GetImage(imageID string) (*ImageInfo, error)
+	GetImage(imageID string) (ImageInfo, error)
 	DeleteImage(imageID string) (bool, error)
 }
-

@@ -8,18 +8,17 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package resources
 
 type KeyPairReqInfo struct {
 	name string
-        // @todo
+	// @todo
 }
 
 type KeyPairInfo struct {
-	name string
-	id string
-        // @todo
+	Name string
+	Id   string
+	// @todo
 }
 
 type KeyPairHandler interface {
@@ -28,4 +27,3 @@ type KeyPairHandler interface {
 	GetKey(keyPairID string) (KeyPairInfo, error)
 	DeleteKey(keyPairID string) (bool, error)
 }
-

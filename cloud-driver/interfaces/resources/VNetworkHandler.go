@@ -8,24 +8,22 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package resources
 
 type VNetworkReqInfo struct {
 	name string
-        // @todo
+	// @todo
 }
 
 type VNetworkInfo struct {
-	name string
-	id string
-        // @todo
+	Name string
+	Id   string
+	// @todo
 }
 
 type VNetworkHandler interface {
 	CreateVNetwork(vNetworkReqInfo VNetworkReqInfo) (VNetworkInfo, error)
 	ListVNetwork() ([]*VNetworkInfo, error)
-	GetVNetwork(vNetworkID string) (VNetworkInfo, error) 
+	GetVNetwork(vNetworkID string) (VNetworkInfo, error)
 	DeleteVNetwork(vNetworkID string) (bool, error)
 }
-

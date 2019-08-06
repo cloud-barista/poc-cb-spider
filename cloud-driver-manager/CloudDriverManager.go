@@ -4,59 +4,126 @@
 //
 //      * Cloud-Barista: https://github.com/cloud-barista
 //
-// This is PoC of Cloud Driver Manager.
+// This is PoC of Cloud Driver Info Manager.
 //
-// by powerkim@etri.re.kr, 2019.06.
+// by powerkim@etri.re.kr, 2019.07.
 
 
 //package drivermanager
 package main
 
 import (
-	"flag"
+	cbs "github.com/cloud-barista/poc-cb-store"
+
 	"fmt"
-	osdrv "poc-cb-spider2/cloud-driver/drivers/openstack"
-	//osrsc "poc-cb-spider2/cloud-driver/drivers/openstack/resources"
-	//idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
-	idrv "poc-cb-spider2/cloud-driver/interfaces"
 )
 
+type CloudDriverInfo struct {
+	providerName string
+	driverName string
+	driverPath string	
+}
 
-var driverPath *string
-func init() {
-	driverPath = flag.String("driver", "none", "select driver: -driver=/tmp/TestADriver.so")
-	flag.Parse()
+func RegisterCloudDriver(providerName string, driverName string, driverPath string) CloudDriverInfo {
+	cldDrvInfo := CloudDriverInfo{providerName, driverName, driverPath}
+	
+	// @todo save into storage
+	writer := cbs.GetWriter()	
+	err := writer.PutKV("key1", "value1")
+	if err != nil {
+		panic(err)
+	}
+
+	return cldDrvInfo
+}
+
+func ListCloudDriver() []*CloudDriverInfo {
+	var cldDrvInfoList []*CloudDriverInfo
+
+	// @todo get list from storage
+
+	return cldDrvInfoList
+}
+
+func GetCloudDriver(driverName string) CloudDriverInfo {
+	var cldDrvInfo CloudDriverInfo
+
+	// @todo
+
+	return cldDrvInfo
+}
+
+func UnRegisterCloudDriver(driverName string) bool {
+	var result bool
+
+	// @todo
+
+	return result
 }
 
 func main() {
-
-	// Define credential info
-	credentialInfo := idrv.CredentialInfo{}
-	regionInfo := idrv.RegionInfo{"testRegion", "TestZone"}
-	connectionInfo := idrv.ConnectionInfo{credentialInfo, regionInfo}
-
-	// Test OpenStack driver
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-
-	imageHandler, _ := cloudConnection.CreateImageHandler()
-
-	// Get Image List
-	imgArr, err := imageHandler.ListImage()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	for _, img := range imgArr {
-		fmt.Println(*img)
-	}
-
-	// Get Image
-	img, err := imageHandler.GetImage("c4a92243-3f53-411c-a339-e12af3607eae")
-	if(err != nil) {
-		fmt.Println(err.Error())
-	}
-	fmt.Println(img)
+	cldDrvInfo := RegisterCloudDriver("csp1", "csp1_driver", "csp1_driver_path")
+	fmt.Printf(">>> %#v\n", cldDrvInfo);
 }
 
+
+/* only to refer by powerkim
+func main() {
+
+	var plug *plugin.Plugin
+	var err error
+        if *driverPath == "none" {
+		fmt.Println("Usage: CloudDriverManager -driver=/tmp/TestADriver.so")
+		return
+        }
+
+	//fmt.Println("######### driver path:" + *driverPath)
+	plug, err = plugin.Open(*driverPath)
+
+	// fmt.Printf("plug: %#v\n\n", plug)	
+	if err != nil {
+		log.Fatalf("plugin.Open: %v\n", err)	
+		return
+	}
+
+
+	testDriver, err := plug.Lookup("TestDriver")	
+	if err != nil {
+		log.Fatalf("plug.Lookup: %v\n", err)	
+		return
+	}
+
+	cloudDriver, ok := testDriver.(idrv.CloudDriver)
+	if !ok {
+		log.Fatalf("Not CloudDriver interface!!")
+		return
+	}
+
+	fmt.Printf("%s: %s\n", *driverPath, cloudDriver.GetDriverVersion())
+
+///* in CloudDriver.go
+//	type CredentialInfo struct {
+		// @todo TBD
+		// key-value pairs
+//	}
+
+//	type RegionInfo struct {
+//		Region string
+//		Zone string
+//	}
+
+//	type ConnectionInfo struct {
+//		CredentialInfo CredentialInfo
+//		RegionInfo RegionInfo
+//	}
+
+//	credentialInfo := idrv.CredentialInfo{}
+//	regionInfo := idrv.RegionInfo{"testRegion", "TestZone"}
+//	connectionInfo := idrv.ConnectionInfo{credentialInfo, regionInfo}
+	
+	
+//	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+//	cloudConnection.CreateVNetworkHandler()
+
+}
+*/

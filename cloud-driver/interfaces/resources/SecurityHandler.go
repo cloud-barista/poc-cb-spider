@@ -8,18 +8,17 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package resources
 
 type SecurityReqInfo struct {
 	name string
-        // @todo
+	// @todo
 }
 
 type SecurityInfo struct {
-	name string
-	id string
-        // @todo
+	Name string
+	Id   string
+	// @todo
 }
 
 type SecurityHandler interface {
@@ -28,4 +27,3 @@ type SecurityHandler interface {
 	GetSecurity(securityID string) (SecurityInfo, error)
 	DeleteSecurity(securityID string) (bool, error)
 }
-
