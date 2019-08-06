@@ -4,46 +4,45 @@
 openstack:
 
   # OpenStack Credential Info
-  domain_name: {domain_name}
-  identity_endpoint: http://{ip}:5000/v3
-  password: {password}
-  project_id: {project_id}
-  username: {username}
-  region: {region}
+  domain_name: default
+  identity_endpoint: http://182.252.135.150:5000/v3
+  password: openstack
+  project_id: 7b50974d16304341975728fb0571851b
+  username: admin
+  region: RegionOne
 
   # OpenStack VM Deployment Info
-  vm_name: {vm_name}
-  image_id: {image_id}
-  flavor_id: {flavor_id}
-  network_id: {network_id}
-  security_groups: {security_groups}
-  keypair_name: {keypair_name}
+  vm_name: mcb-test-vm
+  image_id: 360ca514-02aa-4888-a05a-c5a933c2c8bf
+  flavor_id: 2
+  network_id: b0774ac8-3124-4d62-a07a-5cf32f6e3567
+  security_groups: test-sg
+  keypair_name: mcb-key
 
   # OpenStack Test VM Info
-  server_id: {server_id}
+  server_id: 000c1942-c48d-4dcb-b5a1-69f369f24519
 
 ## Config for AZURE ##
 azure:
 
   # Azure Credential Info
-  subscription_id: {subscription_id}
+  subscription_id: cb592624-b77b-4a8f-bb13-0e5a48cae40f
 
   # Azure VM Deployment Info
-  location: {location}
-  vm_size: {vm_size}
+  location: koreacentral
+  vm_size: Standard_B1ls
   image:
-    publisher: {publisher}
-    offer: {offer}
-    sku: {sku}
-    version: {version}
+    publisher: Canonical
+    offer: UbuntuServer
+    sku: 16.04.0-LTS
+    version: latest
   os:
-    compute_name: {compute_name}
-    admin_username: {admin_username}
-    admin_password: {admin_password}
+    compute_name: poc-cb-spider-vm2
+    admin_username: cloudit
+    admin_password: qwe1212!Q
   network:
-    id: {id}
-    primary: {primary}
+    id: /subscriptions/cb592624-b77b-4a8f-bb13-0e5a48cae40f/resourceGroups/inno-platform1-rsrc-grup/providers/Microsoft.Network/networkInterfaces/mcb-nic
 
   # Azure Test VM Info
-  group_name: {group_name}
-  vm_name: {vm_name}
+  group_name: inno-platform1-rsrc-grup
+  vm_name: inno-test-vm2

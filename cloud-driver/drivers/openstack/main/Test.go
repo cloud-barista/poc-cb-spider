@@ -75,16 +75,16 @@ func handleVM() {
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
-				fmt.Println("Start Suspend VM ...")
+				fmt.Println("Suspend Suspend VM ...")
 				vmHandler.SuspendVM(config.Openstack.ServerId)
 			case 2:
-				fmt.Println("Start Resume  VM ...")
+				fmt.Println("Resume  VM ...")
 				vmHandler.ResumeVM(config.Openstack.ServerId)
 			case 3:
-				fmt.Println("Start Reboot  VM ...")
+				fmt.Println("Reboot  VM ...")
 				vmHandler.RebootVM(config.Openstack.ServerId)
 			case 4:
-				fmt.Println("Start Terminate  VM ...")
+				fmt.Println("Terminate  VM ...")
 				vmHandler.TerminateVM(config.Openstack.ServerId)
 			}
 		}
@@ -125,6 +125,21 @@ func createVM() {
 	fmt.Println("VM_ID=", createdVM.Id)
 }
 
+func getKeyPairInfo() {
+	keypairHandler, err := setKeyPairHandler()
+	if err != nil {
+		panic(err)
+	}
+
+	req := irs.KeyPairReqInfo{
+		//	Name: "keypair-name2",
+	}
+	keypairHandler.CreateKey(req)
+	//keypairHandler.ListKey()
+	//keypairHandler.GetKey("mcb-key")
+	//keypairHandler.DeleteKey("ddddsa")
+}
+
 func setVMHandler() (irs.VMHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
@@ -144,10 +159,31 @@ func setVMHandler() (irs.VMHandler, error) {
 	return vmHandler, nil
 }
 
+func setKeyPairHandler() (irs.KeyPairHandler, error) {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(osdrv.OpenStackDriver)
+
+	config := config.ReadConfigFile()
+	connectionInfo := idrv.ConnectionInfo{
+		RegionInfo: idrv.RegionInfo{
+			Region: config.Openstack.Region,
+		},
+	}
+
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	keyPairHandler, err := cloudConnection.CreateKeyPairHandler() //적용부분
+	if err != nil {
+		return nil, err
+	}
+	return keyPairHandler, nil
+}
+
 func main() {
-	getVMInfo()
+	//getVMInfo()
 	//handleVM()
 	//createVM()
+	//TestImageHandler()
+	getKeyPairInfo()
 }
 
 type Config struct {
@@ -210,5 +246,4 @@ func TestImageHandler() {
 	imageHandler.GetImage(config.Openstack.ImageId)
 	//fmt.Println("Call DeleteImage()")
 	//imageHandler.DeleteImage(config.Openstack.ImageId)
-}
-*/
+}*/
