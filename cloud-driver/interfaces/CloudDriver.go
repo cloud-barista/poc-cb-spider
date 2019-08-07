@@ -48,4 +48,5 @@ type CloudDriver interface {
 	GetDriverCapability() DriverCapabilityInfo
 
 	ConnectCloud(connectionInfo ConnectionInfo) (icon.CloudConnection, error)
+	ConnectNetworkCloud(connectionInfo ConnectionInfo) (icon.CloudConnection, error)
 }
