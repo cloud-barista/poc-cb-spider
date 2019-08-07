@@ -82,15 +82,19 @@ func handleVM() {
 			case 1:
 				fmt.Println("Start Suspend VM ...")
 				vmHandler.SuspendVM(vmId)
+				fmt.Println("Finish Suspend VM")
 			case 2:
 				fmt.Println("Start Resume  VM ...")
 				vmHandler.ResumeVM(vmId)
+				fmt.Println("Finish Resume VM")
 			case 3:
 				fmt.Println("Start Reboot  VM ...")
 				vmHandler.RebootVM(vmId)
+				fmt.Println("Finish Reboot VM")
 			case 4:
 				fmt.Println("Start Terminate  VM ...")
 				vmHandler.TerminateVM(vmId)
+				fmt.Println("Finish Terminate VM")
 			}
 		}
 	}
@@ -98,6 +102,7 @@ func handleVM() {
 
 // Test VM Deployment
 func createVM() {
+	fmt.Println("Start Create VM ...")
 	vmHandler, err := setVMHandler()
 	if err != nil {
 		panic(err)
@@ -121,7 +126,12 @@ func createVM() {
 		},
 	}
 
-	vmHandler.StartVM(vmReqInfo)
+	vm, err := vmHandler.StartVM(vmReqInfo)
+	if err != nil {
+		panic(err)
+	}
+	spew.Dump(vm)
+	fmt.Println("Finish Create VM")
 }
 
 func setVMHandler() (irs.VMHandler, error) {
@@ -131,6 +141,9 @@ func setVMHandler() (irs.VMHandler, error) {
 	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
 		CredentialInfo: idrv.CredentialInfo{
+			ClientId:       config.Azure.ClientId,
+			ClientSecret:   config.Azure.ClientSecret,
+			TenantId:       config.Azure.TenantId,
 			SubscriptionId: config.Azure.SubscriptionID,
 		},
 		RegionInfo: idrv.RegionInfo{
@@ -138,7 +151,10 @@ func setVMHandler() (irs.VMHandler, error) {
 		},
 	}
 
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	cloudConnection, err := cloudDriver.ConnectCloud(connectionInfo)
+	if err != nil {
+		return nil, err
+	}
 	vmHandler, err := cloudConnection.CreateVMHandler()
 	if err != nil {
 		return nil, err
@@ -154,6 +170,9 @@ func main() {
 
 type Config struct {
 	Azure struct {
+		ClientId       string `yaml:"client_id"`
+		ClientSecret   string `yaml:"client_secret"`
+		TenantId       string `yaml:"tenant_id"`
 		SubscriptionID string `yaml:"subscription_id"`
 		GroupName      string `yaml:"group_name"`
 		VMName         string `yaml:"vm_name"`

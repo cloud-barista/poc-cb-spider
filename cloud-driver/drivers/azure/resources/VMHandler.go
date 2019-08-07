@@ -12,6 +12,8 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
@@ -34,6 +36,14 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 
 	vmName := vmReqInfo.Name
 	vmNameArr := strings.Split(vmName, ":")
+
+	// Check VM Exists
+	vm, err := vmHandler.Client.Get(vmHandler.Ctx, vmNameArr[0], vmNameArr[1], compute.InstanceView)
+	if vm.ID != nil {
+		errMsg := fmt.Sprintf("VirtualMachine with name %s already exist", vmNameArr[1])
+		createErr := errors.New(errMsg)
+		return irs.VMInfo{}, createErr
+	}
 
 	vmOpts := compute.VirtualMachine{
 		Location: &vmHandler.Region.Region,
@@ -89,7 +99,7 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 		return irs.VMInfo{}, err
 	}
 
-	vm, err := vmHandler.Client.Get(vmHandler.Ctx, vmNameArr[0], vmNameArr[1], compute.InstanceView)
+	vm, err = vmHandler.Client.Get(vmHandler.Ctx, vmNameArr[0], vmNameArr[1], compute.InstanceView)
 	if err != nil {
 		panic(err)
 	}
@@ -140,8 +150,8 @@ func (vmHandler *AzureVMHandler) RebootVM(vmID string) {
 func (vmHandler *AzureVMHandler) TerminateVM(vmID string) {
 	vmIdArr := strings.Split(vmID, ":")
 
-	//future, err := vmHandler.Client.Delete(vmHandler.Ctx, vmIdArr[0], vmIdArr[1])
-	future, err := vmHandler.Client.Deallocate(vmHandler.Ctx, vmIdArr[0], vmIdArr[1])
+	future, err := vmHandler.Client.Delete(vmHandler.Ctx, vmIdArr[0], vmIdArr[1])
+	//future, err := vmHandler.Client.Deallocate(vmHandler.Ctx, vmIdArr[0], vmIdArr[1])
 	if err != nil {
 		panic(err)
 	}
@@ -160,8 +170,19 @@ func (vmHandler *AzureVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 	var vmStatusList []*irs.VMStatusInfo
 	for _, s := range serverList.Values() {
 		if s.InstanceView != nil {
-			statusStr := getVmStatus(*s.InstanceView)
-			status := irs.VMStatus(statusStr)
+			/*if s.InstanceView != nil {
+			    statusStr := getVmStatus(*s.InstanceView)
+			    status := irs.VMStatus(statusStr)
+			    status := vmHandler.GetVMStatus(*s.ID)
+			    vmStatusInfo := irs.VMStatusInfo{
+			        VmId:     *s.ID,
+			        VmStatus: status,
+			    }
+			    vmStatusList = append(vmStatusList, &vmStatusInfo)
+			}*/
+			vmIdArr := strings.Split(*s.ID, "/")
+			vmId := vmIdArr[4] + ":" + vmIdArr[8]
+			status := vmHandler.GetVMStatus(vmId)
 			vmStatusInfo := irs.VMStatusInfo{
 				VmId:     *s.ID,
 				VmStatus: status,

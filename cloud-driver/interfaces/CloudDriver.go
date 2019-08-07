@@ -27,6 +27,9 @@ type DriverCapabilityInfo struct {
 type CredentialInfo struct {
 	// @todo TBD
 	// key-value pairs
+	ClientId       string // Azure Credential
+	ClientSecret   string // Azure Credential
+	TenantId       string // Azure Credential
 	SubscriptionId string // Azure Credential
 }
 

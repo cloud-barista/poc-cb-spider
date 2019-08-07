@@ -75,17 +75,21 @@ func handleVM() {
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
-				fmt.Println("Suspend Suspend VM ...")
+				fmt.Println("Start Suspend VM ...")
 				vmHandler.SuspendVM(config.Openstack.ServerId)
+				fmt.Println("Finish Suspend VM")
 			case 2:
-				fmt.Println("Resume  VM ...")
+				fmt.Println("Start Resume  VM ...")
 				vmHandler.ResumeVM(config.Openstack.ServerId)
+				fmt.Println("Finish Resume VM")
 			case 3:
-				fmt.Println("Reboot  VM ...")
+				fmt.Println("Start Reboot  VM ...")
 				vmHandler.RebootVM(config.Openstack.ServerId)
+				fmt.Println("Finish Reboot VM")
 			case 4:
-				fmt.Println("Terminate  VM ...")
+				fmt.Println("Start Terminate  VM ...")
 				vmHandler.TerminateVM(config.Openstack.ServerId)
+				fmt.Println("Finish Terminate VM")
 			}
 		}
 	}
@@ -93,6 +97,7 @@ func handleVM() {
 
 // Test VM Deployment
 func createVM() {
+	fmt.Println("Start Create VM ...")
 	vmHandler, err := setVMHandler()
 	if err != nil {
 		panic(err)
@@ -118,26 +123,12 @@ func createVM() {
 		},
 	}
 
-	createdVM, err := vmHandler.StartVM(vmReqInfo)
+	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("VM_ID=", createdVM.Id)
-}
-
-func getKeyPairInfo() {
-	keypairHandler, err := setKeyPairHandler()
-	if err != nil {
-		panic(err)
-	}
-
-	req := irs.KeyPairReqInfo{
-		//	Name: "keypair-name2",
-	}
-	keypairHandler.CreateKey(req)
-	//keypairHandler.ListKey()
-	//keypairHandler.GetKey("mcb-key")
-	//keypairHandler.DeleteKey("ddddsa")
+	spew.Dump(vm)
+	fmt.Println("Finish Create VM")
 }
 
 func setVMHandler() (irs.VMHandler, error) {
@@ -179,11 +170,9 @@ func setKeyPairHandler() (irs.KeyPairHandler, error) {
 }
 
 func main() {
-	//getVMInfo()
+	getVMInfo()
 	//handleVM()
 	//createVM()
-	//TestImageHandler()
-	getKeyPairInfo()
 }
 
 type Config struct {
@@ -220,30 +209,3 @@ func readConfigFile() Config {
 	}
 	return config
 }
-
-/*
-func TestImageHandler() {
-	// Config Driver Info
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-	// Config Connection
-	connectionInfo := idrv.ConnectionInfo{}
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	// Load Handler (VM, Image, KeyPair ..)
-	imageHandler, err := cloudConnection.CreateImageHandler()
-	if err != nil {
-		panic(err)
-	}
-	config := config.ReadConfigFile()
-	// Use Handler Func
-	//fmt.Println("Call CreateImage()")
-	//reqParams := irs.ImageReqInfo{}
-	//result, err := imageHandler.CreateImage(reqParams)
-	//fmt.Println(result)
-	fmt.Println("Call ListImage()")
-	imageHandler.ListImage()
-	fmt.Println("Call GetImage()")
-	imageHandler.GetImage(config.Openstack.ImageId)
-	//fmt.Println("Call DeleteImage()")
-	//imageHandler.DeleteImage(config.Openstack.ImageId)
-}*/
