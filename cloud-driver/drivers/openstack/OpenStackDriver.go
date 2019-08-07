@@ -73,7 +73,20 @@ func (driver *OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) 
 	}
 
 	//var iConn icon.CloudConnection
-	iConn := oscon.OpenStackCloudConnection{Client}
+	iConn := oscon.OpenStackCloudConnection{Client, nil}
+
+	return &iConn, nil // return type: (icon.CloudConnection, error)
+}
+
+func (driver *OpenStackDriver) ConnectNetworkCloud(connectionInfo idrv.ConnectionInfo) (icon.CloudConnection, error) {
+
+	NetworkClient, err := getNetworkClient()
+	if err != nil {
+		panic(err)
+	}
+
+	//var iConn icon.CloudConnection
+	iConn := oscon.OpenStackCloudConnection{nil, NetworkClient}
 
 	return &iConn, nil // return type: (icon.CloudConnection, error)
 }
@@ -152,3 +165,31 @@ func getServiceClient() (*gophercloud.ServiceClient, error) {
 }
 
 var TestDriver OpenStackDriver
+
+func getNetworkClient() (*gophercloud.ServiceClient, error) {
+
+	config := readConfigFile()
+
+	authOpts := gophercloud.AuthOptions{
+		IdentityEndpoint: config.Openstack.IdentityEndpoint,
+		Username:         config.Openstack.Username,
+		Password:         config.Openstack.Password,
+		DomainName:       config.Openstack.DomainName,
+		TenantID:         config.Openstack.ProjectID,
+	}
+
+	provider, err := openstack.AuthenticatedClient(authOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
+		Name:   "neutron",
+		Region: "RegionOne",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return client, err
+}

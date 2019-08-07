@@ -11,7 +11,6 @@
 package connect
 
 import (
-	"fmt"
 	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/rackspace/gophercloud"
@@ -19,12 +18,13 @@ import (
 
 // modified by powerkim, 2019.07.29
 type OpenStackCloudConnection struct {
-	Client *gophercloud.ServiceClient
+	Client        *gophercloud.ServiceClient
+	NetworkClient *gophercloud.ServiceClient
 }
 
-func (OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
-	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
-	return nil, nil
+func (cloudConn *OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
+	vNetworkHandler := osrs.OpenStackVNetworkHandler{cloudConn.NetworkClient}
+	return &vNetworkHandler, nil
 }
 
 func (cloudConn *OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
