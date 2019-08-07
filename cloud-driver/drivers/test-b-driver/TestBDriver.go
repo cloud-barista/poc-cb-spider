@@ -12,9 +12,9 @@ package main
 
 import (
 	"C"
-	acon "github.com/hyokyungk/poc-cb-spider/cloud-driver/drivers/test-b-driver/connect"
-	idrv "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces"
-	icon "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/connect"
+	acon "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/test-b-driver/connect"
+	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
+	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
 )
 
 

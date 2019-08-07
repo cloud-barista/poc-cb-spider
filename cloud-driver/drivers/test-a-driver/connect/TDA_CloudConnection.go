@@ -13,7 +13,7 @@ package connect
 
 import (
 	"fmt"
-	irs "github.com/hyokyungk/poc-cb-spider/cloud-driver/interfaces/resources"
+	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 )
 
 type TADCloudConnection struct{}
