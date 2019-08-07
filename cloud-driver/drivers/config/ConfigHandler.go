@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/rackspace/gophercloud"
+	"github.com/rackspace/gophercloud/openstack"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
@@ -30,7 +30,7 @@ type Config struct {
 		GroupName      string `yaml:"group_name"`
 		VMName         string `yaml:"vm_name"`
 
-		Location string                          `yaml:"location"`
+		Location string `yaml:"location"`
 		VMSize   string `yaml:"vm_size"`
 		Image    struct {
 			Publisher string `yaml:"publisher"`
@@ -43,9 +43,9 @@ type Config struct {
 			AdminUsername string `yaml:"admin_username"`
 			AdminPassword string `yaml:"admin_password"`
 		} `yaml:"os"`
-		Network struct{
-			ID string `yaml:"id"`
-			Primary bool `yaml:"primary"`
+		Network struct {
+			ID      string `yaml:"id"`
+			Primary bool   `yaml:"primary"`
 		} `yaml:"network"`
 
 		ServerId string `yaml:"server_id"`
@@ -79,9 +79,10 @@ func GetServiceClient() (*gophercloud.ServiceClient, error) {
 		Username:         config.Openstack.Username,
 		Password:         config.Openstack.Password,
 		DomainName:       config.Openstack.DomainName,
-		Scope: &gophercloud.AuthScope{
+		TenantID:         config.Openstack.ProjectID,
+		/*Scope: &gophercloud.AuthScope{
 			ProjectID: config.Openstack.ProjectID,
-		},
+		},*/
 	}
 
 	provider, err := openstack.AuthenticatedClient(opts)

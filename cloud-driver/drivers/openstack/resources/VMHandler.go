@@ -13,11 +13,11 @@ package resources
 import (
 	"fmt"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/startstop"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/rackspace/gophercloud"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/servers"
+	"github.com/rackspace/gophercloud/pagination"
 )
 
 // modified by powerkim, 2019.07.29
@@ -39,7 +39,7 @@ func (vmHandler *OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInf
 		SecurityGroups: []string{
 			vmReqInfo.SecurityInfo.Name,
 		},
-		ServiceClient: vmHandler.Client,
+		//ServiceClient: vmHandler.Client,
 	}
 
 	// Add KeyPair
@@ -72,10 +72,11 @@ func (vmHandler *OpenStackVMHandler) ResumeVM(vmID string) {
 }
 
 func (vmHandler *OpenStackVMHandler) RebootVM(vmID string) {
-	rebootOpts := servers.RebootOpts{
+	/*rebootOpts := servers.RebootOpts{
 		Type: servers.SoftReboot,
 		//Type: servers.HardReboot,
-	}
+	}*/
+	rebootOpts := servers.SoftReboot
 	err := servers.Reboot(vmHandler.Client, vmID, rebootOpts).ExtractErr()
 	if err != nil {
 		panic(err)
@@ -164,9 +165,9 @@ func mappingServerInfo(server servers.Server) irs.VMInfo {
 
 	// Get Default VM Info
 	vmInfo := irs.VMInfo{
-		Name:      server.Name,
-		Id:        server.ID,
-		StartTime: server.Updated,
+		Name: server.Name,
+		Id:   server.ID,
+		//StartTime: server.Created,
 		KeyPairID: server.KeyName,
 	}
 

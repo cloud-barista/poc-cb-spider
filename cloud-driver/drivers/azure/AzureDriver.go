@@ -13,7 +13,7 @@ package azure
 import (
 	"context"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
-	"github.com/Azure/go-autorest/autorest/azure"
+	_ "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	azcon "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/azure/connect"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
@@ -47,9 +47,7 @@ func (driver *AzureDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (ico
 	// 3. create CloudConnection Instance of "connect/TDA_CloudConnection".
 	// 4. return CloudConnection Interface of TDA_CloudConnection.
 
-	// sample code, do not user like this^^
-
-	Ctx, Client, err := getVMClient(connectionInfo.CredentialInfo.SubscriptionId)
+	Ctx, Client, err := getVMClient(connectionInfo.CredentialInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -58,13 +56,19 @@ func (driver *AzureDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (ico
 	return &iConn, nil // return type: (icon.CloudConnection, error)
 }
 
-func getVMClient(subscriptionId string) (context.Context, *compute.VirtualMachinesClient, error) {
-	authorizer, err := auth.NewAuthorizerFromFile(azure.PublicCloud.ResourceManagerEndpoint)
+func getVMClient(credential idrv.CredentialInfo) (context.Context, *compute.VirtualMachinesClient, error) {
+	/*auth.NewClientCredentialsConfig()
+	  authorizer, err := auth.NewAuthorizerFromFile(azure.PublicCloud.ResourceManagerEndpoint)
+	  if err != nil {
+	      return nil, nil, err
+	  }*/
+	config := auth.NewClientCredentialsConfig(credential.ClientId, credential.ClientSecret, credential.TenantId)
+	authorizer, err := config.Authorizer()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	vmClient := compute.NewVirtualMachinesClient(subscriptionId)
+	vmClient := compute.NewVirtualMachinesClient(credential.SubscriptionId)
 	vmClient.Authorizer = authorizer
 	ctx, _ := context.WithTimeout(context.Background(), 600*time.Second)
 

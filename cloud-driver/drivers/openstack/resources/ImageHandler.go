@@ -6,13 +6,13 @@ import (
 	_ "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gophercloud/gophercloud"
-	_ "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	_ "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/startstop"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/images"
-	_ "github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/pagination"
-	_ "github.com/gophercloud/gophercloud/pagination"
+	"github.com/rackspace/gophercloud"
+	_ "github.com/rackspace/gophercloud/openstack/compute/v2/extensions/keypairs"
+	_ "github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/images"
+	_ "github.com/rackspace/gophercloud/openstack/compute/v2/servers"
+	"github.com/rackspace/gophercloud/pagination"
+	_ "github.com/rackspace/gophercloud/pagination"
 )
 
 type OpenStackImageHandler struct {
