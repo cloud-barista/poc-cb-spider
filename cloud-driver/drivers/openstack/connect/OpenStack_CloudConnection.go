@@ -32,8 +32,9 @@ func (cloudConn *OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandle
 	return &imageHandler, nil
 }
 
-func (OpenStackCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
-	return nil, nil
+func (cloudConn OpenStackCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
+	securityHandler := osrs.OpenStackSecurityHandler{cloudConn.Client}
+	return &securityHandler, nil
 }
 func (cloudConn *OpenStackCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
 	keypairHandler := osrs.OpenStackKeyPairHandler{cloudConn.Client}
@@ -42,8 +43,9 @@ func (cloudConn *OpenStackCloudConnection) CreateKeyPairHandler() (irs.KeyPairHa
 func (OpenStackCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
 	return nil, nil
 }
-func (OpenStackCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
-	return nil, nil
+func (cloudConn OpenStackCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
+	publicIPHandler := osrs.OpenStackPublicIPHandler{cloudConn.Client}
+	return &publicIPHandler, nil
 }
 
 /* org.

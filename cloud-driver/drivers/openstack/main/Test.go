@@ -131,13 +131,43 @@ func getKeyPairInfo() {
 		panic(err)
 	}
 
-	req := irs.KeyPairReqInfo{
-		//	Name: "keypair-name2",
-	}
+	req := irs.KeyPairReqInfo{}
+
 	keypairHandler.CreateKey(req)
 	//keypairHandler.ListKey()
-	//keypairHandler.GetKey("mcb-key")
+	//keypairHandler.GetKey("test111")
 	//keypairHandler.DeleteKey("ddddsa")
+}
+
+func getPublicIPInfo() {
+	publicIPHandler, err := setPublicIPHandler()
+	if err != nil {
+		panic(err)
+	}
+
+	//publicIPHandler.ListVNetwork()
+	publicIPHandler.GetVNetwork("dff3823e-29fb-40ef-af9b-a9f2250c4f79") //ID로 검색
+	//publicIPHandler.DeleteVNetwork("")
+
+	//pool 생성 (확인요함) 404에러
+	//publicIPHandler.CreatePublicIP(irs.PublicIPReqInfo{})
+
+}
+
+func getSecurityInfo() {
+	securityHandler, err := setSecurityHandler()
+	if err != nil {
+		panic(err)
+	}
+
+	//req := irs.SecurityReqInfo{
+	//
+	//}
+
+	//securityHandler.CreateSecurity(req)
+	//securityHandler.ListSecurity()
+	//securityHandler.GetSecurity("e7d2752a-4d21-4e81-9c44-c274205f6d52")	//그룹 아이디로 검색
+	securityHandler.DeleteSecurity("e7d2752a-4d21-4e81-9c44-c274205f6d52") //그룹 아이디로 삭제
 }
 
 func setVMHandler() (irs.VMHandler, error) {
@@ -178,12 +208,54 @@ func setKeyPairHandler() (irs.KeyPairHandler, error) {
 	return keyPairHandler, nil
 }
 
+func setPublicIPHandler() (irs.PublicIPHandler, error) {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(osdrv.OpenStackDriver)
+
+	config := config.ReadConfigFile()
+	connectionInfo := idrv.ConnectionInfo{
+		RegionInfo: idrv.RegionInfo{
+			Region: config.Openstack.Region,
+		},
+	}
+
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	publicIPHandler, err := cloudConnection.CreatePublicIPHandler() //적용부분
+	if err != nil {
+		return nil, err
+	}
+
+	return publicIPHandler, nil
+}
+
+func setSecurityHandler() (irs.SecurityHandler, error) {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(osdrv.OpenStackDriver)
+
+	config := config.ReadConfigFile()
+	connectionInfo := idrv.ConnectionInfo{
+		RegionInfo: idrv.RegionInfo{
+			Region: config.Openstack.Region,
+		},
+	}
+
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	securityHandler, err := cloudConnection.CreateSecurityHandler() //적용부분
+	if err != nil {
+		return nil, err
+	}
+
+	return securityHandler, nil
+}
+
 func main() {
 	//getVMInfo()
 	//handleVM()
 	//createVM()
 	//TestImageHandler()
-	getKeyPairInfo()
+	//getKeyPairInfo()
+	getPublicIPInfo()
+	//getSecurityInfo()
 }
 
 type Config struct {
