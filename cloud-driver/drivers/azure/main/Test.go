@@ -1,9 +1,19 @@
+// Proof of Concepts of CB-Spider.
+// The CB-Spider is a sub-Framework of the Cloud-Barista Multi-Cloud Project.
+// The CB-Spider Mission is to connect all the clouds with a single interface.
+//
+//      * Cloud-Barista: https://github.com/cloud-barista
+//
+// This is a Cloud Driver Example for PoC Test.
+//
+// by hyokyung.kim@innogrid.co.kr, 2019.07.
+
 package main
 
 import (
 	"fmt"
-	config "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
-	osdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack"
+	azdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/azure"
+	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
@@ -11,15 +21,6 @@ import (
 	"io/ioutil"
 	"os"
 )
-
-// Test OpenStack Connection
-/*func TestConnection() {
-	client, err := config.GetServiceClient()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(client)
-}*/
 
 // Test VM Handler Functions (Get VM Info, VM Status)
 func getVMInfo() {
@@ -36,8 +37,10 @@ func getVMInfo() {
 		spew.Dump(vm)
 	}
 
+	vmId := config.Azure.GroupName + ":" + config.Azure.VMName
+
 	// Get VM Info
-	vmInfo := vmHandler.GetVM(config.Openstack.ServerId)
+	vmInfo := vmHandler.GetVM(vmId)
 	spew.Dump(vmInfo)
 
 	// Get VM Status List
@@ -47,7 +50,7 @@ func getVMInfo() {
 	}
 
 	// Get VM Status
-	vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
+	vmStatus := vmHandler.GetVMStatus(vmId)
 	fmt.Println(vmStatus)
 }
 
@@ -72,23 +75,25 @@ func handleVM() {
 			panic(err)
 		}
 
+		vmId := config.Azure.GroupName + ":" + config.Azure.VMName
+
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
 				fmt.Println("Start Suspend VM ...")
-				vmHandler.SuspendVM(config.Openstack.ServerId)
+				vmHandler.SuspendVM(vmId)
 				fmt.Println("Finish Suspend VM")
 			case 2:
 				fmt.Println("Start Resume  VM ...")
-				vmHandler.ResumeVM(config.Openstack.ServerId)
+				vmHandler.ResumeVM(vmId)
 				fmt.Println("Finish Resume VM")
 			case 3:
 				fmt.Println("Start Reboot  VM ...")
-				vmHandler.RebootVM(config.Openstack.ServerId)
+				vmHandler.RebootVM(vmId)
 				fmt.Println("Finish Reboot VM")
 			case 4:
 				fmt.Println("Start Terminate  VM ...")
-				vmHandler.TerminateVM(config.Openstack.ServerId)
+				vmHandler.TerminateVM(vmId)
 				fmt.Println("Finish Terminate VM")
 			}
 		}
@@ -102,24 +107,22 @@ func createVM() {
 	if err != nil {
 		panic(err)
 	}
-
 	config := config.ReadConfigFile()
 
-	// Create VM Server
+	vmName := config.Azure.GroupName + ":" + config.Azure.VMName
+	imageId := config.Azure.Image.Publisher + ":" + config.Azure.Image.Offer + ":" + config.Azure.Image.Sku + ":" + config.Azure.Image.Version
 	vmReqInfo := irs.VMReqInfo{
-		Name: config.Openstack.VMName,
+		Name: vmName,
 		ImageInfo: irs.ImageInfo{
-			Id: config.Openstack.ImageId,
+			Id: imageId,
 		},
-		SpecID: config.Openstack.FlavorId,
+		SpecID: config.Azure.VMSize,
 		VNetworkInfo: irs.VNetworkInfo{
-			Id: config.Openstack.NetworkId,
+			Id: config.Azure.Network.ID,
 		},
-		SecurityInfo: irs.SecurityInfo{
-			Name: config.Openstack.SecurityGroups,
-		},
-		KeyPairInfo: irs.KeyPairInfo{
-			Name: config.Openstack.KeypairName,
+		LoginInfo: irs.LoginInfo{
+			AdminUsername: config.Azure.Os.AdminUsername,
+			AdminPassword: config.Azure.Os.AdminPassword,
 		},
 	}
 
@@ -133,40 +136,30 @@ func createVM() {
 
 func setVMHandler() (irs.VMHandler, error) {
 	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
+	cloudDriver = new(azdrv.AzureDriver)
 
-	config := config.ReadConfigFile()
+	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			ClientId:       config.Azure.ClientId,
+			ClientSecret:   config.Azure.ClientSecret,
+			TenantId:       config.Azure.TenantId,
+			SubscriptionId: config.Azure.SubscriptionID,
+		},
 		RegionInfo: idrv.RegionInfo{
-			Region: config.Openstack.Region,
+			Region: config.Azure.Location,
 		},
 	}
 
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	cloudConnection, err := cloudDriver.ConnectCloud(connectionInfo)
+	if err != nil {
+		return nil, err
+	}
 	vmHandler, err := cloudConnection.CreateVMHandler()
 	if err != nil {
 		return nil, err
 	}
 	return vmHandler, nil
-}
-
-func setKeyPairHandler() (irs.KeyPairHandler, error) {
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-
-	config := config.ReadConfigFile()
-	connectionInfo := idrv.ConnectionInfo{
-		RegionInfo: idrv.RegionInfo{
-			Region: config.Openstack.Region,
-		},
-	}
-
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	keyPairHandler, err := cloudConnection.CreateKeyPairHandler() //적용부분
-	if err != nil {
-		return nil, err
-	}
-	return keyPairHandler, nil
 }
 
 func main() {
@@ -176,22 +169,33 @@ func main() {
 }
 
 type Config struct {
-	Openstack struct {
-		DomainName       string `yaml:"domain_name"`
-		IdentityEndpoint string `yaml:"identity_endpoint"`
-		Password         string `yaml:"password"`
-		ProjectID        string `yaml:"project_id"`
-		Username         string `yaml:"username"`
-		Region           string `yaml:"region"`
-		VMName           string `yaml:"vm_name"`
-		ImageId          string `yaml:"image_id"`
-		FlavorId         string `yaml:"flavor_id"`
-		NetworkId        string `yaml:"network_id"`
-		SecurityGroups   string `yaml:"security_groups"`
-		KeypairName      string `yaml:"keypair_name"`
+	Azure struct {
+		ClientId       string `yaml:"client_id"`
+		ClientSecret   string `yaml:"client_secret"`
+		TenantId       string `yaml:"tenant_id"`
+		SubscriptionID string `yaml:"subscription_id"`
+		GroupName      string `yaml:"group_name"`
+		VMName         string `yaml:"vm_name"`
 
+		Location string `yaml:"location"`
+		VMSize   string `yaml:"vm_size"`
+		Image    struct {
+			Publisher string `yaml:"publisher"`
+			Offer     string `yaml:"offer"`
+			Sku       string `yaml:"sku"`
+			Version   string `yaml:"version"`
+		} `yaml:"image"`
+		Os struct {
+			ComputeName   string `yaml:"compute_name"`
+			AdminUsername string `yaml:"admin_username"`
+			AdminPassword string `yaml:"admin_password"`
+		} `yaml:"os"`
+		Network struct {
+			ID      string `yaml:"id"`
+			Primary bool   `yaml:"primary"`
+		} `yaml:"network"`
 		ServerId string `yaml:"server_id"`
-	} `yaml:"openstack"`
+	} `yaml:"azure"`
 }
 
 func readConfigFile() Config {
@@ -207,5 +211,6 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
+
 	return config
 }

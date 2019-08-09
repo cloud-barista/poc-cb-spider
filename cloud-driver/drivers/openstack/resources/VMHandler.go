@@ -1,29 +1,32 @@
+// Proof of Concepts of CB-Spider.
+// The CB-Spider is a sub-Framework of the Cloud-Barista Multi-Cloud Project.
+// The CB-Spider Mission is to connect all the clouds with a single interface.
+//
+//      * Cloud-Barista: https://github.com/cloud-barista
+//
+// This is a Cloud Driver Example for PoC Test.
+//
+// by hyokyung.kim@innogrid.co.kr, 2019.07.
+
 package resources
 
 import (
 	"fmt"
-	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
-	"github.com/gophercloud/gophercloud"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/startstop"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/rackspace/gophercloud"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/servers"
+	"github.com/rackspace/gophercloud/pagination"
 )
 
 // modified by powerkim, 2019.07.29
-type OpenStackVMHandler struct{
-	Client  *gophercloud.ServiceClient
+type OpenStackVMHandler struct {
+	Client *gophercloud.ServiceClient
 }
-
 
 // modified by powerkim, 2019.07.29
 func (vmHandler *OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	/* client, err := config.GetServiceClient()
-	if err != nil {
-		panic(err)
-	}
-	*/
 
 	// Add Server Create Options
 	serverCreateOpts := servers.CreateOpts{
@@ -36,7 +39,7 @@ func (vmHandler *OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInf
 		SecurityGroups: []string{
 			vmReqInfo.SecurityInfo.Name,
 		},
-		ServiceClient: vmHandler.Client,
+		//ServiceClient: vmHandler.Client,
 	}
 
 	// Add KeyPair
@@ -50,60 +53,48 @@ func (vmHandler *OpenStackVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInf
 		return irs.VMInfo{}, err
 	}
 
-	vmInfo := MappingServerInfo(*server)
+	vmInfo := mappingServerInfo(*server)
 	return vmInfo, nil
 }
 
-func (OpenStackVMHandler) SuspendVM(vmID string) {
-	client, err := config.GetServiceClient()
+func (vmHandler *OpenStackVMHandler) SuspendVM(vmID string) {
+	err := startstop.Stop(vmHandler.Client, vmID).Err
 	if err != nil {
 		panic(err)
 	}
-
-	err = startstop.Stop(client, vmID).Err
 }
 
-func (OpenStackVMHandler) ResumeVM(vmID string) {
-	client, err := config.GetServiceClient()
+func (vmHandler *OpenStackVMHandler) ResumeVM(vmID string) {
+	err := startstop.Start(vmHandler.Client, vmID).Err
 	if err != nil {
 		panic(err)
 	}
-
-	err = startstop.Start(client, vmID).Err
 }
 
-func (OpenStackVMHandler) RebootVM(vmID string) {
-	client, err := config.GetServiceClient()
-	if err != nil {
-		panic(err)
-	}
-
-	rebootOpts := servers.RebootOpts{
+func (vmHandler *OpenStackVMHandler) RebootVM(vmID string) {
+	/*rebootOpts := servers.RebootOpts{
 		Type: servers.SoftReboot,
 		//Type: servers.HardReboot,
-	}
-	err = servers.Reboot(client, vmID, rebootOpts).ExtractErr()
-}
-
-func (OpenStackVMHandler) TerminateVM(vmID string) {
-	client, err := config.GetServiceClient()
+	}*/
+	rebootOpts := servers.SoftReboot
+	err := servers.Reboot(vmHandler.Client, vmID, rebootOpts).ExtractErr()
 	if err != nil {
 		panic(err)
 	}
-
-	err = servers.Delete(client, vmID).ExtractErr()
 }
 
-func (OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
-	client, err := config.GetServiceClient()
+func (vmHandler *OpenStackVMHandler) TerminateVM(vmID string) {
+	err := servers.Delete(vmHandler.Client, vmID).ExtractErr()
 	if err != nil {
-		return nil
+		panic(err)
 	}
+}
 
-	var vmStatusList []*irs.VMStatus
+func (vmHandler *OpenStackVMHandler) ListVMStatus() []*irs.VMStatusInfo {
+	var vmStatusList []*irs.VMStatusInfo
 
-	pager := servers.List(client, nil)
-	err = pager.EachPage(func(page pagination.Page) (bool, error) {
+	pager := servers.List(vmHandler.Client, nil)
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		// Get VM Status
 		list, err := servers.ExtractServers(page)
 		if err != nil {
@@ -112,38 +103,34 @@ func (OpenStackVMHandler) ListVMStatus() []*irs.VMStatus {
 		// Add to List
 		for _, s := range list {
 			vmStatus := irs.VMStatus(s.Status)
-			vmStatusList = append(vmStatusList, &vmStatus)
+			vmStatusInfo := irs.VMStatusInfo{
+				VmId:     s.ID,
+				VmStatus: vmStatus,
+			}
+			vmStatusList = append(vmStatusList, &vmStatusInfo)
 		}
 		return true, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	return vmStatusList
 }
 
-func (OpenStackVMHandler) GetVMStatus(vmID string) irs.VMStatus {
-	client, err := config.GetServiceClient()
+func (vmHandler *OpenStackVMHandler) GetVMStatus(vmID string) irs.VMStatus {
+	serverResult, err := servers.Get(vmHandler.Client, vmID).Extract()
 	if err != nil {
-		return irs.VMStatus("")
+		panic(err)
 	}
-
-	serverResult, err := servers.Get(client, vmID).Extract()
-	if err != nil {
-		return irs.VMStatus("")
-	}
-
 	return irs.VMStatus(serverResult.Status)
 }
 
-func (OpenStackVMHandler) ListVM() []*irs.VMInfo {
-	client, err := config.GetServiceClient()
-	if err != nil {
-		return nil
-	}
-
+func (vmHandler *OpenStackVMHandler) ListVM() []*irs.VMInfo {
 	var vmList []*irs.VMInfo
 
-	pager := servers.List(client, nil)
-	err = pager.EachPage(func(page pagination.Page) (bool, error) {
+	pager := servers.List(vmHandler.Client, nil)
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		// Get Servers
 		list, err := servers.ExtractServers(page)
 		if err != nil {
@@ -151,42 +138,37 @@ func (OpenStackVMHandler) ListVM() []*irs.VMInfo {
 		}
 		// Add to List
 		for _, s := range list {
-			vmInfo := MappingServerInfo(s)
+			vmInfo := mappingServerInfo(s)
 			vmList = append(vmList, &vmInfo)
 		}
-
 		return true, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	return vmList
 }
 
-func (OpenStackVMHandler) GetVM(vmID string) irs.VMInfo {
-	client, err := config.GetServiceClient()
-	if err != nil {
-		return irs.VMInfo{}
-	}
-
-	serverResult, err := servers.Get(client, vmID).Extract()
+func (vmHandler *OpenStackVMHandler) GetVM(vmID string) irs.VMInfo {
+	serverResult, err := servers.Get(vmHandler.Client, vmID).Extract()
 	if err != nil {
 		fmt.Println(err)
 		return irs.VMInfo{}
 	}
 
-	vmInfo := MappingServerInfo(*serverResult)
-
+	vmInfo := mappingServerInfo(*serverResult)
 	return vmInfo
 }
 
-func MappingServerInfo(server servers.Server) irs.VMInfo {
+func mappingServerInfo(server servers.Server) irs.VMInfo {
 
 	// Get Default VM Info
 	vmInfo := irs.VMInfo{
-		Name:      server.Name,
-		Id:        server.ID,
-		StartTime: server.Updated,
-		//ImageID:   server.Image["id"].(string),
-		//SpecID:    server.Flavor["id"].(string),
+		Name: server.Name,
+		Id:   server.ID,
+		//StartTime: server.Created,
+		KeyPairID: server.KeyName,
 	}
 
 	if len(server.Image) != 0 {

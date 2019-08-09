@@ -26,6 +26,12 @@ type VMReqInfo struct {
 	SpecID       string // instance type or flavour, etc...
 	vNicInfo     VNicInfo
 	PublicIPInfo PublicIPInfo
+	LoginInfo    LoginInfo
+}
+
+type VMStatusInfo struct {
+	VmId     string
+	VmStatus VMStatus
 }
 
 // GO do not support Enum. So, define like this.
@@ -77,6 +83,11 @@ type VMInfo struct {
 	AdditionalInfo string // Any information to be good for users and developers.
 }
 
+type LoginInfo struct {
+	AdminUsername string
+	AdminPassword string
+}
+
 type VMHandler interface {
 	StartVM(vmReqInfo VMReqInfo) (VMInfo, error)
 	SuspendVM(vmID string)
@@ -84,7 +95,7 @@ type VMHandler interface {
 	RebootVM(vmID string)
 	TerminateVM(vmID string)
 
-	ListVMStatus() []*VMStatus
+	ListVMStatus() []*VMStatusInfo
 	GetVMStatus(vmID string) VMStatus
 
 	ListVM() []*VMInfo

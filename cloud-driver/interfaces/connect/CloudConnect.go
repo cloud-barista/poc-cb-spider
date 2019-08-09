@@ -8,7 +8,6 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package connect
 
 import (
@@ -16,8 +15,7 @@ import (
 )
 
 type CloudConnection interface {
-
-	CreateImageHandler() (irs.ImageHandler, error)	
+	CreateImageHandler() (irs.ImageHandler, error)
 	CreateVNetworkHandler() (irs.VNetworkHandler, error)
 	CreateSecurityHandler() (irs.SecurityHandler, error)
 	CreateKeyPairHandler() (irs.KeyPairHandler, error)
@@ -27,6 +25,5 @@ type CloudConnection interface {
 	CreateVMHandler() (irs.VMHandler, error)
 
 	IsConnected() (bool, error)
-	Close()	error
+	Close() error
 }
-

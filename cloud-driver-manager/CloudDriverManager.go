@@ -4,25 +4,68 @@
 //
 //      * Cloud-Barista: https://github.com/cloud-barista
 //
-// This is PoC of Cloud Driver Manager.
+// This is PoC of Cloud Driver Info Manager.
 //
 // by powerkim@etri.re.kr, 2019.07.
 
 
-package drivermanager
+//package drivermanager
+package main
 
 import (
-	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
+	cbs "github.com/cloud-barista/poc-cb-store"
+
+	"fmt"
 )
 
+type CloudDriverInfo struct {
+	providerName string
+	driverName string
+	driverPath string	
+}
 
-func GetCloudConnectionInterface(driverPath string) icon.CloudConnection {
-	var cloudConn icon.CloudConnection
+func RegisterCloudDriver(providerName string, driverName string, driverPath string) CloudDriverInfo {
+	cldDrvInfo := CloudDriverInfo{providerName, driverName, driverPath}
+	
+	// @todo save into storage
+	writer := cbs.GetWriter()	
+	err := writer.PutKV("key1", "value1")
+	if err != nil {
+		panic(err)
+	}
+
+	return cldDrvInfo
+}
+
+func ListCloudDriver() []*CloudDriverInfo {
+	var cldDrvInfoList []*CloudDriverInfo
+
+	// @todo get list from storage
+
+	return cldDrvInfoList
+}
+
+func GetCloudDriver(driverName string) CloudDriverInfo {
+	var cldDrvInfo CloudDriverInfo
 
 	// @todo
 
-	return cloudConn
+	return cldDrvInfo
 }
+
+func UnRegisterCloudDriver(driverName string) bool {
+	var result bool
+
+	// @todo
+
+	return result
+}
+
+func main() {
+	cldDrvInfo := RegisterCloudDriver("csp1", "csp1_driver", "csp1_driver_path")
+	fmt.Printf(">>> %#v\n", cldDrvInfo);
+}
+
 
 /* only to refer by powerkim
 func main() {
