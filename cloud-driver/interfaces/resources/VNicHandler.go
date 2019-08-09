@@ -8,20 +8,19 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package resources
 
 type VNicReqInfo struct {
-	name string
+	Name string
+	Id   string
 	// @todo
 }
 
 type VNicInfo struct {
-	name string
-	id string
+	Name string
+	Id   string
 	// @todo
 }
-
 
 type VNicHandler interface {
 	CreateVNic(vNicReqInfo VNicReqInfo) (VNicInfo, error)
@@ -29,4 +28,3 @@ type VNicHandler interface {
 	GetVNic(vNicID string) (VNicInfo, error)
 	DeleteVNic(vNicID string) (bool, error)
 }
-
