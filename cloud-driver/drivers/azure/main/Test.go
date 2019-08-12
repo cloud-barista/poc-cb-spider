@@ -140,12 +140,14 @@ func testImageHandler() {
 	}
 	config := readConfigFile()
 
-	fmt.Println("ImageHandler")
+	fmt.Println("Test ImageHandler")
 	fmt.Println("1. ListImage()")
 	fmt.Println("2. GetImage()")
 	fmt.Println("3. CreateImage()")
 	fmt.Println("4. DeleteImage()")
+	fmt.Println("5. Exit Program")
 
+Loop:
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -166,12 +168,128 @@ func testImageHandler() {
 				imageHandler.GetImage(imageId)
 				fmt.Println("Finish GetImage()")
 			case 3:
-				/*fmt.Println("Start CreateImage() ...")
-				fmt.Println("Finish CreateImage()")*/
+				fmt.Println("Start CreateImage() ...")
+				reqInfo := irs.ImageReqInfo{Id: imageId}
+				_, err := imageHandler.CreateImage(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish CreateImage()")
 			case 4:
 				fmt.Println("Start DeleteImage() ...")
 				imageHandler.DeleteImage(imageId)
 				fmt.Println("Finish DeleteImage()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
+			}
+		}
+	}
+}
+
+func testPublicIPHandler() {
+	publicIPHandler, err := setPublicIPHandler()
+	if err != nil {
+		panic(err)
+	}
+	config := readConfigFile()
+	
+	fmt.Println("Test PublicIPHandler")
+	fmt.Println("1. ListPublicIP()")
+	fmt.Println("2. GetPublicIP()")
+	fmt.Println("3. CreatePublicIP()")
+	fmt.Println("4. DeletePublicIP()")
+	fmt.Println("5. Exit Program")
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+		
+		publicIPId := config.Azure.PublicIP.GroupName + ":" + config.Azure.PublicIP.Name
+		
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListPublicIP() ...")
+				publicIPHandler.ListPublicIP()
+				fmt.Println("Finish ListPublicIP()")
+			case 2:
+				fmt.Println("Start GetPublicIP() ...")
+				publicIPHandler.GetPublicIP(publicIPId)
+				fmt.Println("Finish GetPublicIP()")
+			case 3:
+				fmt.Println("Start CreatePublicIP() ...")
+				reqInfo := irs.PublicIPReqInfo{Id: publicIPId}
+				_, err := publicIPHandler.CreatePublicIP(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish CreatePublicIP()")
+			case 4:
+				fmt.Println("Start DeletePublicIP() ...")
+				publicIPHandler.DeletePublicIP(publicIPId)
+				fmt.Println("Finish DeletePublicIP()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
+			}
+		}
+	}
+}
+
+func testSecurityHandler() {
+	securityHandler, err := setSecurityHandler()
+	if err != nil {
+		panic(err)
+	}
+	config := readConfigFile()
+	
+	fmt.Println("Test SecurityHandler")
+	fmt.Println("1. ListSecurity()")
+	fmt.Println("2. GetSecurity()")
+	fmt.Println("3. CreateSecurity()")
+	fmt.Println("4. DeleteSecurity()")
+	fmt.Println("5. Exit Program")
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+		
+		securityId := config.Azure.Security.GroupName + ":" + config.Azure.Security.Name
+		
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListSecurity() ...")
+				securityHandler.ListSecurity()
+				fmt.Println("Finish ListSecurity()")
+			case 2:
+				fmt.Println("Start GetSecurity() ...")
+				securityHandler.GetSecurity(securityId)
+				fmt.Println("Finish GetSecurity()")
+			case 3:
+				fmt.Println("Start CreateSecurity() ...")
+				reqInfo := irs.SecurityReqInfo{Id: securityId}
+				_, err := securityHandler.CreateSecurity(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish CreateSecurity()")
+			case 4:
+				fmt.Println("Start DeleteSecurity() ...")
+				securityHandler.DeleteSecurity(securityId)
+				fmt.Println("Finish DeleteSecurity()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
 			}
 		}
 	}
@@ -184,7 +302,7 @@ func testVNetworkHandler() {
 	}
 	config := readConfigFile()
 
-	fmt.Println("ImageHandler")
+	fmt.Println("Test VNetworkHandler")
 	fmt.Println("1. ListVNetwork()")
 	fmt.Println("2. GetVNetwork()")
 	fmt.Println("3. CreateVNetwork()")
@@ -224,24 +342,26 @@ Loop:
 				vNetHandler.DeleteVNetwork(networkId)
 				fmt.Println("Finish DeleteVNetwork()")
 			case 5:
+				fmt.Println("Exit Program")
 				break Loop
 			}
 		}
 	}
 }
 
-func testPublicIPHandler() {
-	publicIPHandler, err := setPublicIPHandler()
+
+func testVNicHandler() {
+	vNicHandler, err := setVNicHandler()
 	if err != nil {
 		panic(err)
 	}
 	config := readConfigFile()
-
-	fmt.Println("ImageHandler")
-	fmt.Println("1. ListPublicIP()")
-	fmt.Println("2. GetPublicIP()")
-	fmt.Println("3. CreatePublicIP()")
-	fmt.Println("4. DeletePublicIP()")
+	
+	fmt.Println("Test VNicHandler")
+	fmt.Println("1. ListVNic()")
+	fmt.Println("2. GetVNic()")
+	fmt.Println("3. CreateVNic()")
+	fmt.Println("4. DeleteVNic()")
 	fmt.Println("5. Exit Program")
 
 Loop:
@@ -251,121 +371,37 @@ Loop:
 		if err != nil {
 			panic(err)
 		}
-
-		publicIPId := config.Azure.PublicIP.GroupName + ":" + config.Azure.PublicIP.Name
-
+		
+		vNicId := config.Azure.VNic.GroupName + ":" + config.Azure.VNic.Name
+		
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
-				fmt.Println("Start ListPublicIP() ...")
-				publicIPHandler.ListPublicIP()
-				fmt.Println("Finish ListPublicIP()")
+				fmt.Println("Start ListVNic() ...")
+				vNicHandler.ListVNic()
+				fmt.Println("Finish ListVNic()")
 			case 2:
-				fmt.Println("Start GetPublicIP() ...")
-				publicIPHandler.GetPublicIP(publicIPId)
-				fmt.Println("Finish GetPublicIP()")
+				fmt.Println("Start GetVNic() ...")
+				vNicHandler.GetVNic(vNicId)
+				fmt.Println("Finish GetVNic()")
 			case 3:
-				fmt.Println("Start CreatePublicIP() ...")
-				reqInfo := irs.PublicIPReqInfo{Id: publicIPId}
-				_, err := publicIPHandler.CreatePublicIP(reqInfo)
+				fmt.Println("Start CreateVNic() ...")
+				reqInfo := irs.VNicReqInfo{Id: vNicId}
+				_, err := vNicHandler.CreateVNic(reqInfo)
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println("Finish CreatePublicIP()")
+				fmt.Println("Finish CreateVNic()")
 			case 4:
-				fmt.Println("Start DeletePublicIP() ...")
-				publicIPHandler.DeletePublicIP(publicIPId)
-				fmt.Println("Finish DeletePublicIP()")
+				fmt.Println("Start DeleteVNic() ...")
+				vNicHandler.DeleteVNic(vNicId)
+				fmt.Println("Finish DeleteVNic()")
 			case 5:
+				fmt.Println("Exit Program")
 				break Loop
 			}
 		}
 	}
-}
-
-func testSecurityHandler() {
-	securityHandler, err := setSecurityHandler()
-	if err != nil {
-		panic(err)
-	}
-	config := readConfigFile()
-
-	fmt.Println("Test SecurityHandler")
-	fmt.Println("1. ListSecurity()")
-	fmt.Println("2. GetSecurity()")
-	fmt.Println("3. CreateSecurity()")
-	fmt.Println("4. DeleteSecurity()")
-	fmt.Println("5. Exit Program")
-
-Loop:
-	for {
-		var commandNum int
-		inputCnt, err := fmt.Scan(&commandNum)
-		if err != nil {
-			panic(err)
-		}
-
-		securityId := config.Azure.Security.GroupName + ":" + config.Azure.Security.Name
-
-		if inputCnt == 1 {
-			switch commandNum {
-			case 1:
-				fmt.Println("Start ListSecurity() ...")
-				securityHandler.ListSecurity()
-				fmt.Println("Finish ListSecurity()")
-			case 2:
-				fmt.Println("Start GetSecurity() ...")
-				securityHandler.GetSecurity(securityId)
-				fmt.Println("Finish GetSecurity()")
-			case 3:
-				fmt.Println("Start CreateSecurity() ...")
-				reqInfo := irs.SecurityReqInfo{Id: securityId}
-				_, err := securityHandler.CreateSecurity(reqInfo)
-				if err != nil {
-					panic(err)
-				}
-				fmt.Println("Finish CreateSecurity()")
-			case 4:
-				fmt.Println("Start DeleteSecurity() ...")
-				securityHandler.DeleteSecurity(securityId)
-				fmt.Println("Finish DeleteSecurity()")
-			case 5:
-				break Loop
-			}
-		}
-	}
-}
-
-func getVNicInfo() {
-	vNicHandler, err := setVNicHandler()
-	if err != nil {
-		panic(err)
-	}
-	config := readConfigFile()
-
-	//vNicHandler.ListVNic()
-
-	vNicId := config.Azure.VNic.GroupName + ":" + config.Azure.VNic.Name
-	vNicHandler.GetVNic(vNicId)
-}
-
-func createVNicInfo() {
-	vNicHandler, err := setVNicHandler()
-	if err != nil {
-		panic(err)
-	}
-	config := readConfigFile()
-
-	vNicId := config.Azure.VNic.GroupName + ":" + config.Azure.VNic.Name
-	reqInfo := irs.VNicReqInfo{
-		Id: vNicId,
-	}
-
-	result, err := vNicHandler.CreateVNic(reqInfo)
-	if err != nil {
-		panic(err)
-	}
-	spew.Dump(result)
 }
 
 func setVMHandler() (irs.VMHandler, error) {
@@ -480,6 +516,34 @@ func setSecurityHandler() (irs.SecurityHandler, error) {
 	return securityHandler, nil
 }
 
+func setVNetHandler() (irs.VNetworkHandler, error) {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(azdrv.AzureDriver)
+	
+	config := readConfigFile()
+	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			ClientId:       config.Azure.ClientId,
+			ClientSecret:   config.Azure.ClientSecret,
+			TenantId:       config.Azure.TenantId,
+			SubscriptionId: config.Azure.SubscriptionID,
+		},
+		RegionInfo: idrv.RegionInfo{
+			Region: config.Azure.Location,
+		},
+	}
+	
+	cloudConnection, err := cloudDriver.ConnectCloud(connectionInfo)
+	if err != nil {
+		return nil, err
+	}
+	vNetHandler, err := cloudConnection.CreateVNetworkHandler()
+	if err != nil {
+		return nil, err
+	}
+	return vNetHandler, nil
+}
+
 func setVNicHandler() (irs.VNicHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(azdrv.AzureDriver)
@@ -508,43 +572,19 @@ func setVNicHandler() (irs.VNicHandler, error) {
 	return vNicHandler, nil
 }
 
-func setVNetHandler() (irs.VNetworkHandler, error) {
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(azdrv.AzureDriver)
-
-	config := readConfigFile()
-	connectionInfo := idrv.ConnectionInfo{
-		CredentialInfo: idrv.CredentialInfo{
-			ClientId:       config.Azure.ClientId,
-			ClientSecret:   config.Azure.ClientSecret,
-			TenantId:       config.Azure.TenantId,
-			SubscriptionId: config.Azure.SubscriptionID,
-		},
-		RegionInfo: idrv.RegionInfo{
-			Region: config.Azure.Location,
-		},
-	}
-
-	cloudConnection, err := cloudDriver.ConnectCloud(connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-	vNetHandler, err := cloudConnection.CreateVNetworkHandler()
-	if err != nil {
-		return nil, err
-	}
-	return vNetHandler, nil
-}
 
 func main() {
-
+	// Test VM Handler
 	//getVMInfo()
 	//handleVM()
 	//createVM()
-
+	
+	// Teset Resource Handler
 	//testImageHandler()
-	//testVNetworkHandler()
-	testPublicIPHandler()
+	//testPublicIPHandler()
+	//testSecurityHandler()
+	testVNetworkHandler()
+	//testVNicHandler()
 }
 
 type Config struct {
@@ -575,7 +615,12 @@ type Config struct {
 			Primary bool   `yaml:"primary"`
 		} `yaml:"network"`
 		ServerId string `yaml:"server_id"`
-
+		
+		ImageInfo struct {
+			GroupName string `yaml:"group_name"`
+			Name      string `yaml:"name"`
+		} `yaml:"image_info"`
+		
 		PublicIP struct {
 			GroupName string `yaml:"group_name"`
 			Name      string `yaml:"name"`
@@ -595,11 +640,7 @@ type Config struct {
 			GroupName string `yaml:"group_name"`
 			Name      string `yaml:"name"`
 		} `yaml:"network_interface"`
-
-		ImageInfo struct {
-			GroupName string `yaml:"group_name"`
-			Name      string `yaml:"name"`
-		} `yaml:"image_info"`
+		
 	} `yaml:"azure"`
 }
 

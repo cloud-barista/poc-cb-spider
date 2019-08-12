@@ -92,13 +92,12 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 		panic(err)
 		return irs.VMInfo{}, err
 	}
-
 	err = future.WaitForCompletionRef(vmHandler.Ctx, vmHandler.Client.Client)
 	if err != nil {
 		panic(err)
 		return irs.VMInfo{}, err
 	}
-
+	
 	vm, err = vmHandler.Client.Get(vmHandler.Ctx, vmNameArr[0], vmNameArr[1], compute.InstanceView)
 	if err != nil {
 		panic(err)

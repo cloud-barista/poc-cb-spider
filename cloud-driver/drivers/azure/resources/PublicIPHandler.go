@@ -34,9 +34,9 @@ func (publicIP *PublicIPInfo) setter(address network.PublicIPAddress) *PublicIPI
 	publicIP.Name = *address.Name
 	publicIP.Location = *address.Location
 	publicIP.PublicIPAddressSku = fmt.Sprint(address.Sku.Name)
-	//publicIP.PublicIPAddressVersion = fmt.Sprint(address.PublicIPAddressVersion)
-	//publicIP.PublicIPAllocationMethod = fmt.Sprint(address.PublicIPAllocationMethod)
-	//publicIP.IPAddress = *address.IPAddress
+	publicIP.PublicIPAddressVersion = fmt.Sprint(address.PublicIPAddressVersion)
+	publicIP.PublicIPAllocationMethod = fmt.Sprint(address.PublicIPAllocationMethod)
+	publicIP.IPAddress = *address.IPAddress
 	publicIP.IdleTimeoutInMinutes = *address.IdleTimeoutInMinutes
 
 	return publicIP
@@ -54,7 +54,7 @@ func (publicIpHandler *AzurePublicIPHandler) CreatePublicIP(publicIPReqInfo irs.
 	reqInfo := PublicIPReqInfo{
 		PublicIPAddressSkuName:       "Basic",
 		PublicIPAddressVersion:       "IPv4",
-		PublicIPAllocationMethod:     "Dynamic",
+		PublicIPAllocationMethod:     "Static",
 		PublicIPIdleTimeoutInMinutes: 4,
 	}
 

@@ -73,7 +73,6 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 	// @TODO: VNicInfo 생성 요청 파라미터 정의 필요
 	type VNicIPReqInfo struct {
 		Name string
-		//SubnetName                string
 		PrivateIPAllocationMethod string
 	}
 	type VNicReqInfo struct {
@@ -82,7 +81,6 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 		SubnetName        string
 		SecurityGroupName string
 		IP                []VNicIPReqInfo
-		//SecurityGroup     string
 	}
 
 	reqInfo := VNicReqInfo{
@@ -132,7 +130,6 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 	if err != nil {
 		return irs.VNicInfo{}, err
 	}
-
 	err = future.WaitForCompletionRef(vNicHandler.Ctx, vNicHandler.NicClient.Client)
 	if err != nil {
 		return irs.VNicInfo{}, err

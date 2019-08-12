@@ -2,6 +2,8 @@ package resources
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-04-01/network"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
@@ -82,7 +84,15 @@ func (vNetworkHandler *AzureVNetworkHandler) CreateVNetwork(vNetworkReqInfo irs.
 		}
 		subnetArr = append(subnetArr, subnetInfo)
 	}
-
+	
+	// Check vNetwork Exists
+	vNetwork, err := vNetworkHandler.Client.Get(vNetworkHandler.Ctx, vNicIdArr[0], vNicIdArr[1], "")
+	if vNetwork.ID != nil {
+		errMsg := fmt.Sprintf("Virtual Network with name %s already exist", vNicIdArr[1])
+		createErr := errors.New(errMsg)
+		return irs.VNetworkInfo{}, createErr
+	}
+	
 	createOpts := network.VirtualNetwork{
 		Name: &reqInfo.Name,
 		VirtualNetworkPropertiesFormat: &network.VirtualNetworkPropertiesFormat{

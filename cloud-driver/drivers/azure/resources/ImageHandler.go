@@ -2,8 +2,10 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
+	"github.com/Azure/go-autorest/autorest/to"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
@@ -42,7 +44,52 @@ func (imageInfo *ImageInfo) setter(image compute.Image) *ImageInfo {
 	return imageInfo
 }
 
-func (imageHandler *AzureImageHandler) CreateImage(irs.ImageReqInfo) (irs.ImageInfo, error) {
+func (imageHandler *AzureImageHandler) CreateImage(imageReqInfo irs.ImageReqInfo) (irs.ImageInfo, error) {
+	imageIdArr := strings.Split(imageReqInfo.Id, ":")
+
+	// @TODO: PublicIP 생성 요청 파라미터 정의 필요
+	type ImageReqInfo struct {
+		OSType string
+		DiskId string
+	}
+	reqInfo := ImageReqInfo{
+		//BlobUrl: "https://md-ds50xp550wh2.blob.core.windows.net/kt0lhznvgx2h/abcd?sv=2017-04-17&sr=b&si=b9674241-fb8e-4cb2-89c7-614d336dc3a7&sig=uvbqvAZQITSpxas%2BWosG%2FGOf6e%2BIBmWNxlUmvARnxiM%3D",
+		OSType: "Linux",
+		DiskId: "/subscriptions/cb592624-b77b-4a8f-bb13-0e5a48cae40f/resourceGroups/INNO-PLATFORM1-RSRC-GRUP/providers/Microsoft.Compute/disks/vhd-test-vm_OsDisk_1_722bec6ef1fa45edb0c5d7925d32d44c",
+	}
+	
+	// Check Image Exists
+	image, err := imageHandler.Client.Get(imageHandler.Ctx, imageIdArr[0], imageIdArr[1], "")
+	if image.ID != nil {
+		errMsg := fmt.Sprintf("Image with name %s already exist", imageIdArr[1])
+		createErr := errors.New(errMsg)
+		return irs.ImageInfo{}, createErr
+	}
+	
+	createOpts := compute.Image{
+		ImageProperties: &compute.ImageProperties{
+			StorageProfile: &compute.ImageStorageProfile{
+				OsDisk: &compute.ImageOSDisk{
+					ManagedDisk: &compute.SubResource{
+						ID: to.StringPtr(reqInfo.DiskId),
+					},
+					OsType: compute.OperatingSystemTypes(reqInfo.OSType),
+					//BlobURI: to.StringPtr(reqInfo.BlobUrl),
+				},
+			},
+		},
+		Location: &imageHandler.Region.Region,
+	}
+
+	future, err := imageHandler.Client.CreateOrUpdate(imageHandler.Ctx, imageIdArr[0], imageIdArr[1], createOpts)
+	if err != nil {
+		return irs.ImageInfo{}, err
+	}
+	err = future.WaitForCompletionRef(imageHandler.Ctx, imageHandler.Client.Client)
+	if err != nil {
+		return irs.ImageInfo{}, err
+	}
+
 	return irs.ImageInfo{}, nil
 }
 

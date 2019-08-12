@@ -13,7 +13,8 @@ package resources
 //package image
 
 type ImageReqInfo struct {
-	name string
+	Name string
+	Id   string
 	// @todo
 }
 
