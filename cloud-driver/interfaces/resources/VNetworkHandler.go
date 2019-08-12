@@ -11,7 +11,8 @@
 package resources
 
 type VNetworkReqInfo struct {
-	name string
+	Name string
+	Id   string
 	// @todo
 }
 

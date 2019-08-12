@@ -50,3 +50,23 @@ azure:
   # Azure Test VM Info
   group_name: {group_name}
   vm_name: {vm_name}
+
+  image_info:
+    group_name: {group_name}
+    name: {name}
+
+  public_ip:
+    group_name: {group_name}
+    name: {name}
+
+  security_group:
+    group_name: {group_name}
+    name: {name}
+
+  virtual_network:
+    group_name: {group_name}
+    name: {name}
+
+  network_interface:
+    group_name: {group_name}
+    name: {name}
