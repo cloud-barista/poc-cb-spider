@@ -122,7 +122,7 @@ func createVM() {
 			Name: config.Openstack.KeypairName,
 		},
 	}
-	
+
 	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
@@ -131,14 +131,15 @@ func createVM() {
 	fmt.Println("Finish Create VM")
 }
 
+
 func getKeyPairInfo() {
 	keypairHandler, err := setKeyPairHandler()
 	if err != nil {
 		panic(err)
 	}
-
+	
 	req := irs.KeyPairReqInfo{}
-
+	
 	keypairHandler.CreateKey(req)
 	//keypairHandler.ListKey()
 	//keypairHandler.GetKey("mcb-key")
@@ -150,14 +151,14 @@ func getPublicIPInfo() {
 	if err != nil {
 		panic(err)
 	}
-
+	
 	//publicIPHandler.ListVNetwork()
 	publicIPHandler.GetVNetwork("dff3823e-29fb-40ef-af9b-a9f2250c4f79") //ID로 검색
 	//publicIPHandler.DeleteVNetwork("")
-
+	
 	//pool 생성 (확인요함) 404에러
 	//publicIPHandler.CreatePublicIP(irs.PublicIPReqInfo{})
-
+	
 }
 
 func getSecurityInfo() {
@@ -165,11 +166,11 @@ func getSecurityInfo() {
 	if err != nil {
 		panic(err)
 	}
-
+	
 	//req := irs.SecurityReqInfo{
 	//
 	//}
-
+	
 	//securityHandler.CreateSecurity(req)
 	//securityHandler.ListSecurity()
 	//securityHandler.GetSecurity("e7d2752a-4d21-4e81-9c44-c274205f6d52")	//그룹 아이디로 검색
@@ -213,6 +214,7 @@ func setKeyPairHandler() (irs.KeyPairHandler, error) {
 	}
 	return keyPairHandler, nil
 }
+
 
 func setPublicIPHandler() (irs.PublicIPHandler, error) {
 	var cloudDriver idrv.CloudDriver
@@ -330,30 +332,3 @@ func readConfigFile() Config {
 	}
 	return config
 }
-
-/*
-func TestImageHandler() {
-	// Config Driver Info
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-	// Config Connection
-	connectionInfo := idrv.ConnectionInfo{}
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	// Load Handler (VM, Image, KeyPair ..)
-	imageHandler, err := cloudConnection.CreateImageHandler()
-	if err != nil {
-		panic(err)
-	}
-	config := config.ReadConfigFile()
-	// Use Handler Func
-	//fmt.Println("Call CreateImage()")
-	//reqParams := irs.ImageReqInfo{}
-	//result, err := imageHandler.CreateImage(reqParams)
-	//fmt.Println(result)
-	fmt.Println("Call ListImage()")
-	imageHandler.ListImage()
-	fmt.Println("Call GetImage()")
-	imageHandler.GetImage(config.Openstack.ImageId)
-	//fmt.Println("Call DeleteImage()")
-	//imageHandler.DeleteImage(config.Openstack.ImageId)
-}*/
