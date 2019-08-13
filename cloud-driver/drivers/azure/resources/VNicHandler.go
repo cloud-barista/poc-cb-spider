@@ -84,7 +84,9 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 	}
 
 	reqInfo := VNicReqInfo{
-		VNetworkName: "inno-platform1-rsrc-grup-vnet",
+		//VNetworkName: "inno-platform1-rsrc-grup-vnet",
+		// edited by powerkim for test, 2019.08.13
+		VNetworkName: "cb-vnet",
 		SubnetName:   "default",
 		IP: []VNicIPReqInfo{
 			{
@@ -92,7 +94,9 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 				PrivateIPAllocationMethod: "Dynamic",
 			},
 		},
-		SecurityGroupName: "inno-test-vm-nsg",
+		//SecurityGroupName: "inno-test-vm-nsg",
+		// edited by powerkim for test, 2019.08.13
+		SecurityGroupName: "cb-security-group",
 	}
 
 	vNicIdArr := strings.Split(vNicReqInfo.Id, ":")

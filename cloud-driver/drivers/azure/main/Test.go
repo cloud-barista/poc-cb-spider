@@ -583,8 +583,8 @@ func main() {
 	//testImageHandler()
 	//testPublicIPHandler()
 	//testSecurityHandler()
-	testVNetworkHandler()
-	//testVNicHandler()
+	//testVNetworkHandler()
+	testVNicHandler()
 }
 
 type Config struct {
