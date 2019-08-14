@@ -418,6 +418,7 @@ func setVMHandler() (irs.VMHandler, error) {
 		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Azure.Location,
+			ResourceGroup: config.Azure.GroupName,
 		},
 	}
 
@@ -446,6 +447,7 @@ func setImageHandler() (irs.ImageHandler, error) {
 		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Azure.Location,
+			ResourceGroup: config.Azure.GroupName,
 		},
 	}
 
@@ -474,6 +476,7 @@ func setPublicIPHandler() (irs.PublicIPHandler, error) {
 		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Azure.Location,
+			ResourceGroup: config.Azure.GroupName,
 		},
 	}
 
@@ -502,6 +505,7 @@ func setSecurityHandler() (irs.SecurityHandler, error) {
 		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Azure.Location,
+			ResourceGroup: config.Azure.GroupName,
 		},
 	}
 
@@ -530,6 +534,7 @@ func setVNetHandler() (irs.VNetworkHandler, error) {
 		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Azure.Location,
+			ResourceGroup: config.Azure.GroupName,
 		},
 	}
 	
@@ -558,6 +563,7 @@ func setVNicHandler() (irs.VNicHandler, error) {
 		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Azure.Location,
+			ResourceGroup: config.Azure.GroupName,
 		},
 	}
 
@@ -583,8 +589,8 @@ func main() {
 	//testImageHandler()
 	//testPublicIPHandler()
 	//testSecurityHandler()
-	testVNetworkHandler()
-	//testVNicHandler()
+	//testVNetworkHandler()
+	testVNicHandler()
 }
 
 type Config struct {

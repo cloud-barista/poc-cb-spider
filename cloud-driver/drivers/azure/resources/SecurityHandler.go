@@ -172,7 +172,8 @@ func (securityHandler *AzureSecurityHandler) CreateSecurity(securityReqInfo irs.
 }
 
 func (securityHandler *AzureSecurityHandler) ListSecurity() ([]*irs.SecurityInfo, error) {
-	result, err := securityHandler.Client.ListAll(securityHandler.Ctx)
+	//result, err := securityHandler.Client.ListAll(securityHandler.Ctx)
+	result, err := securityHandler.Client.List(securityHandler.Ctx, securityHandler.Region.ResourceGroup)
 	if err != nil {
 		return nil, err
 	}

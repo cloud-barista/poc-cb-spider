@@ -161,7 +161,8 @@ func (vmHandler *AzureVMHandler) TerminateVM(vmID string) {
 }
 
 func (vmHandler *AzureVMHandler) ListVMStatus() []*irs.VMStatusInfo {
-	serverList, err := vmHandler.Client.ListAll(vmHandler.Ctx)
+	//serverList, err := vmHandler.Client.ListAll(vmHandler.Ctx)
+	serverList, err := vmHandler.Client.List(vmHandler.Ctx, vmHandler.Region.ResourceGroup)
 	if err != nil {
 		panic(err)
 	}
@@ -206,7 +207,8 @@ func (vmHandler *AzureVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 }
 
 func (vmHandler *AzureVMHandler) ListVM() []*irs.VMInfo {
-	serverList, err := vmHandler.Client.ListAll(vmHandler.Ctx)
+	//serverList, err := vmHandler.Client.ListAll(vmHandler.Ctx)
+	serverList, err := vmHandler.Client.List(vmHandler.Ctx, vmHandler.Region.ResourceGroup)
 	if err != nil {
 		panic(err)
 	}
