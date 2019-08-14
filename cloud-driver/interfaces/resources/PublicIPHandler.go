@@ -8,23 +8,23 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
-
 package resources
 
 type PublicIPReqInfo struct {
-	name string
-        // @todo
+	Name string
+	Id   string
+	// @todo
 }
 
 type PublicIPInfo struct {
 	name string
-	id string
-        // @todo
+	id   string
+	// @todo
 }
 
 type PublicIPHandler interface {
 	CreatePublicIP(publicIPReqInfo PublicIPReqInfo) (PublicIPInfo, error)
-	ListVNetwork() ([]*PublicIPInfo, error)
-	GetVNetwork(publicIPID string) (PublicIPInfo, error) 
-	DeleteVNetwork(publicIPID string) (bool, error)
+	ListPublicIP() ([]*PublicIPInfo, error)
+	GetPublicIP(publicIPID string) (PublicIPInfo, error)
+	DeletePublicIP(publicIPID string) (bool, error)
 }

@@ -11,7 +11,8 @@
 package resources
 
 type SecurityReqInfo struct {
-	name string
+	Name string
+	Id   string
 	// @todo
 }
 
