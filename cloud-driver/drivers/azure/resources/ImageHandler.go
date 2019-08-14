@@ -96,7 +96,8 @@ func (imageHandler *AzureImageHandler) CreateImage(imageReqInfo irs.ImageReqInfo
 }
 
 func (imageHandler *AzureImageHandler) ListImage() ([]*irs.ImageInfo, error) {
-	resultList, err := imageHandler.Client.List(imageHandler.Ctx)
+	//resultList, err := imageHandler.Client.List(imageHandler.Ctx)
+	resultList, err := imageHandler.Client.ListByResourceGroup(imageHandler.Ctx, imageHandler.Region.ResourceGroup)
 	if err != nil {
 		panic(err)
 	}

@@ -34,8 +34,9 @@ type CredentialInfo struct {
 }
 
 type RegionInfo struct {
-	Region string
-	Zone   string
+	Region        string
+	Zone          string
+	ResourceGroup string
 }
 
 type ConnectionInfo struct {

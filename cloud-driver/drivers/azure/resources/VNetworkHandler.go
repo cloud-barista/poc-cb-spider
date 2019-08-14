@@ -117,7 +117,8 @@ func (vNetworkHandler *AzureVNetworkHandler) CreateVNetwork(vNetworkReqInfo irs.
 }
 
 func (vNetworkHandler *AzureVNetworkHandler) ListVNetwork() ([]*irs.VNetworkInfo, error) {
-	vNetworkList, err := vNetworkHandler.Client.ListAll(vNetworkHandler.Ctx)
+	//vNetworkList, err := vNetworkHandler.Client.ListAll(vNetworkHandler.Ctx)
+	vNetworkList, err := vNetworkHandler.Client.List(vNetworkHandler.Ctx, vNetworkHandler.Region.ResourceGroup)
 	if err != nil {
 		return nil, err
 	}

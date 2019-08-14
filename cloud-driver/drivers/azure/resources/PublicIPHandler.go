@@ -98,7 +98,8 @@ func (publicIpHandler *AzurePublicIPHandler) CreatePublicIP(publicIPReqInfo irs.
 }
 
 func (publicIpHandler *AzurePublicIPHandler) ListPublicIP() ([]*irs.PublicIPInfo, error) {
-	result, err := publicIpHandler.Client.ListAll(publicIpHandler.Ctx)
+	//result, err := publicIpHandler.Client.ListAll(publicIpHandler.Ctx)
+	result, err := publicIpHandler.Client.List(publicIpHandler.Ctx, publicIpHandler.Region.ResourceGroup)
 	if err != nil {
 		return nil, err
 	}
