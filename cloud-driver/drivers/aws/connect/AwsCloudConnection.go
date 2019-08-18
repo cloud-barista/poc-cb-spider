@@ -13,10 +13,21 @@ package connect
 import (
 	"fmt"
 
+	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+
+	ars "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/aws/resources"
+
+	//ec2drv "github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-type AwsCloudConnection struct{}
+//type AwsCloudConnection struct{}
+type AwsCloudConnection struct {
+	Region idrv.RegionInfo
+	//Client *ec2.EC2
+	VMClient *ec2.EC2
+}
 
 func (AwsCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
 	fmt.Println("TEST AWS Cloud Driver: called CreateVNetworkHandler()!")
@@ -40,8 +51,18 @@ func (AwsCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
 	return nil, nil
 }
 
+/*
 func (AwsCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
+	fmt.Println("TEST AWS Cloud Driver: called CreateVMHandler()!")
 	return nil, nil
+}
+*/
+
+func (cloudConn *AwsCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
+	fmt.Println("AWS Cloud Driver: called CreateVMHandler()!")
+	//vmHandler := ars.AzureVMHandler{cloudConn.Region, cloudConn.Ctx, cloudConn.VMClient}
+	vmHandler := ars.AwsVMHandler{cloudConn.Region, cloudConn.VMClient}
+	return &vmHandler, nil
 }
 
 func (AwsCloudConnection) IsConnected() (bool, error) {
