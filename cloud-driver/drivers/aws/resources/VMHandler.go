@@ -17,27 +17,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/davecgh/go-spew/spew"
 
-	//	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
-	//	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	//	ec2drv "github.com/aws/aws-sdk-go/service/ec2"
 	ec2drv "github.com/aws/aws-sdk-go/service/ec2"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/cloud-barista/poc-farmoni/farmoni_master/ec2handler"
 )
-
-/*
-import (
-	"context"
-	"errors"
-	"fmt"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
-	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
-	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"strings"
-)
-*/
 
 type AwsVMHandler struct {
 	Region idrv.RegionInfo
@@ -355,6 +339,24 @@ func (vmHandler *AwsVMHandler) RebootVM(vmID string) {
 }
 
 func (vmHandler *AwsVMHandler) TerminateVM(vmID string) {
+
+	fmt.Println("Start VMHandler()::TerminateVM()")
+	instanceIds := []*string{&vmID}
+
+	spew.Dump(instanceIds)
+
+	input := &ec2.TerminateInstancesInput{
+		InstanceIds: instanceIds,
+	}
+
+	_, err := vmHandler.Client.TerminateInstances(input)
+
+	if err != nil {
+		fmt.Println("Could not termiate instances", err)
+	}
+
+	fmt.Println("End VMHandler()::TerminateVM()")
+
 	return
 }
 
