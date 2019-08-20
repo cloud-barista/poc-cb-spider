@@ -27,10 +27,15 @@ type DriverCapabilityInfo struct {
 type CredentialInfo struct {
 	// @todo TBD
 	// key-value pairs
-	ClientId       string // Azure Credential
-	ClientSecret   string // Azure Credential
-	TenantId       string // Azure Credential
-	SubscriptionId string // Azure Credential
+	ClientId         string // Azure Credential
+	ClientSecret     string // Azure Credential
+	TenantId         string // Azure Credential
+	SubscriptionId   string // Azure Credential
+	IdentityEndpoint string // OpenStack Credential
+	Username         string // OpenStack Credential
+	Password         string // OpenStack Credential
+	DomainName       string // OpenStack Credential
+	ProjectID        string // OpenStack Credential
 }
 
 type RegionInfo struct {
@@ -49,5 +54,5 @@ type CloudDriver interface {
 	GetDriverCapability() DriverCapabilityInfo
 
 	ConnectCloud(connectionInfo ConnectionInfo) (icon.CloudConnection, error)
-	ConnectNetworkCloud(connectionInfo ConnectionInfo) (icon.CloudConnection, error)
+	//ConnectNetworkCloud(connectionInfo ConnectionInfo) (icon.CloudConnection, error)
 }
