@@ -11,16 +11,11 @@
 package openstack
 
 import (
-	"fmt"
 	oscon "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/connect"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
-
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"os"
 )
 
 type OpenStackDriver struct{}
@@ -111,51 +106,24 @@ type Config struct {
 	} `yaml:"openstack"`
 }
 
-func readConfigFile() Config {
-	// Set Environment Value of Project Root Path
-	rootPath := os.Getenv("CBSPIDER_PATH")
-	data, err := ioutil.ReadFile(rootPath + "/config/config.yaml")
-	if err != nil {
-		panic(err)
-	}
-
-	var config Config
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		panic(err)
-	}
-
-	return config
-}
-
-//--------- temporary
-
 // moved by powerkim, 2019.07.29.
-func getServiceClient() (*gophercloud.ServiceClient, error) {
+func getServiceClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient, error) {
 
-	// read configuration YAML file
-	config := readConfigFile()
-
-	fmt.Println(config)
-
-	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: config.Openstack.IdentityEndpoint,
-		Username:         config.Openstack.Username,
-		Password:         config.Openstack.Password,
-		DomainName:       config.Openstack.DomainName,
-		TenantID:         config.Openstack.ProjectID,
-		/*Scope: &gophercloud.AuthScope{
-			ProjectID: config.Openstack.ProjectID,
-		},*/
+	authOpts := gophercloud.AuthOptions{
+		IdentityEndpoint: connInfo.CredentialInfo.IdentityEndpoint,
+		Username:         connInfo.CredentialInfo.Username,
+		Password:         connInfo.CredentialInfo.Password,
+		DomainName:       connInfo.CredentialInfo.DomainName,
+		TenantID:         connInfo.CredentialInfo.ProjectID,
 	}
 
-	provider, err := openstack.AuthenticatedClient(opts)
+	provider, err := openstack.AuthenticatedClient(authOpts)
 	if err != nil {
 		return nil, err
 	}
 
 	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{
-		Region: config.Openstack.Region,
+		Region: connInfo.RegionInfo.Region,
 	})
 	if err != nil {
 		return nil, err
@@ -166,30 +134,28 @@ func getServiceClient() (*gophercloud.ServiceClient, error) {
 
 var TestDriver OpenStackDriver
 
-func getNetworkClient() (*gophercloud.ServiceClient, error) {
-
-	config := readConfigFile()
+func getNetworkClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient, error) {
 
 	authOpts := gophercloud.AuthOptions{
-		IdentityEndpoint: config.Openstack.IdentityEndpoint,
-		Username:         config.Openstack.Username,
-		Password:         config.Openstack.Password,
-		DomainName:       config.Openstack.DomainName,
-		TenantID:         config.Openstack.ProjectID,
+		IdentityEndpoint: connInfo.CredentialInfo.IdentityEndpoint,
+		Username:         connInfo.CredentialInfo.Username,
+		Password:         connInfo.CredentialInfo.Password,
+		DomainName:       connInfo.CredentialInfo.DomainName,
+		TenantID:         connInfo.CredentialInfo.ProjectID,
 	}
 
 	provider, err := openstack.AuthenticatedClient(authOpts)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
 		Name:   "neutron",
-		Region: "RegionOne",
+		Region: connInfo.RegionInfo.Region,
 	})
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return client, err
 }

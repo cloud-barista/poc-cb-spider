@@ -11,6 +11,7 @@
 package connect
 
 import (
+	"fmt"
 	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/rackspace/gophercloud"
@@ -23,38 +24,36 @@ type OpenStackCloudConnection struct {
 }
 
 func (cloudConn *OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
 	vNetworkHandler := osrs.OpenStackVNetworkHandler{cloudConn.NetworkClient}
 	return &vNetworkHandler, nil
 }
 
 func (cloudConn *OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateImageHandler()!")
 	imageHandler := osrs.OpenStackImageHandler{cloudConn.Client}
 	return &imageHandler, nil
 }
 
 func (cloudConn OpenStackCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateSecurityHandler()!")
 	securityHandler := osrs.OpenStackSecurityHandler{cloudConn.Client}
 	return &securityHandler, nil
 }
 func (cloudConn *OpenStackCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateKeyPairHandler()!")
 	keypairHandler := osrs.OpenStackKeyPairHandler{cloudConn.Client}
 	return &keypairHandler, nil
 }
 func (OpenStackCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateVNicHandler()!")
 	return nil, nil
 }
 func (cloudConn OpenStackCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreatePublicIPHandler()!")
 	publicIPHandler := osrs.OpenStackPublicIPHandler{cloudConn.Client}
 	return &publicIPHandler, nil
 }
-
-/* org.
-func (OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
-	var vmHandler irs.VMHandler
-	vmHandler = osrs.OpenStackVMHandler{}
-	return vmHandler, nil
-}
-*/
 
 // modified by powerkim, 2019.07.29
 func (cloudConn *OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
@@ -68,8 +67,8 @@ func (cloudConn *OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, err
 	//       if err != nil {
 	//              panic(err)
 	//     }
-
-	//var vmHandler irs.VMHandler
+	
+	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
 	vmHandler := osrs.OpenStackVMHandler{cloudConn.Client}
 	return &vmHandler, nil
 }

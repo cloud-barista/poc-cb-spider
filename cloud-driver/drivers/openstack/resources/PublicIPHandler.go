@@ -1,123 +1,103 @@
 package resources
 
 import (
-	"fmt"
-	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
-	_ "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/floatingip"
-	_ "github.com/rackspace/gophercloud/openstack/compute/v2/extensions/keypairs"
-	_ "github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
-	_ "github.com/rackspace/gophercloud/openstack/compute/v2/servers"
 	"github.com/rackspace/gophercloud/pagination"
-	_ "github.com/rackspace/gophercloud/pagination"
 )
 
 type OpenStackPublicIPHandler struct {
 	Client *gophercloud.ServiceClient
 }
 
+// @TODO: PublicIP 리소스 프로퍼티 정의 필요
 type PublicIPInfo struct {
-	ID string `mapstructure:"id"`
-	// FixedIP is the IP of the instance related to the Floating IP
-	FixedIP string `mapstructure:"fixed_ip,omitempty"`
-	// InstanceID is the ID of the instance that is using the Floating IP
-	InstanceID string `mapstructure:"instance_id"`
-	// IP is the actual Floating IP
-	IP string `mapstructure:"ip"`
-	// Pool is the pool of floating IPs that this floating IP belongs to
-	Pool string `mapstructure:"pool"`
+	ID         string
+	FixedIP    string
+	InstanceID string
+	IP         string
+	Pool       string
 }
 
-func (publicIPInfo *PublicIPInfo) setter(results floatingip.FloatingIP) PublicIPInfo {
-	publicIPInfo.ID = results.ID
-	publicIPInfo.FixedIP = results.FixedIP       //유동IP와 관련된 인스턴스 IP
-	publicIPInfo.InstanceID = results.InstanceID //유동IP를 사용하는 인스턴스ID
-	publicIPInfo.IP = results.IP                 //유동IP
-	publicIPInfo.Pool = results.Pool
+func (publicIPInfo *PublicIPInfo) setter(floatingIp floatingip.FloatingIP) *PublicIPInfo {
+	publicIPInfo.ID = floatingIp.ID
+	publicIPInfo.FixedIP = floatingIp.FixedIP
+	publicIPInfo.InstanceID = floatingIp.InstanceID
+	publicIPInfo.IP = floatingIp.IP
+	publicIPInfo.Pool = floatingIp.Pool
 
-	return *publicIPInfo
-}
-
-func (publicIPInfo *PublicIPInfo) printInfo() {
-	fmt.Println("ID : ", publicIPInfo.ID)
-	fmt.Println("FixedIP : ", publicIPInfo.FixedIP)
-	fmt.Println("InstanceID : ", publicIPInfo.InstanceID)
-	fmt.Println("IP : ", publicIPInfo.IP)
-	fmt.Println("Pool : ", publicIPInfo.Pool)
+	return publicIPInfo
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo irs.PublicIPReqInfo) (irs.PublicIPInfo, error) {
 
+	// @TODO: PublicIP 생성 요청 파라미터 정의 필요
+	type PublicIPReqInfo struct {
+		Pool string
+	}
+	reqInfo := PublicIPReqInfo{
+		Pool: "public1",
+	}
+
+	// Check PublicIP Exists
+	/**/
+
 	createOpts := floatingip.CreateOpts{
-		"public1", //Pool 확인용
+		Pool: reqInfo.Pool,
 	}
-	publicIP, err := floatingip.Create(publicIPHandler.Client, createOpts).Extract()
-
+	publicIPInfo, err := floatingip.Create(publicIPHandler.Client, createOpts).Extract()
 	if err != nil {
-		panic(err)
+		return irs.PublicIPInfo{}, err
 	}
 
-	spew.Dump(publicIP)
+	// @TODO: 생성된 PublicIP 정보 리턴
+	spew.Dump(publicIPInfo)
 	return irs.PublicIPInfo{}, nil
 }
 
-func (publicIPHandler *OpenStackPublicIPHandler) ListVNetwork() ([]*irs.PublicIPInfo, error) {
-
-	var IPList = make([]PublicIPInfo, 20)
+func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIPInfo, error) {
+	var publicIPList []*PublicIPInfo
 
 	pager := floatingip.List(publicIPHandler.Client)
-
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
-
-		//Get server
-		publicIPList, err := floatingip.ExtractFloatingIPs(page)
+		// Get PublicIP
+		list, err := floatingip.ExtractFloatingIPs(page)
 		if err != nil {
 			return false, err
 		}
-
-		var publicInfo PublicIPInfo
-
-		//add to list
-		for _, publicIPs := range publicIPList {
-			publicIP := publicInfo.setter(publicIPs)
-			IPList = append(IPList, publicIP)
-			spew.Dump(publicIP)
-			fmt.Println("-----------------------------------")
+		// Add to List
+		for _, p := range list {
+			publicIPInfo := new(PublicIPInfo).setter(p)
+			publicIPList = append(publicIPList, publicIPInfo)
 		}
 		return true, nil
 	})
-
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+
+	spew.Dump(publicIPList)
 	return nil, nil
 }
 
-func (publicIPHandler *OpenStackPublicIPHandler) GetVNetwork(publicIPID string) (irs.PublicIPInfo, error) {
-	client, err := config.GetServiceClient()
+func (publicIPHandler *OpenStackPublicIPHandler) GetPublicIP(publicIPID string) (irs.PublicIPInfo, error) {
+	floatingIp, err := floatingip.Get(publicIPHandler.Client, publicIPID).Extract()
 	if err != nil {
-		panic(err)
+		return irs.PublicIPInfo{}, err
 	}
 
-	publicIP, err := floatingip.Get(client, publicIPID).Extract()
+	publicIPInfo := new(PublicIPInfo).setter(*floatingIp)
 
-	var info PublicIPInfo
-	info.setter(*publicIP)
-	spew.Dump(info)
-
+	spew.Dump(publicIPInfo)
 	return irs.PublicIPInfo{}, nil
 }
 
-func (publicIPHandler *OpenStackPublicIPHandler) DeleteVNetwork(publicIPID string) (bool, error) {
-	client, err := config.GetServiceClient()
-	if err != nil {
-		panic(err)
+func (publicIPHandler *OpenStackPublicIPHandler) DeletePublicIP(publicIPID string) (bool, error) {
+	result := floatingip.Delete(publicIPHandler.Client, publicIPID)
+	if result.Err != nil {
+		return false, result.Err
 	}
-	result := floatingip.Delete(client, publicIPID)
-	fmt.Println("Delete : ", result)
-
-	return false, nil
+	return true, nil
 }
