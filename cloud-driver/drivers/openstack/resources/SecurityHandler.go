@@ -20,47 +20,22 @@ type SecurityInfo struct {
 	Rules       []SecurityRuleInfo
 	TenantID    string
 }
-
 type SecurityRuleInfo struct {
 	ID            string
 	FromPort      int
 	ToPort        int
 	IPProtocol    string
-	ParentGroupID string
 	CIDR          string
-	Group         Group
-}
-
-type Group struct {
-	TenantId string
-	Name     string
+	ParentGroupID string
+	GroupTenantId string
+	GroupName     string
 }
 
 func (securityInfo *SecurityInfo) setter(results secgroups.SecurityGroup) *SecurityInfo {
 	securityInfo.ID = results.ID
 	securityInfo.Name = results.Name
 	securityInfo.Description = results.Description
-
-	var securityRuleArr []SecurityRuleInfo
-
-	for _, sgRule := range results.Rules {
-		ruleInfo := SecurityRuleInfo{
-			ID:            sgRule.ID,
-			FromPort:      sgRule.FromPort,
-			ToPort:        sgRule.ToPort,
-			IPProtocol:    sgRule.IPProtocol,
-			CIDR:          sgRule.IPRange.CIDR,
-			ParentGroupID: sgRule.ParentGroupID,
-			Group: Group{
-				TenantId: sgRule.Group.TenantID,
-				Name:     sgRule.Group.Name,
-			},
-		}
-
-		securityRuleArr = append(securityRuleArr, ruleInfo)
-	}
-
-	securityInfo.Rules = securityRuleArr
+	//securityInfo.Rules = results.Rules
 	securityInfo.TenantID = results.TenantID
 
 	return securityInfo
@@ -68,95 +43,43 @@ func (securityInfo *SecurityInfo) setter(results secgroups.SecurityGroup) *Secur
 
 func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo irs.SecurityReqInfo) (irs.SecurityInfo, error) {
 
-	// @TODO: SecurityGroup 생성 요청 파라미터 정의 필요
-	type SecurityRuleReqInfo struct {
-		ParentGroupID string
-		FromPort      int
-		ToPort        int
-		IPProtocol    string
-		CIDR          string // 특정 CIDR 범위의 IP 기준으로 룰 적용
-		FromGroupID   string // SecurityGroup이 적용된 VM에 일괄적으로 룰 적용
+	opts := secgroups.CreateOpts{
+		Name:        "mcb-sg",
+		Description: "mcb-sg",
 	}
-	type SecurityReqInfo struct {
-		Name          string
-		Description   string
-		SecurityRules *[]SecurityRuleReqInfo
-	}
-
-	reqInfo := SecurityReqInfo{
-		Name:        securityReqInfo.Name,
-		Description: "Temp securityGroup for test",
-	}
-
-	// SecurityGroup 생성
-	createOpts := secgroups.CreateOpts{
-		Name:        reqInfo.Name,
-		Description: reqInfo.Description,
-	}
-	group, err := secgroups.Create(securityHandler.Client, createOpts).Extract()
+	group, err := secgroups.Create(securityHandler.Client, opts).Extract()
 	if err != nil {
 		return irs.SecurityInfo{}, err
 	}
-	
-	reqInfo.SecurityRules = &[]SecurityRuleReqInfo{
-		{
-			ParentGroupID: group.ID,
-			FromPort:      22,
-			ToPort:        22,
-			IPProtocol:    "TCP",
-			CIDR:          "0.0.0.0/0",
-		},
-		{
-			ParentGroupID: group.ID,
-			FromPort:      3306,
-			ToPort:        3306,
-			IPProtocol:    "TCP",
-			FromGroupID:   "94399ea7-f0b0-4f7b-aeea-ba1c17b770c0", // default 보안그룹 ID
-		},
+	spew.Dump(group)
+
+	ruleOpts := secgroups.CreateRuleOpts{
+		ParentGroupID: group.ID,
+		FromPort:      22,
+		ToPort:        22,
+		IPProtocol:    "TCP",
+		CIDR:          "0.0.0.0/0",
 	}
-
-	for _, rule := range *reqInfo.SecurityRules {
-		createRuleOpts := secgroups.CreateRuleOpts{
-			ParentGroupID: group.ID,
-			FromPort:      rule.FromPort,
-			ToPort:        rule.ToPort,
-			IPProtocol:    rule.IPProtocol,
-		}
-
-		if rule.CIDR != "" {
-			createRuleOpts.CIDR = rule.CIDR
-		} else {
-			createRuleOpts.FromGroupID = group.ID
-		}
-
-		_, err := secgroups.CreateRule(securityHandler.Client, createRuleOpts).Extract()
-		if err != nil {
-			return irs.SecurityInfo{}, err
-		}
-	}
-	
-	// @TODO: 생성된 SecurityGroup 정보 리턴
-	securityInfo, err := securityHandler.GetSecurity(group.ID)
+	sgRule, err := secgroups.CreateRule(securityHandler.Client, ruleOpts).Extract()
 	if err != nil {
-		return irs.SecurityInfo{}, nil
+		panic(err)
 	}
-	
-	spew.Dump(securityInfo)
-	return irs.SecurityInfo{Id: group.ID}, nil
+	spew.Dump(sgRule)
+	return irs.SecurityInfo{}, nil
 }
 
 func (securityHandler *OpenStackSecurityHandler) ListSecurity() ([]*irs.SecurityInfo, error) {
 	var securityList []*SecurityInfo
-
+	
 	pager := secgroups.List(securityHandler.Client)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		// Get SecurityGroup
 		list, err := secgroups.ExtractSecurityGroups(page)
 		if err != nil {
-			return false, err
+			return false, nil
 		}
 		// Add to List
-		for _, s := range list {
+		for _, s:= range list {
 			securityInfo := new(SecurityInfo).setter(s)
 			securityList = append(securityList, securityInfo)
 		}
@@ -165,7 +88,7 @@ func (securityHandler *OpenStackSecurityHandler) ListSecurity() ([]*irs.Security
 	if err != nil {
 		panic(err)
 	}
-
+	
 	spew.Dump(securityList)
 	return nil, nil
 }
@@ -175,9 +98,9 @@ func (securityHandler *OpenStackSecurityHandler) GetSecurity(securityID string) 
 	if err != nil {
 		return irs.SecurityInfo{}, err
 	}
-
+	
 	securityInfo := new(SecurityInfo).setter(*securityGroup)
-
+	
 	spew.Dump(securityInfo)
 	return irs.SecurityInfo{}, nil
 }
