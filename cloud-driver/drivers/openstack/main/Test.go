@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	config "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	osdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
@@ -12,15 +11,6 @@ import (
 	"os"
 )
 
-// Test OpenStack Connection
-/*func TestConnection() {
-	client, err := config.GetServiceClient()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(client)
-}*/
-
 // Test VM Handler Functions (Get VM Info, VM Status)
 func getVMInfo() {
 	vmHandler, err := setVMHandler()
@@ -28,24 +18,24 @@ func getVMInfo() {
 		panic(err)
 	}
 	config := readConfigFile()
-
+	
 	// Get VM List
 	vmList := vmHandler.ListVM()
 	for i, vm := range vmList {
 		fmt.Println("[", i, "] ")
 		spew.Dump(vm)
 	}
-
+	
 	// Get VM Info
 	vmInfo := vmHandler.GetVM(config.Openstack.ServerId)
 	spew.Dump(vmInfo)
-
+	
 	// Get VM Status List
 	vmStatusList := vmHandler.ListVMStatus()
 	for i, vmStatus := range vmStatusList {
 		fmt.Println("[", i, "] ", *vmStatus)
 	}
-
+	
 	// Get VM Status
 	vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
 	fmt.Println(vmStatus)
@@ -58,20 +48,20 @@ func handleVM() {
 		panic(err)
 	}
 	config := readConfigFile()
-
+	
 	fmt.Println("VM LifeCycle Management")
 	fmt.Println("1. Suspend VM")
 	fmt.Println("2. Resume VM")
 	fmt.Println("3. Reboot VM")
 	fmt.Println("4. Terminate VM")
-
+	
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
 		if err != nil {
 			panic(err)
 		}
-
+		
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
@@ -96,7 +86,7 @@ func handleVM() {
 }
 
 // Test VM Deployment
-func createVM() {
+/*func createVM() {
 	fmt.Println("Start Create VM ...")
 	vmHandler, err := setVMHandler()
 	if err != nil {
@@ -122,7 +112,7 @@ func createVM() {
 			Name: config.Openstack.KeypairName,
 		},
 	}
-	
+
 	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
@@ -130,109 +120,239 @@ func createVM() {
 	spew.Dump(vm)
 	fmt.Println("Finish Create VM")
 }
-
-
-func getKeyPairInfo() {
-	keypairHandler, err := setKeyPairHandler()
+*/
+func testImageHandler() {
+	imageHandler, err := setImageHandler()
 	if err != nil {
 		panic(err)
 	}
+	config := readConfigFile()
 	
-	req := irs.KeyPairReqInfo{}
-	
-	keypairHandler.CreateKey(req)
-	//keypairHandler.ListKey()
-	//keypairHandler.GetKey("mcb-key")
-	//keypairHandler.DeleteKey("ddddsa")
+	fmt.Println("Test ImageHandler")
+	fmt.Println("1. ListImage()")
+	fmt.Println("2. GetImage()")
+	fmt.Println("3. CreateImage()")
+	fmt.Println("4. DeleteImage()")
+	fmt.Println("5. Exit Program")
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+		
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListImage() ...")
+				imageHandler.ListImage()
+				fmt.Println("Finish ListImage()")
+			case 2:
+				fmt.Println("Start GetImage() ...")
+				imageHandler.GetImage(config.Openstack.Image.Id)
+				fmt.Println("Finish GetImage()")
+			case 3:
+				fmt.Println("Start CreateImage() ...")
+				reqInfo := irs.ImageReqInfo{
+					Name: "CoreOS",
+				}
+				_, err := imageHandler.CreateImage(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish CreateImage()")
+			case 4:
+				fmt.Println("Start DeleteImage() ...")
+				imageHandler.DeleteImage(config.Openstack.Image.Id)
+				fmt.Println("Finish DeleteImage()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
+			}
+		}
+	}
 }
 
-func getPublicIPInfo() {
+func testKeyPairHandler() {
+	keyPairHandler, err := setKeyPairHandler()
+	if err != nil {
+		panic(err)
+	}
+	config := readConfigFile()
+	
+	fmt.Println("Test KeyPairHandler")
+	fmt.Println("1. ListKey()")
+	fmt.Println("2. GetKey()")
+	fmt.Println("3. CreateKey()")
+	fmt.Println("4. DeleteKey()")
+	fmt.Println("5. Exit Program")
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+		
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListKey() ...")
+				keyPairHandler.ListKey()
+				fmt.Println("Finish ListKey()")
+			case 2:
+				fmt.Println("Start GetKey() ...")
+				keyPairHandler.GetKey(config.Openstack.KeypairName)
+				fmt.Println("Finish GetKey()")
+			case 3:
+				fmt.Println("Start CreateKey() ...")
+				reqInfo := irs.KeyPairReqInfo{Name: config.Openstack.KeypairName}
+				_, err := keyPairHandler.CreateKey(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish CreateKey()")
+			case 4:
+				fmt.Println("Start DeleteKey() ...")
+				keyPairHandler.DeleteKey(config.Openstack.KeypairName)
+				fmt.Println("Finish DeleteKey()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
+			}
+		}
+	}
+}
+
+func testPublicIPHanlder() {
 	publicIPHandler, err := setPublicIPHandler()
 	if err != nil {
 		panic(err)
 	}
+	config := readConfigFile()
 	
-	//publicIPHandler.ListVNetwork()
-	publicIPHandler.GetVNetwork("dff3823e-29fb-40ef-af9b-a9f2250c4f79") //ID로 검색
-	//publicIPHandler.DeleteVNetwork("")
-	
-	//pool 생성 (확인요함) 404에러
-	//publicIPHandler.CreatePublicIP(irs.PublicIPReqInfo{})
-	
+	fmt.Println("Test PublicIPHandler")
+	fmt.Println("1. ListPublicIP()")
+	fmt.Println("2. GetPublicIP()")
+	fmt.Println("3. CreatePublicIP()")
+	fmt.Println("4. DeletePublicIP()")
+	fmt.Println("5. Exit Program")
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+		
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListPublicIP() ...")
+				publicIPHandler.ListPublicIP()
+				fmt.Println("Finish ListPublicIP()")
+			case 2:
+				fmt.Println("Start GetPublicIP() ...")
+				publicIPHandler.GetPublicIP(config.Openstack.PublicIPID)
+				fmt.Println("Finish GetPublicIP()")
+			case 3:
+				fmt.Println("Start CreatePublicIP() ...")
+				reqInfo := irs.PublicIPReqInfo{}
+				_, err := publicIPHandler.CreatePublicIP(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish CreatePublicIP()")
+			case 4:
+				fmt.Println("Start DeletePublicIP() ...")
+				publicIPHandler.DeletePublicIP(config.Openstack.PublicIPID)
+				fmt.Println("Finish DeletePublicIP()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
+			}
+		}
+	}
 }
 
-func getSecurityInfo() {
+func testSecurityHandler() {
 	securityHandler, err := setSecurityHandler()
 	if err != nil {
 		panic(err)
 	}
+	config := readConfigFile()
 	
-	//req := irs.SecurityReqInfo{
-	//
-	//}
+	fmt.Println("Test SecurityHandler")
+	fmt.Println("1. ListSecurity()")
+	fmt.Println("2. GetSecurity()")
+	fmt.Println("3. CreateSecurity()")
+	fmt.Println("4. DeleteSecurity()")
+	fmt.Println("5. Exit Program")
 	
-	//securityHandler.CreateSecurity(req)
-	//securityHandler.ListSecurity()
-	//securityHandler.GetSecurity("e7d2752a-4d21-4e81-9c44-c274205f6d52")	//그룹 아이디로 검색
-	securityHandler.DeleteSecurity("e7d2752a-4d21-4e81-9c44-c274205f6d52") //그룹 아이디로 삭제
-}
+	var securityGroupID string
 
-func getKeyPairInfo() {
-	keypairHandler, err := setKeyPairHandler()
-	if err != nil {
-		panic(err)
+Loop:
+	
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+		
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListSecurity() ...")
+				securityHandler.ListSecurity()
+				fmt.Println("Finish ListSecurity()")
+			case 2:
+				fmt.Println("Start GetSecurity() ...")
+				securityHandler.GetSecurity(securityGroupID)
+				fmt.Println("Finish GetSecurity()")
+			case 3:
+				fmt.Println("Start CreateSecurity() ...")
+				reqInfo := irs.SecurityReqInfo{ Name: config.Openstack.SecurityGroups }
+				securityGroup, err := securityHandler.CreateSecurity(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				securityGroupID = securityGroup.Id
+				fmt.Println("Finish CreateSecurity()")
+			case 4:
+				fmt.Println("Start DeleteSecurity() ...")
+				securityHandler.DeleteSecurity(securityGroupID)
+				fmt.Println("Finish DeleteSecurity()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
+			}
+		}
 	}
-
-	req := irs.KeyPairReqInfo{}
-
-	keypairHandler.CreateKey(req)
-	//keypairHandler.ListKey()
-	//keypairHandler.GetKey("mcb-key")
-	//keypairHandler.DeleteKey("ddddsa")
-}
-
-func getPublicIPInfo() {
-	publicIPHandler, err := setPublicIPHandler()
-	if err != nil {
-		panic(err)
-	}
-
-	//publicIPHandler.ListVNetwork()
-	publicIPHandler.GetVNetwork("dff3823e-29fb-40ef-af9b-a9f2250c4f79") //ID로 검색
-	//publicIPHandler.DeleteVNetwork("")
-
-	//pool 생성 (확인요함) 404에러
-	//publicIPHandler.CreatePublicIP(irs.PublicIPReqInfo{})
-
-}
-
-func getSecurityInfo() {
-	securityHandler, err := setSecurityHandler()
-	if err != nil {
-		panic(err)
-	}
-
-	//req := irs.SecurityReqInfo{
-	//
-	//}
-
-	//securityHandler.CreateSecurity(req)
-	//securityHandler.ListSecurity()
-	//securityHandler.GetSecurity("e7d2752a-4d21-4e81-9c44-c274205f6d52")	//그룹 아이디로 검색
-	securityHandler.DeleteSecurity("e7d2752a-4d21-4e81-9c44-c274205f6d52") //그룹 아이디로 삭제
 }
 
 func setVMHandler() (irs.VMHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
-
-	config := config.ReadConfigFile()
+	
+	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			IdentityEndpoint: config.Openstack.IdentityEndpoint,
+			Username:         config.Openstack.Username,
+			Password:         config.Openstack.Password,
+			DomainName:       config.Openstack.DomainName,
+			ProjectID:        config.Openstack.ProjectID,
+		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Openstack.Region,
 		},
 	}
-
+	
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
 	vmHandler, err := cloudConnection.CreateVMHandler()
 	if err != nil {
@@ -241,39 +361,78 @@ func setVMHandler() (irs.VMHandler, error) {
 	return vmHandler, nil
 }
 
-func setKeyPairHandler() (irs.KeyPairHandler, error) {
+func setImageHandler() (irs.ImageHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
-
-	config := config.ReadConfigFile()
+	
+	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			IdentityEndpoint: config.Openstack.IdentityEndpoint,
+			Username:         config.Openstack.Username,
+			Password:         config.Openstack.Password,
+			DomainName:       config.Openstack.DomainName,
+			ProjectID:        config.Openstack.ProjectID,
+		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Openstack.Region,
 		},
 	}
-
+	
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	keyPairHandler, err := cloudConnection.CreateKeyPairHandler() //적용부분
+	imageHandler, err := cloudConnection.CreateImageHandler()
+	if err != nil {
+		return nil, err
+	}
+	return imageHandler, nil
+}
+
+func setKeyPairHandler() (irs.KeyPairHandler, error) {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(osdrv.OpenStackDriver)
+	
+	config := readConfigFile()
+	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			IdentityEndpoint: config.Openstack.IdentityEndpoint,
+			Username:         config.Openstack.Username,
+			Password:         config.Openstack.Password,
+			DomainName:       config.Openstack.DomainName,
+			ProjectID:        config.Openstack.ProjectID,
+		},
+		RegionInfo: idrv.RegionInfo{
+			Region: config.Openstack.Region,
+		},
+	}
+	
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	keyPairHandler, err := cloudConnection.CreateKeyPairHandler()
 	if err != nil {
 		return nil, err
 	}
 	return keyPairHandler, nil
 }
 
-
 func setPublicIPHandler() (irs.PublicIPHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
 	
-	config := config.ReadConfigFile()
+	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			IdentityEndpoint: config.Openstack.IdentityEndpoint,
+			Username:         config.Openstack.Username,
+			Password:         config.Openstack.Password,
+			DomainName:       config.Openstack.DomainName,
+			ProjectID:        config.Openstack.ProjectID,
+		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Openstack.Region,
 		},
 	}
 	
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	publicIPHandler, err := cloudConnection.CreatePublicIPHandler() //적용부분
+	publicIPHandler, err := cloudConnection.CreatePublicIPHandler()
 	if err != nil {
 		return nil, err
 	}
@@ -285,15 +444,22 @@ func setSecurityHandler() (irs.SecurityHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
 	
-	config := config.ReadConfigFile()
+	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			IdentityEndpoint: config.Openstack.IdentityEndpoint,
+			Username:         config.Openstack.Username,
+			Password:         config.Openstack.Password,
+			DomainName:       config.Openstack.DomainName,
+			ProjectID:        config.Openstack.ProjectID,
+		},
 		RegionInfo: idrv.RegionInfo{
 			Region: config.Openstack.Region,
 		},
 	}
 	
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	securityHandler, err := cloudConnection.CreateSecurityHandler() //적용부분
+	securityHandler, err := cloudConnection.CreateSecurityHandler()
 	if err != nil {
 		return nil, err
 	}
@@ -301,118 +467,46 @@ func setSecurityHandler() (irs.SecurityHandler, error) {
 	return securityHandler, nil
 }
 
-func setVNetworkHandler() (irs.VNetworkHandler, error) {
+/*func setVNetworkHandler() (irs.VNetworkHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
-	
+
 	config := config.ReadConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
 		RegionInfo: idrv.RegionInfo{
-			
+
 			Region: config.Openstack.Region,
 		},
 	}
-	
+
 	cloudConnection, _ := cloudDriver.ConnectNetworkCloud(connectionInfo)
 	vNetworkHandler, err := cloudConnection.CreateVNetworkHandler()
 	if err != nil {
 		return nil, err
 	}
 	return vNetworkHandler, nil
-}
-
+}*/
+/*
 func VNetwork() {
 	vNetworkHandler, err := setVNetworkHandler()
 	if err != nil {
 		panic(err)
 	}
-	
+
 	//vNetworkHandler.CreateVNetwork(irs.VNetworkReqInfo{})
 	//vNetworkHandler.GetVNetwork("b6610ceb-8089-48b0-9bfc-3c35e4e245cf")
 	vNetworkHandler.ListVNetwork()
 	//vNetworkHandler.DeleteVNetwork("b947ff7b-a586-4f98-828c-cdea04afc114")
-}
-
-func setPublicIPHandler() (irs.PublicIPHandler, error) {
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-	
-	config := config.ReadConfigFile()
-	connectionInfo := idrv.ConnectionInfo{
-		RegionInfo: idrv.RegionInfo{
-			Region: config.Openstack.Region,
-		},
-	}
-	
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	publicIPHandler, err := cloudConnection.CreatePublicIPHandler() //적용부분
-	if err != nil {
-		return nil, err
-	}
-	
-	return publicIPHandler, nil
-}
-
-func setSecurityHandler() (irs.SecurityHandler, error) {
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-	
-	config := config.ReadConfigFile()
-	connectionInfo := idrv.ConnectionInfo{
-		RegionInfo: idrv.RegionInfo{
-			Region: config.Openstack.Region,
-		},
-	}
-	
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	securityHandler, err := cloudConnection.CreateSecurityHandler() //적용부분
-	if err != nil {
-		return nil, err
-	}
-	
-	return securityHandler, nil
-}
-
-func setVNetworkHandler() (irs.VNetworkHandler, error) {
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-	
-	config := config.ReadConfigFile()
-	connectionInfo := idrv.ConnectionInfo{
-		RegionInfo: idrv.RegionInfo{
-			
-			Region: config.Openstack.Region,
-		},
-	}
-	
-	cloudConnection, _ := cloudDriver.ConnectNetworkCloud(connectionInfo)
-	vNetworkHandler, err := cloudConnection.CreateVNetworkHandler()
-	if err != nil {
-		return nil, err
-	}
-	return vNetworkHandler, nil
-}
-
-func VNetwork() {
-	vNetworkHandler, err := setVNetworkHandler()
-	if err != nil {
-		panic(err)
-	}
-	
-	//vNetworkHandler.CreateVNetwork(irs.VNetworkReqInfo{})
-	//vNetworkHandler.GetVNetwork("b6610ceb-8089-48b0-9bfc-3c35e4e245cf")
-	vNetworkHandler.ListVNetwork()
-	//vNetworkHandler.DeleteVNetwork("b947ff7b-a586-4f98-828c-cdea04afc114")
-}
+}*/
 
 func main() {
 	//getVMInfo()
 	//handleVM()
 	//createVM()
-	//TestImageHandler()
-	//getKeyPairInfo()
-	getPublicIPInfo()
-	//getSecurityInfo()
+	testImageHandler()
+	//testKeyPairHandler()
+	//testPublicIPHanlder()
+	//testSecurityHandler()
 }
 
 type Config struct {
@@ -429,8 +523,14 @@ type Config struct {
 		NetworkId        string `yaml:"network_id"`
 		SecurityGroups   string `yaml:"security_groups"`
 		KeypairName      string `yaml:"keypair_name"`
-
-		ServerId string `yaml:"server_id"`
+		
+		ServerId   string `yaml:"server_id"`
+		PublicIPID string `yaml:"public_ip_id"`
+		
+		Image struct{
+			Id string `yaml:"id"`
+		} `yaml:"image_info"`
+		
 	} `yaml:"openstack"`
 }
 
@@ -441,7 +541,7 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-
+	
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
@@ -449,30 +549,3 @@ func readConfigFile() Config {
 	}
 	return config
 }
-
-/*
-func TestImageHandler() {
-	// Config Driver Info
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-	// Config Connection
-	connectionInfo := idrv.ConnectionInfo{}
-	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	// Load Handler (VM, Image, KeyPair ..)
-	imageHandler, err := cloudConnection.CreateImageHandler()
-	if err != nil {
-		panic(err)
-	}
-	config := config.ReadConfigFile()
-	// Use Handler Func
-	//fmt.Println("Call CreateImage()")
-	//reqParams := irs.ImageReqInfo{}
-	//result, err := imageHandler.CreateImage(reqParams)
-	//fmt.Println(result)
-	fmt.Println("Call ListImage()")
-	imageHandler.ListImage()
-	fmt.Println("Call GetImage()")
-	imageHandler.GetImage(config.Openstack.ImageId)
-	//fmt.Println("Call DeleteImage()")
-	//imageHandler.DeleteImage(config.Openstack.ImageId)
-}*/

@@ -21,6 +21,7 @@ import (
 type OpenStackCloudConnection struct {
 	Client        *gophercloud.ServiceClient
 	NetworkClient *gophercloud.ServiceClient
+	ImageClient   *gophercloud.ServiceClient
 }
 
 func (cloudConn *OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
@@ -67,7 +68,7 @@ func (cloudConn *OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, err
 	//       if err != nil {
 	//              panic(err)
 	//     }
-	
+
 	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
 	vmHandler := osrs.OpenStackVMHandler{cloudConn.Client}
 	return &vmHandler, nil

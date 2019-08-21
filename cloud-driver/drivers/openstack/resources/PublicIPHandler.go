@@ -27,23 +27,20 @@ func (publicIPInfo *PublicIPInfo) setter(floatingIp floatingip.FloatingIP) *Publ
 	publicIPInfo.InstanceID = floatingIp.InstanceID
 	publicIPInfo.IP = floatingIp.IP
 	publicIPInfo.Pool = floatingIp.Pool
-
+	
 	return publicIPInfo
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo irs.PublicIPReqInfo) (irs.PublicIPInfo, error) {
-
+	
 	// @TODO: PublicIP 생성 요청 파라미터 정의 필요
 	type PublicIPReqInfo struct {
 		Pool string
 	}
 	reqInfo := PublicIPReqInfo{
-		Pool: "public1",
+		Pool: "public1", // Floating IP가 할당되는 IP Pool 정보
 	}
-
-	// Check PublicIP Exists
-	/**/
-
+	
 	createOpts := floatingip.CreateOpts{
 		Pool: reqInfo.Pool,
 	}
@@ -51,7 +48,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo 
 	if err != nil {
 		return irs.PublicIPInfo{}, err
 	}
-
+	
 	// @TODO: 생성된 PublicIP 정보 리턴
 	spew.Dump(publicIPInfo)
 	return irs.PublicIPInfo{}, nil
@@ -59,7 +56,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo 
 
 func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIPInfo, error) {
 	var publicIPList []*PublicIPInfo
-
+	
 	pager := floatingip.List(publicIPHandler.Client)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		// Get PublicIP
@@ -77,7 +74,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIP
 	if err != nil {
 		return nil, err
 	}
-
+	
 	spew.Dump(publicIPList)
 	return nil, nil
 }
@@ -87,17 +84,17 @@ func (publicIPHandler *OpenStackPublicIPHandler) GetPublicIP(publicIPID string) 
 	if err != nil {
 		return irs.PublicIPInfo{}, err
 	}
-
+	
 	publicIPInfo := new(PublicIPInfo).setter(*floatingIp)
-
+	
 	spew.Dump(publicIPInfo)
 	return irs.PublicIPInfo{}, nil
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) DeletePublicIP(publicIPID string) (bool, error) {
-	result := floatingip.Delete(publicIPHandler.Client, publicIPID)
-	if result.Err != nil {
-		return false, result.Err
+	err := floatingip.Delete(publicIPHandler.Client, publicIPID).ExtractErr()
+	if err != nil {
+		return false, err
 	}
 	return true, nil
 }

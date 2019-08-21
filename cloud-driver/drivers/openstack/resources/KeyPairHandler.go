@@ -32,20 +32,9 @@ func (keyPairInfo *KeyPairInfo) setter(keypair keypairs.KeyPair) *KeyPairInfo {
 
 //create 1번
 func (keyPairHandler *OpenStackKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReqInfo) (irs.KeyPairInfo, error) {
-
-	// @TODO: keyPair 생성 요청 파라미터 정의 필요
-	type KeyPairReqInfo struct {
-		Name string
-	}
-	reqInfo := KeyPairInfo{
-		Name: "mcb-test-key",
-	}
-
-	// Check keyPair Exists
-	/**/
-
+	
 	create0pts := keypairs.CreateOpts{
-		Name: reqInfo.Name,
+		Name: keyPairReqInfo.Name,
 	}
 	keyPairInfo, err := keypairs.Create(keyPairHandler.Client, create0pts).Extract()
 	if err != nil {
@@ -95,9 +84,9 @@ func (keyPairHandler *OpenStackKeyPairHandler) GetKey(keyPairID string) (irs.Key
 }
 
 func (keyPairHandler *OpenStackKeyPairHandler) DeleteKey(keyPairID string) (bool, error) {
-	result := keypairs.Delete(keyPairHandler.Client, keyPairID)
-	if result.Err != nil {
-		return false, result.Err
+	err := keypairs.Delete(keyPairHandler.Client, keyPairID).ExtractErr()
+	if err != nil {
+		return false, err
 	}
-	return false, nil
+	return true, nil
 }
