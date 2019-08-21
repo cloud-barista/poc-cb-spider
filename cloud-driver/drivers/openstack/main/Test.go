@@ -18,24 +18,24 @@ func getVMInfo() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	// Get VM List
 	vmList := vmHandler.ListVM()
 	for i, vm := range vmList {
 		fmt.Println("[", i, "] ")
 		spew.Dump(vm)
 	}
-	
+
 	// Get VM Info
 	vmInfo := vmHandler.GetVM(config.Openstack.ServerId)
 	spew.Dump(vmInfo)
-	
+
 	// Get VM Status List
 	vmStatusList := vmHandler.ListVMStatus()
 	for i, vmStatus := range vmStatusList {
 		fmt.Println("[", i, "] ", *vmStatus)
 	}
-	
+
 	// Get VM Status
 	vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
 	fmt.Println(vmStatus)
@@ -48,20 +48,20 @@ func handleVM() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	fmt.Println("VM LifeCycle Management")
 	fmt.Println("1. Suspend VM")
 	fmt.Println("2. Resume VM")
 	fmt.Println("3. Reboot VM")
 	fmt.Println("4. Terminate VM")
-	
+
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
 		if err != nil {
 			panic(err)
 		}
-		
+
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
@@ -127,13 +127,15 @@ func testImageHandler() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	fmt.Println("Test ImageHandler")
 	fmt.Println("1. ListImage()")
 	fmt.Println("2. GetImage()")
 	fmt.Println("3. CreateImage()")
 	fmt.Println("4. DeleteImage()")
 	fmt.Println("5. Exit Program")
+
+	var imageId string
 
 Loop:
 	for {
@@ -142,7 +144,7 @@ Loop:
 		if err != nil {
 			panic(err)
 		}
-		
+
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
@@ -151,21 +153,22 @@ Loop:
 				fmt.Println("Finish ListImage()")
 			case 2:
 				fmt.Println("Start GetImage() ...")
-				imageHandler.GetImage(config.Openstack.Image.Id)
+				imageHandler.GetImage(imageId)
 				fmt.Println("Finish GetImage()")
 			case 3:
 				fmt.Println("Start CreateImage() ...")
 				reqInfo := irs.ImageReqInfo{
-					Name: "CoreOS",
+					Name: config.Openstack.Image.Name,
 				}
-				_, err := imageHandler.CreateImage(reqInfo)
+				image, err := imageHandler.CreateImage(reqInfo)
 				if err != nil {
 					panic(err)
 				}
+				imageId = image.Id
 				fmt.Println("Finish CreateImage()")
 			case 4:
 				fmt.Println("Start DeleteImage() ...")
-				imageHandler.DeleteImage(config.Openstack.Image.Id)
+				imageHandler.DeleteImage(imageId)
 				fmt.Println("Finish DeleteImage()")
 			case 5:
 				fmt.Println("Exit Program")
@@ -181,7 +184,7 @@ func testKeyPairHandler() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	fmt.Println("Test KeyPairHandler")
 	fmt.Println("1. ListKey()")
 	fmt.Println("2. GetKey()")
@@ -196,7 +199,7 @@ Loop:
 		if err != nil {
 			panic(err)
 		}
-		
+
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
@@ -232,15 +235,17 @@ func testPublicIPHanlder() {
 	if err != nil {
 		panic(err)
 	}
-	config := readConfigFile()
-	
+	//config := readConfigFile()
+
 	fmt.Println("Test PublicIPHandler")
 	fmt.Println("1. ListPublicIP()")
 	fmt.Println("2. GetPublicIP()")
 	fmt.Println("3. CreatePublicIP()")
 	fmt.Println("4. DeletePublicIP()")
 	fmt.Println("5. Exit Program")
-
+	
+	var publicIPId string
+	
 Loop:
 	for {
 		var commandNum int
@@ -248,7 +253,7 @@ Loop:
 		if err != nil {
 			panic(err)
 		}
-		
+
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
@@ -257,19 +262,20 @@ Loop:
 				fmt.Println("Finish ListPublicIP()")
 			case 2:
 				fmt.Println("Start GetPublicIP() ...")
-				publicIPHandler.GetPublicIP(config.Openstack.PublicIPID)
+				publicIPHandler.GetPublicIP(publicIPId)
 				fmt.Println("Finish GetPublicIP()")
 			case 3:
 				fmt.Println("Start CreatePublicIP() ...")
 				reqInfo := irs.PublicIPReqInfo{}
-				_, err := publicIPHandler.CreatePublicIP(reqInfo)
+				publicIP, err := publicIPHandler.CreatePublicIP(reqInfo)
 				if err != nil {
 					panic(err)
 				}
+				publicIPId = publicIP.Id
 				fmt.Println("Finish CreatePublicIP()")
 			case 4:
 				fmt.Println("Start DeletePublicIP() ...")
-				publicIPHandler.DeletePublicIP(config.Openstack.PublicIPID)
+				publicIPHandler.DeletePublicIP(publicIPId)
 				fmt.Println("Finish DeletePublicIP()")
 			case 5:
 				fmt.Println("Exit Program")
@@ -285,15 +291,71 @@ func testSecurityHandler() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	fmt.Println("Test SecurityHandler")
 	fmt.Println("1. ListSecurity()")
 	fmt.Println("2. GetSecurity()")
 	fmt.Println("3. CreateSecurity()")
 	fmt.Println("4. DeleteSecurity()")
 	fmt.Println("5. Exit Program")
+
+	var securityGroupId string
+
+Loop:
+
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListSecurity() ...")
+				securityHandler.ListSecurity()
+				fmt.Println("Finish ListSecurity()")
+			case 2:
+				fmt.Println("Start GetSecurity() ...")
+				securityHandler.GetSecurity(securityGroupId)
+				fmt.Println("Finish GetSecurity()")
+			case 3:
+				fmt.Println("Start CreateSecurity() ...")
+				reqInfo := irs.SecurityReqInfo{Name: config.Openstack.SecurityGroups}
+				securityGroup, err := securityHandler.CreateSecurity(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				securityGroupId = securityGroup.Id
+				fmt.Println("Finish CreateSecurity()")
+			case 4:
+				fmt.Println("Start DeleteSecurity() ...")
+				securityHandler.DeleteSecurity(securityGroupId)
+				fmt.Println("Finish DeleteSecurity()")
+			case 5:
+				fmt.Println("Exit Program")
+				break Loop
+			}
+		}
+	}
+}
+
+func testVNetworkHandler() {
+	vNetworkHandler, err := setVNetworkHandler()
+	if err != nil {
+		panic(err)
+	}
+	config := readConfigFile()
 	
-	var securityGroupID string
+	fmt.Println("Test VNetworkHandler")
+	fmt.Println("1. ListVNetwork()")
+	fmt.Println("2. GetVNetwork()")
+	fmt.Println("3. CreateVNetwork()")
+	fmt.Println("4. DeleteVNetwork()")
+	fmt.Println("5. Exit Program")
+	
+	var vNetworkId string
 
 Loop:
 	
@@ -307,26 +369,26 @@ Loop:
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
-				fmt.Println("Start ListSecurity() ...")
-				securityHandler.ListSecurity()
-				fmt.Println("Finish ListSecurity()")
+				fmt.Println("Start ListVNetwork() ...")
+				vNetworkHandler.ListVNetwork()
+				fmt.Println("Finish ListVNetwork()")
 			case 2:
-				fmt.Println("Start GetSecurity() ...")
-				securityHandler.GetSecurity(securityGroupID)
-				fmt.Println("Finish GetSecurity()")
+				fmt.Println("Start GetVNetwork() ...")
+				vNetworkHandler.GetVNetwork(vNetworkId)
+				fmt.Println("Finish GetVNetwork()")
 			case 3:
-				fmt.Println("Start CreateSecurity() ...")
-				reqInfo := irs.SecurityReqInfo{ Name: config.Openstack.SecurityGroups }
-				securityGroup, err := securityHandler.CreateSecurity(reqInfo)
+				fmt.Println("Start CreateVNetwork() ...")
+				reqInfo := irs.VNetworkReqInfo{Name: config.Openstack.VirtualNetwork.Name}
+				vNetwork, err := vNetworkHandler.CreateVNetwork(reqInfo)
 				if err != nil {
 					panic(err)
 				}
-				securityGroupID = securityGroup.Id
-				fmt.Println("Finish CreateSecurity()")
+				vNetworkId = vNetwork.Id
+				fmt.Println("Finish CreateVNetwork()")
 			case 4:
-				fmt.Println("Start DeleteSecurity() ...")
-				securityHandler.DeleteSecurity(securityGroupID)
-				fmt.Println("Finish DeleteSecurity()")
+				fmt.Println("Start DeleteVNetwork() ...")
+				vNetworkHandler.DeleteVNetwork(vNetworkId)
+				fmt.Println("Finish DeleteVNetwork()")
 			case 5:
 				fmt.Println("Exit Program")
 				break Loop
@@ -338,7 +400,7 @@ Loop:
 func setVMHandler() (irs.VMHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
-	
+
 	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
 		CredentialInfo: idrv.CredentialInfo{
@@ -352,7 +414,7 @@ func setVMHandler() (irs.VMHandler, error) {
 			Region: config.Openstack.Region,
 		},
 	}
-	
+
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
 	vmHandler, err := cloudConnection.CreateVMHandler()
 	if err != nil {
@@ -364,7 +426,7 @@ func setVMHandler() (irs.VMHandler, error) {
 func setImageHandler() (irs.ImageHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
-	
+
 	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
 		CredentialInfo: idrv.CredentialInfo{
@@ -378,7 +440,7 @@ func setImageHandler() (irs.ImageHandler, error) {
 			Region: config.Openstack.Region,
 		},
 	}
-	
+
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
 	imageHandler, err := cloudConnection.CreateImageHandler()
 	if err != nil {
@@ -390,7 +452,7 @@ func setImageHandler() (irs.ImageHandler, error) {
 func setKeyPairHandler() (irs.KeyPairHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
-	
+
 	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
 		CredentialInfo: idrv.CredentialInfo{
@@ -404,7 +466,7 @@ func setKeyPairHandler() (irs.KeyPairHandler, error) {
 			Region: config.Openstack.Region,
 		},
 	}
-	
+
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
 	keyPairHandler, err := cloudConnection.CreateKeyPairHandler()
 	if err != nil {
@@ -416,7 +478,7 @@ func setKeyPairHandler() (irs.KeyPairHandler, error) {
 func setPublicIPHandler() (irs.PublicIPHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
-	
+
 	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
 		CredentialInfo: idrv.CredentialInfo{
@@ -430,19 +492,46 @@ func setPublicIPHandler() (irs.PublicIPHandler, error) {
 			Region: config.Openstack.Region,
 		},
 	}
-	
+
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
 	publicIPHandler, err := cloudConnection.CreatePublicIPHandler()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return publicIPHandler, nil
 }
 
 func setSecurityHandler() (irs.SecurityHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
+
+	config := readConfigFile()
+	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			IdentityEndpoint: config.Openstack.IdentityEndpoint,
+			Username:         config.Openstack.Username,
+			Password:         config.Openstack.Password,
+			DomainName:       config.Openstack.DomainName,
+			ProjectID:        config.Openstack.ProjectID,
+		},
+		RegionInfo: idrv.RegionInfo{
+			Region: config.Openstack.Region,
+		},
+	}
+
+	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
+	securityHandler, err := cloudConnection.CreateSecurityHandler()
+	if err != nil {
+		return nil, err
+	}
+
+	return securityHandler, nil
+}
+
+func setVNetworkHandler() (irs.VNetworkHandler, error) {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(osdrv.OpenStackDriver)
 	
 	config := readConfigFile()
 	connectionInfo := idrv.ConnectionInfo{
@@ -459,54 +548,22 @@ func setSecurityHandler() (irs.SecurityHandler, error) {
 	}
 	
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	securityHandler, err := cloudConnection.CreateSecurityHandler()
-	if err != nil {
-		return nil, err
-	}
-	
-	return securityHandler, nil
-}
-
-/*func setVNetworkHandler() (irs.VNetworkHandler, error) {
-	var cloudDriver idrv.CloudDriver
-	cloudDriver = new(osdrv.OpenStackDriver)
-
-	config := config.ReadConfigFile()
-	connectionInfo := idrv.ConnectionInfo{
-		RegionInfo: idrv.RegionInfo{
-
-			Region: config.Openstack.Region,
-		},
-	}
-
-	cloudConnection, _ := cloudDriver.ConnectNetworkCloud(connectionInfo)
 	vNetworkHandler, err := cloudConnection.CreateVNetworkHandler()
 	if err != nil {
 		return nil, err
 	}
 	return vNetworkHandler, nil
-}*/
-/*
-func VNetwork() {
-	vNetworkHandler, err := setVNetworkHandler()
-	if err != nil {
-		panic(err)
-	}
-
-	//vNetworkHandler.CreateVNetwork(irs.VNetworkReqInfo{})
-	//vNetworkHandler.GetVNetwork("b6610ceb-8089-48b0-9bfc-3c35e4e245cf")
-	vNetworkHandler.ListVNetwork()
-	//vNetworkHandler.DeleteVNetwork("b947ff7b-a586-4f98-828c-cdea04afc114")
-}*/
+}
 
 func main() {
 	//getVMInfo()
 	//handleVM()
 	//createVM()
-	testImageHandler()
+	//testImageHandler()
 	//testKeyPairHandler()
 	//testPublicIPHanlder()
 	//testSecurityHandler()
+	testVNetworkHandler()
 }
 
 type Config struct {
@@ -523,13 +580,18 @@ type Config struct {
 		NetworkId        string `yaml:"network_id"`
 		SecurityGroups   string `yaml:"security_groups"`
 		KeypairName      string `yaml:"keypair_name"`
-		
+
 		ServerId   string `yaml:"server_id"`
 		PublicIPID string `yaml:"public_ip_id"`
-		
-		Image struct{
-			Id string `yaml:"id"`
+
+		Image struct {
+			Id   string `yaml:"id"`
+			Name string `yaml:"name"`
 		} `yaml:"image_info"`
+		
+		VirtualNetwork struct {
+			Name string `yaml:"name"`
+		} `yaml:"virtual_network"`
 		
 	} `yaml:"openstack"`
 }
@@ -541,7 +603,7 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {

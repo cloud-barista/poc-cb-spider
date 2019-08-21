@@ -20,8 +20,8 @@ import (
 // modified by powerkim, 2019.07.29
 type OpenStackCloudConnection struct {
 	Client        *gophercloud.ServiceClient
-	NetworkClient *gophercloud.ServiceClient
 	ImageClient   *gophercloud.ServiceClient
+	NetworkClient *gophercloud.ServiceClient
 }
 
 func (cloudConn *OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
@@ -32,7 +32,7 @@ func (cloudConn *OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetwork
 
 func (cloudConn *OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
 	fmt.Println("OpenStack Cloud Driver: called CreateImageHandler()!")
-	imageHandler := osrs.OpenStackImageHandler{cloudConn.Client}
+	imageHandler := osrs.OpenStackImageHandler{cloudConn.Client, cloudConn.ImageClient}
 	return &imageHandler, nil
 }
 

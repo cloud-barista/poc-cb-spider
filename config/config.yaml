@@ -22,6 +22,12 @@ openstack:
   # OpenStack Test VM Info
   server_id: {server_id}
 
+  image_info:
+    name: mcb-CoreOS
+
+  virtual_network:
+    name: mcb-test-vnet
+
 ## Config for AZURE ##
 azure:
 
@@ -45,11 +51,11 @@ azure:
     admin_password: {admin_password}
   network:
     id: {id}
-    primary: {primary}
 
   # Azure Test VM Info
-  group_name: {group_name}
-  vm_name: {vm_name}
+  vm_info:
+    group_name: {group_name}
+    vm_name: {vm_name}
 
   image_info:
     group_name: {group_name}

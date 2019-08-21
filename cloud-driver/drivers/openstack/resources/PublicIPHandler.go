@@ -51,7 +51,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo 
 	
 	// @TODO: 생성된 PublicIP 정보 리턴
 	spew.Dump(publicIPInfo)
-	return irs.PublicIPInfo{}, nil
+	return irs.PublicIPInfo{Id: publicIPInfo.ID}, nil
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIPInfo, error) {

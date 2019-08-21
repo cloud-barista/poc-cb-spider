@@ -1,11 +1,11 @@
 package resources
 
 import (
-	"fmt"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
+	"github.com/rackspace/gophercloud/openstack/networking/v2/subnets"
 	"github.com/rackspace/gophercloud/pagination"
 )
 
@@ -23,17 +23,7 @@ type VNetworkInfo struct {
 	Shared       bool
 }
 
-func (vNetworkInfo *VNetworkInfo) printInfo() {
-	fmt.Println("ID : ", vNetworkInfo.ID)
-	fmt.Println("Name : ", vNetworkInfo.Name)
-	fmt.Println("AdminStateUp : ", vNetworkInfo.AdminStateUp)
-	fmt.Println("Status : ", vNetworkInfo.Status)
-	fmt.Println("Subnets : ", vNetworkInfo.Subnets)
-	fmt.Println("TenantID : ", vNetworkInfo.TenantID)
-	fmt.Println("Shared : ", vNetworkInfo.Shared)
-}
-
-func (vNetworkInfo *VNetworkInfo) setter(network networks.Network) VNetworkInfo {
+func (vNetworkInfo *VNetworkInfo) setter(network networks.Network) *VNetworkInfo {
 	vNetworkInfo.ID = network.ID
 	vNetworkInfo.Name = network.Name
 	vNetworkInfo.AdminStateUp = network.AdminStateUp
@@ -42,47 +32,77 @@ func (vNetworkInfo *VNetworkInfo) setter(network networks.Network) VNetworkInfo 
 	vNetworkInfo.TenantID = network.TenantID
 	vNetworkInfo.Shared = network.Shared
 
-	return *vNetworkInfo
+	return vNetworkInfo
 }
 
 func (vNetworkHandler *OpenStackVNetworkHandler) CreateVNetwork(vNetworkReqInfo irs.VNetworkReqInfo) (irs.VNetworkInfo, error) {
 
-	opts := networks.CreateOpts{Name: "testing Network", AdminStateUp: networks.Up} //이름 변경시 추가 매개변수 필요...
-
-	network, err := networks.Create(vNetworkHandler.Client, opts).Extract()
-	if err != nil {
-		panic(err)
+	// @TODO: vNetwork 생성 요청 파라미터 정의 필요
+	type VNetworkReqInfo struct {
+		Name         string
+		AdminStateUp bool
+		CIDR         string
+		IPVersion    int
+		SubnetName   string
 	}
-	fmt.Println("Created : ", network)
+	reqInfo := VNetworkReqInfo{
+		Name: vNetworkReqInfo.Name,
+		AdminStateUp: *networks.Up,
+		CIDR: "10.0.0.0/24",
+		IPVersion: subnets.IPv4,
+		SubnetName: "subnet-"+vNetworkReqInfo.Name,
+	}
+	
+	// vNetwork 생성
+	createOpts := networks.CreateOpts{
+		Name:         reqInfo.Name,
+		AdminStateUp: &reqInfo.AdminStateUp,
+	}
+	network, err := networks.Create(vNetworkHandler.Client, createOpts).Extract()
+	if err != nil {
+		return irs.VNetworkInfo{}, err
+	}
+	spew.Dump(network)
 
-	return irs.VNetworkInfo{}, nil
+	// Subnet 생성
+	subnetCreateOpts := subnets.CreateOpts{
+		NetworkID: network.ID,
+		CIDR: reqInfo.CIDR,
+		IPVersion: reqInfo.IPVersion,
+		Name: reqInfo.SubnetName,
+	}
+	subnet, err := subnets.Create(vNetworkHandler.Client, subnetCreateOpts).Extract()
+	if err != nil {
+		return irs.VNetworkInfo{}, err
+	}
+	spew.Dump(subnet)
+
+	// @TODO: 생성된 vNetwork 정보 리턴
+	return irs.VNetworkInfo{Id: network.ID}, nil
 }
 
 func (vNetworkHandler *OpenStackVNetworkHandler) ListVNetwork() ([]*irs.VNetworkInfo, error) {
-	var vNetworkInfoSlices = make([]VNetworkInfo, 20)
+	var vNetworkIList []*VNetworkInfo
 
 	pager := networks.List(vNetworkHandler.Client, nil)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
-		networkList, err := networks.ExtractNetworks(page)
+		// Get vNetwork
+		list, err := networks.ExtractNetworks(page)
 		if err != nil {
 			return false, err
 		}
-
-		var vNetworkInfo VNetworkInfo
-		for _, network := range networkList {
-			vNetwork := vNetworkInfo.setter(network)
-			vNetworkInfoSlices = append(vNetworkInfoSlices, vNetwork)
-			spew.Dump(network)
-			fmt.Println("###############################")
+		// Add to List
+		for _, n := range list {
+			vNetworkInfo := new(VNetworkInfo).setter(n)
+			vNetworkIList = append(vNetworkIList, vNetworkInfo)
 		}
-
 		return true, nil
 	})
-
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
+	spew.Dump(vNetworkIList)
 	return nil, nil
 }
 
@@ -92,16 +112,16 @@ func (vNetworkHandler *OpenStackVNetworkHandler) GetVNetwork(vNetworkID string) 
 		panic(err)
 	}
 
-	var vNetworkInfo VNetworkInfo
-	vNetworkInfo.setter(*network)
-	vNetworkInfo.printInfo()
+	vNetworkInfo := new(VNetworkInfo).setter(*network)
 
+	spew.Dump(vNetworkInfo)
 	return irs.VNetworkInfo{}, nil
 }
 
 func (vNetworkHandler *OpenStackVNetworkHandler) DeleteVNetwork(vNetworkID string) (bool, error) {
-	result := networks.Delete(vNetworkHandler.Client, vNetworkID)
-	fmt.Println("Deleted : ", result)
-
-	return false, nil
+	err := networks.Delete(vNetworkHandler.Client, vNetworkID).ExtractErr()
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
