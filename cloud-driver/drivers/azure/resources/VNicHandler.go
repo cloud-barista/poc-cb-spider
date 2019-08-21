@@ -143,7 +143,8 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 }
 
 func (vNicHandler *AzureVNicHandler) ListVNic() ([]*irs.VNicInfo, error) {
-	result, err := vNicHandler.NicClient.ListAll(vNicHandler.Ctx)
+	//result, err := vNicHandler.NicClient.ListAll(vNicHandler.Ctx)
+	result, err := vNicHandler.NicClient.List(vNicHandler.Ctx, vNicHandler.Region.ResourceGroup)
 	if err != nil {
 		return nil, err
 	}
