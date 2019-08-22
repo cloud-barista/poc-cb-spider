@@ -59,9 +59,8 @@ azure:
     id: {id}
 
   # Azure Test VM Info
-  vm_info:
-    group_name: {group_name}
-    vm_name: {vm_name}
+  group_name: {group_name}
+  vm_name: {vm_name}
 
   image_info:
     group_name: {group_name}
