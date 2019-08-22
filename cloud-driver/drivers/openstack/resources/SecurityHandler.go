@@ -74,8 +74,8 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 		FromPort      int
 		ToPort        int
 		IPProtocol    string
-		CIDR          string // 특정 CIDR 범위의 IP 기준으로 룰 적용
-		FromGroupID   string // SecurityGroup이 적용된 VM에 일괄적으로 룰 적용
+		CIDR          string // 방식 1) 특정 CIDR 범위의 IP 기준으로 룰 적용
+		FromGroupID   string // 방식 2) SecurityGroup 기준으로 룰 적용
 	}
 	type SecurityReqInfo struct {
 		Name          string
@@ -88,7 +88,7 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 		Description: "Temp securityGroup for test",
 	}
 
-	// SecurityGroup 생성
+	// Create SecurityGroup
 	createOpts := secgroups.CreateOpts{
 		Name:        reqInfo.Name,
 		Description: reqInfo.Description,
@@ -100,21 +100,22 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 
 	reqInfo.SecurityRules = &[]SecurityRuleReqInfo{
 		{
-			ParentGroupID: group.ID,
-			FromPort:      22,
-			ToPort:        22,
-			IPProtocol:    "TCP",
-			CIDR:          "0.0.0.0/0",
+			//ParentGroupID: group.ID,
+			FromPort:   22,
+			ToPort:     22,
+			IPProtocol: "TCP",
+			CIDR:       "0.0.0.0/0", // 방식 1) CIDR 기준 룰 적용
 		},
 		{
-			ParentGroupID: group.ID,
-			FromPort:      3306,
-			ToPort:        3306,
-			IPProtocol:    "TCP",
-			FromGroupID:   "94399ea7-f0b0-4f7b-aeea-ba1c17b770c0", // default 보안그룹 ID
+			//ParentGroupID: group.ID,
+			FromPort:    3306,
+			ToPort:      3306,
+			IPProtocol:  "TCP",
+			FromGroupID: group.ID, // 방식 2) 보안그룹 기준 룰 적용
 		},
 	}
 
+	// Create SecurityGroup Rules
 	for _, rule := range *reqInfo.SecurityRules {
 		createRuleOpts := secgroups.CreateRuleOpts{
 			ParentGroupID: group.ID,
@@ -135,7 +136,6 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 		}
 	}
 
-	// @TODO: 생성된 SecurityGroup 정보 리턴
 	securityInfo, err := securityHandler.GetSecurity(group.ID)
 	if err != nil {
 		return irs.SecurityInfo{}, nil
@@ -163,7 +163,7 @@ func (securityHandler *OpenStackSecurityHandler) ListSecurity() ([]*irs.Security
 		return true, nil
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	spew.Dump(securityList)

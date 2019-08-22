@@ -18,6 +18,7 @@ type OpenStackImageHandler struct {
 	ImageClient *gophercloud.ServiceClient
 }
 
+// @TODO: ImageInfo 리소스 프로퍼티 정의 필요
 type ImageInfo struct {
 	ID       string
 	Created  string
@@ -71,9 +72,9 @@ func (imageHandler *OpenStackImageHandler) CreateImage(imageReqInfo irs.ImageReq
 	}
 	spew.Dump(image)
 
-	// Update Image File
+	// Upload Image file
 	rootPath := os.Getenv("CBSPIDER_PATH")
-	imageBytes, err := ioutil.ReadFile(rootPath + "/image/coreos_production_iso_image.iso")
+	imageBytes, err := ioutil.ReadFile(rootPath + "/image/mcb_custom_image.iso")
 	if err != nil {
 		return irs.ImageInfo{}, err
 	}

@@ -49,7 +49,6 @@ func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo 
 		return irs.PublicIPInfo{}, err
 	}
 	
-	// @TODO: 생성된 PublicIP 정보 리턴
 	spew.Dump(publicIPInfo)
 	return irs.PublicIPInfo{Id: publicIPInfo.ID}, nil
 }
@@ -80,12 +79,12 @@ func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIP
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) GetPublicIP(publicIPID string) (irs.PublicIPInfo, error) {
-	floatingIp, err := floatingip.Get(publicIPHandler.Client, publicIPID).Extract()
+	floatingIP, err := floatingip.Get(publicIPHandler.Client, publicIPID).Extract()
 	if err != nil {
 		return irs.PublicIPInfo{}, err
 	}
 	
-	publicIPInfo := new(PublicIPInfo).setter(*floatingIp)
+	publicIPInfo := new(PublicIPInfo).setter(*floatingIP)
 	
 	spew.Dump(publicIPInfo)
 	return irs.PublicIPInfo{}, nil

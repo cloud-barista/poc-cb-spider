@@ -12,6 +12,7 @@ type OpenStackKeyPairHandler struct {
 	Client *gophercloud.ServiceClient
 }
 
+// @TODO: KeyPairInfo 리소스 프로퍼티 정의 필요
 type KeyPairInfo struct {
 	Name        string
 	Fingerprint string
@@ -30,7 +31,6 @@ func (keyPairInfo *KeyPairInfo) setter(keypair keypairs.KeyPair) *KeyPairInfo {
 	return keyPairInfo
 }
 
-//create 1번
 func (keyPairHandler *OpenStackKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReqInfo) (irs.KeyPairInfo, error) {
 	
 	create0pts := keypairs.CreateOpts{
@@ -40,8 +40,7 @@ func (keyPairHandler *OpenStackKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyP
 	if err != nil {
 		return irs.KeyPairInfo{}, err
 	}
-
-	// @TODO: 생성된 keyPair 정보 리턴
+	
 	spew.Dump(keyPairInfo)
 	return irs.KeyPairInfo{}, nil
 }

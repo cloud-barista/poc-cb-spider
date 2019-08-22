@@ -59,7 +59,6 @@ func (security *SecurityInfo) setter(securityGroup network.SecurityGroup) *Secur
 			Priority:                 *sgRule.Priority,
 			Direction:                fmt.Sprint(sgRule.Direction),
 		}
-		//fmt.Println(ruleInfo)
 		securityRuleArr = append(securityRuleArr, ruleInfo)
 	}
 
@@ -75,7 +74,6 @@ func (security *SecurityInfo) setter(securityGroup network.SecurityGroup) *Secur
 			Priority:                 *sgRule.Priority,
 			Direction:                fmt.Sprint(sgRule.Direction),
 		}
-		//fmt.Println(ruleInfo)
 		defaultSecurityRuleArr = append(defaultSecurityRuleArr, ruleInfo)
 	}
 

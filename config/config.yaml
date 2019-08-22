@@ -23,9 +23,15 @@ openstack:
   server_id: {server_id}
 
   image_info:
-    name: mcb-CoreOS
+    name: mcb_custom_image.iso
 
-  virtual_network:
+  keypair_info:
+    name: mcb-test-key
+
+  security_group_info:
+    name: mcb-test-security
+
+  vnet_info:
     name: mcb-test-vnet
 
 ## Config for AZURE ##

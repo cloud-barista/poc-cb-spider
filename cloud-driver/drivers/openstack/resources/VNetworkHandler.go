@@ -50,10 +50,10 @@ func (vNetworkHandler *OpenStackVNetworkHandler) CreateVNetwork(vNetworkReqInfo 
 		AdminStateUp: *networks.Up,
 		CIDR: "10.0.0.0/24",
 		IPVersion: subnets.IPv4,
-		SubnetName: "subnet-"+vNetworkReqInfo.Name,
+		SubnetName: "default",
 	}
 	
-	// vNetwork 생성
+	// Create vNetwork
 	createOpts := networks.CreateOpts{
 		Name:         reqInfo.Name,
 		AdminStateUp: &reqInfo.AdminStateUp,
@@ -64,7 +64,7 @@ func (vNetworkHandler *OpenStackVNetworkHandler) CreateVNetwork(vNetworkReqInfo 
 	}
 	spew.Dump(network)
 
-	// Subnet 생성
+	// Create Subnet
 	subnetCreateOpts := subnets.CreateOpts{
 		NetworkID: network.ID,
 		CIDR: reqInfo.CIDR,
@@ -109,12 +109,14 @@ func (vNetworkHandler *OpenStackVNetworkHandler) ListVNetwork() ([]*irs.VNetwork
 func (vNetworkHandler *OpenStackVNetworkHandler) GetVNetwork(vNetworkID string) (irs.VNetworkInfo, error) {
 	network, err := networks.Get(vNetworkHandler.Client, vNetworkID).Extract()
 	if err != nil {
-		panic(err)
+		return irs.VNetworkInfo{}, err
 	}
 
-	vNetworkInfo := new(VNetworkInfo).setter(*network)
+	if network != nil {
+		vNetworkInfo := new(VNetworkInfo).setter(*network)
+		spew.Dump(vNetworkInfo)
+	}
 
-	spew.Dump(vNetworkInfo)
 	return irs.VNetworkInfo{}, nil
 }
 
