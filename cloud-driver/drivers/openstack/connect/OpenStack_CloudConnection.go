@@ -19,40 +19,42 @@ import (
 
 // modified by powerkim, 2019.07.29
 type OpenStackCloudConnection struct {
-	Client *gophercloud.ServiceClient
+	Client        *gophercloud.ServiceClient
+	ImageClient   *gophercloud.ServiceClient
+	NetworkClient *gophercloud.ServiceClient
 }
 
-func (OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
+func (cloudConn *OpenStackCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
 	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
-	return nil, nil
+	vNetworkHandler := osrs.OpenStackVNetworkHandler{cloudConn.NetworkClient}
+	return &vNetworkHandler, nil
 }
 
 func (cloudConn *OpenStackCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
-	imageHandler := osrs.OpenStackImageHandler{cloudConn.Client}
+	fmt.Println("OpenStack Cloud Driver: called CreateImageHandler()!")
+	imageHandler := osrs.OpenStackImageHandler{cloudConn.Client, cloudConn.ImageClient}
 	return &imageHandler, nil
 }
 
-func (OpenStackCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
-	return nil, nil
+func (cloudConn OpenStackCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateSecurityHandler()!")
+	securityHandler := osrs.OpenStackSecurityHandler{cloudConn.Client}
+	return &securityHandler, nil
 }
 func (cloudConn *OpenStackCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateKeyPairHandler()!")
 	keypairHandler := osrs.OpenStackKeyPairHandler{cloudConn.Client}
 	return &keypairHandler, nil
 }
 func (OpenStackCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreateVNicHandler()!")
 	return nil, nil
 }
-func (OpenStackCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
-	return nil, nil
+func (cloudConn OpenStackCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
+	fmt.Println("OpenStack Cloud Driver: called CreatePublicIPHandler()!")
+	publicIPHandler := osrs.OpenStackPublicIPHandler{cloudConn.Client}
+	return &publicIPHandler, nil
 }
-
-/* org.
-func (OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
-	var vmHandler irs.VMHandler
-	vmHandler = osrs.OpenStackVMHandler{}
-	return vmHandler, nil
-}
-*/
 
 // modified by powerkim, 2019.07.29
 func (cloudConn *OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
@@ -67,7 +69,7 @@ func (cloudConn *OpenStackCloudConnection) CreateVMHandler() (irs.VMHandler, err
 	//              panic(err)
 	//     }
 
-	//var vmHandler irs.VMHandler
+	fmt.Println("OpenStack Cloud Driver: called CreateVNetworkHandler()!")
 	vmHandler := osrs.OpenStackVMHandler{cloudConn.Client}
 	return &vmHandler, nil
 }

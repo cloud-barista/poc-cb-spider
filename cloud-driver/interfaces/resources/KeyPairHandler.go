@@ -11,7 +11,8 @@
 package resources
 
 type KeyPairReqInfo struct {
-	name string
+	Name string
+	Id   string
 	// @todo
 }
 

@@ -1,47 +1,37 @@
 package resources
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
-	_ "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/config"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/rackspace/gophercloud"
-	_ "github.com/rackspace/gophercloud/openstack/compute/v2/extensions/keypairs"
-	_ "github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/images"
-	_ "github.com/rackspace/gophercloud/openstack/compute/v2/servers"
+	imgsvc "github.com/rackspace/gophercloud/openstack/imageservice/v2/images"
 	"github.com/rackspace/gophercloud/pagination"
-	_ "github.com/rackspace/gophercloud/pagination"
+	"io/ioutil"
+	"os"
 )
 
 type OpenStackImageHandler struct {
-	Client *gophercloud.ServiceClient
+	Client      *gophercloud.ServiceClient
+	ImageClient *gophercloud.ServiceClient
 }
 
+// @TODO: ImageInfo 리소스 프로퍼티 정의 필요
 type ImageInfo struct {
-	ID                 string
-	Created            string
-	MinDisk            int
-	MinRAM             int
-	Name               string
-	Progress           int
-	Status             string
-	Updated            string
-	base_image_ref     interface{}
-	boot_roles         interface{}
-	description        interface{}
-	image_location     interface{}
-	image_state        interface{}
-	image_type         interface{}
-	instance_uuid      interface{}
-	owner_id           interface{}
-	owner_project_name interface{}
-	owner_user_name    interface{}
-	user_id            interface{}
+	ID       string
+	Created  string
+	MinDisk  int
+	MinRAM   int
+	Name     string
+	Progress int
+	Status   string
+	Updated  string
+	Metadata map[string]string
 }
 
-func (imageInfo *ImageInfo) setter(results images.Image) ImageInfo {
+func (imageInfo *ImageInfo) setter(results images.Image) *ImageInfo {
 	imageInfo.ID = results.ID
 	imageInfo.Created = results.Created
 	imageInfo.MinDisk = results.MinDisk
@@ -50,123 +40,98 @@ func (imageInfo *ImageInfo) setter(results images.Image) ImageInfo {
 	imageInfo.Progress = results.Progress
 	imageInfo.Status = results.Status
 	imageInfo.Updated = results.Updated
-	imageInfo.base_image_ref = results.Metadata["base_image_ref"]
-	imageInfo.boot_roles = results.Metadata["boot_roles"]
-	imageInfo.description = results.Metadata["description"]
-	imageInfo.image_location = results.Metadata["image_location"]
-	imageInfo.image_state = results.Metadata["image_state"]
-	imageInfo.image_type = results.Metadata["image_type"]
-	imageInfo.instance_uuid = results.Metadata["instance_uuid"]
-	imageInfo.owner_id = results.Metadata["owner_id"]
-	imageInfo.owner_project_name = results.Metadata["owner_project_name"]
-	imageInfo.user_id = results.Metadata["user_id"]
-	//TODO: Metadata에 어떤 종류 있는지 더 확인해서 추가
-
-	return *imageInfo
-}
-
-func (imageInfo *ImageInfo) printInfo() {
-	fmt.Println("Name : ", imageInfo.Name)
-	fmt.Println("Created : ", imageInfo.Created)
-	fmt.Println("ID : ", imageInfo.ID)
-	fmt.Println("MinDisk : ", imageInfo.MinDisk)
-	fmt.Println("MinRAM : ", imageInfo.MinRAM)
-	fmt.Println("Progress : ", imageInfo.Progress)
-	fmt.Println("Status : ", imageInfo.Status)
-	fmt.Println("Updated : ", imageInfo.Updated)
-	fmt.Println("base_image_ref : ", imageInfo.base_image_ref)
-	fmt.Println("boot_roles : ", imageInfo.boot_roles)
-	fmt.Println("description : ", imageInfo.description)
-	fmt.Println("image_location : ", imageInfo.image_location)
-	fmt.Println("image_state : ", imageInfo.image_state)
-	fmt.Println("image_type : ", imageInfo.image_type)
-	fmt.Println("instance_uuid : ", imageInfo.instance_uuid)
-	fmt.Println("owner_id : ", imageInfo.owner_id)
-	fmt.Println("owner_project_name : ", imageInfo.owner_project_name)
-	fmt.Println("owner_user_name : ", imageInfo.owner_user_name)
-	fmt.Println("user_id : ", imageInfo.user_id)
+	imageInfo.Metadata = results.Metadata
+	
+	return imageInfo
 }
 
 func (imageHandler *OpenStackImageHandler) CreateImage(imageReqInfo irs.ImageReqInfo) (irs.ImageInfo, error) {
-	fmt.Println("Call CreateImage()")
-	return irs.ImageInfo{}, nil
+
+	// @TODO: Image 생성 요청 파라미터 정의 필요
+	type ImageReqInfo struct {
+		Name            string
+		ContainerFormat string
+		DiskFormat      string
+	}
+	reqInfo := ImageReqInfo{
+		Name:            imageReqInfo.Name,
+		ContainerFormat: "bare",
+		DiskFormat:      "iso",
+	}
+
+	createOpts := imgsvc.CreateOpts{
+		Name:            reqInfo.Name,
+		ContainerFormat: reqInfo.ContainerFormat,
+		DiskFormat:      reqInfo.DiskFormat,
+	}
+
+	// Create Image
+	image, err := imgsvc.Create(imageHandler.ImageClient, createOpts).Extract()
+	if err != nil {
+		return irs.ImageInfo{}, err
+	}
+	spew.Dump(image)
+
+	// Upload Image file
+	rootPath := os.Getenv("CBSPIDER_PATH")
+	imageBytes, err := ioutil.ReadFile(rootPath + "/image/mcb_custom_image.iso")
+	if err != nil {
+		return irs.ImageInfo{}, err
+	}
+	result := imgsvc.Upload(imageHandler.ImageClient, image.ID, bytes.NewReader(imageBytes))
+	if result.Err != nil {
+		return irs.ImageInfo{}, err
+	}
+	fmt.Println(result)
+	
+	imageInfo := irs.ImageInfo{
+		Id: image.ID,
+		Name: image.Name,
+	}
+	return imageInfo, nil
 }
 
 func (imageHandler *OpenStackImageHandler) ListImage() ([]*irs.ImageInfo, error) {
-	var infoSlices = make([]ImageInfo, 20)
+	var imageList []*ImageInfo
+
 	pager := images.ListDetail(imageHandler.Client, images.ListOpts{})
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
-		// Get Servers
-		imageList, err := images.ExtractImages(page)
+		// Get Image
+		list, err := images.ExtractImages(page)
 		if err != nil {
 			return false, err
 		}
-		var imageInfo ImageInfo
 		// Add to List
-		for _, images := range imageList {
-			image := imageInfo.setter(images)
-			infoSlices = append(infoSlices, image)
-			spew.Dump(imageInfo)
-			fmt.Println("##############################")
+		for _, img := range list {
+			imageInfo := new(ImageInfo).setter(img)
+			imageList = append(imageList, imageInfo)
 		}
 		return true, nil
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	/*opts := serviceImages.ListOpts{
-	     Owner: "a7509e1ae65945fda83f3e52c6296017",
-	  }
-	  allPages, err := serviceImages.List(client, opts).AllPages()
-	  if err != nil {
-	     panic(err)
-	  }
-	  allImages, err := serviceImages.ExtractImages(allPages)
-	  if err != nil {
-	     panic(err)
-	  }*/
-	/*for _, image := range allImages {
-	   //fmt.Printf("%+v\n", image)
-	   var imageInfo ImageInfo
-	   imageInfo.setter(image)
-	   //imageInfo.printInfo()
-	   infoSlices = append(infoSlices, imageInfo)
-	   //fmt.Println(image.Name)
-	}*/
+
+	spew.Dump(imageList)
 	return nil, nil
 }
-func (imageHandler *OpenStackImageHandler) GetImage(imageID string) (irs.ImageInfo, error) {
-	client, err := config.GetServiceClient()
-	if err != nil {
-		panic(err)
-	}
-	//image, err := images.IDFromName(client, imageID)
-	image, err := images.Get(client, imageID).Extract()
 
-	var info ImageInfo
-	info.setter(*image)
-	spew.Dump(info)
-	/*imageId, err := images.IDFromName(client, "hhhh")
-	  if err != nil {
-	  }
-	  fmt.Println(">>" , imageId)*/
+func (imageHandler *OpenStackImageHandler) GetImage(imageID string) (irs.ImageInfo, error) {
+	image, err := images.Get(imageHandler.Client, imageID).Extract()
+	if err != nil {
+		return irs.ImageInfo{}, err
+	}
+
+	imageInfo := new(ImageInfo).setter(*image)
+
+	spew.Dump(imageInfo)
 	return irs.ImageInfo{}, nil
 }
 
 func (imageHandler *OpenStackImageHandler) DeleteImage(imageID string) (bool, error) {
-	client, err := config.GetServiceClient()
+	err := images.Delete(imageHandler.Client, imageID).ExtractErr()
 	if err != nil {
-		panic(err)
+		return false, err
 	}
-	result := images.Delete(client, imageID)
-	fmt.Println("Delete : ", result)
-	return false, nil
-}
-
-func mappingImageInfo(image images.Image) irs.ImageInfo {
-	imageInfo := irs.ImageInfo{
-		Id:   image.ID,
-		Name: image.Name,
-	}
-	return imageInfo
+	return true, nil
 }
