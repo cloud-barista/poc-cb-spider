@@ -13,7 +13,7 @@ package resources
 import (
 	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
-	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/compute"
+	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/ace/server"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
 	"strconv"
@@ -52,7 +52,7 @@ func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 }
 
 func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
-	vmList, _ := compute.List(vmHandler.Client)
+	vmList, _ := server.List(vmHandler.Client)
 	for i, vm := range *vmList {
 		fmt.Println("["+ strconv.Itoa(i) +"]")
 		spew.Dump(vm)
@@ -61,7 +61,7 @@ func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
 }
 
 func (vmHandler *ClouditVMHandler) GetVM(vmID string) irs.VMInfo {
-	vm, _ := compute.Get(vmHandler.Client, vmID)
+	vm, _ := server.Get(vmHandler.Client, vmID)
 	spew.Dump(vm)
 	return irs.VMInfo{}
 }

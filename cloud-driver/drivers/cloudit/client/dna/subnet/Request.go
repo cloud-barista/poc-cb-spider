@@ -1,6 +1,7 @@
-package dna
+package subnet
 
 import (
+	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
 	"time"
 )
@@ -23,4 +24,14 @@ type SubnetInfo struct {
 
 func List(restClient *client.RestClient) (*[]SubnetInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "")
+	fmt.Println(requestURL)
+
+	var result client.Result
+	_, result.Err = restClient.Get(requestURL, &result.Body, nil)
+
+	var subnet []SubnetInfo
+	if err := result.ExtractInto(&subnet); err != nil {
+		return nil, err
+	}
+	return &subnet, nil
 }
