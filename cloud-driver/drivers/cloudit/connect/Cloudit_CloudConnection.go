@@ -48,7 +48,8 @@ func (ClouditCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
 
 func (cloudConn ClouditCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreatePublicIPHandler()!")
-	return nil, nil
+	publicIPHandler := cirs.ClouditPublicIPHandler{&cloudConn.Client}
+	return &publicIPHandler, nil
 }
 func (cloudConn *ClouditCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateVMHandler()!")
