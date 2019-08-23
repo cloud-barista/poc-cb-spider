@@ -81,7 +81,7 @@ func getResourceHandler(resourceType string) (interface{}, error) {
 	}
 	
 	cloudConnection, _ := cloudDriver.ConnectCloud(connectionInfo)
-	
+
 	var resourceHandler interface{}
 	var err error
 	
@@ -96,8 +96,10 @@ func getResourceHandler(resourceType string) (interface{}, error) {
 		resourceHandler, err = cloudConnection.CreateSecurityHandler()
 	case "vnetwork":
 		resourceHandler, err = cloudConnection.CreateVNetworkHandler()
+	case "vnic":
+		resourceHandler, err = cloudConnection.CreateVNicHandler()
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +115,8 @@ func showTestHandlerInfo() {
 	fmt.Println("3. PublicIPHandler")
 	fmt.Println("4. SecurityHandler")
 	fmt.Println("5. VNetworkHandler")
-	fmt.Println("6. Exit")
+	fmt.Println("6. VNicHandler")
+	fmt.Println("7. Exit")
 	fmt.Println("==========================================================")
 }
 
@@ -121,6 +124,8 @@ func main() {
 	
 	showTestHandlerInfo()      // ResourceHandler 테스트 정보 출력
 	config := readConfigFile() // config.yaml 파일 로드
+
+
 
 Loop:
 	
@@ -149,6 +154,21 @@ Loop:
 				//testVNetworkHandler(config)
 				showTestHandlerInfo()
 			case 6:
+				//testVNicHandler(config)
+				resourceHandler, err := getResourceHandler("vnic")
+				if err != nil {
+					panic(err)
+				}
+				vNicInfoList, err := resourceHandler.(irs.VNicHandler).ListVNic()
+				if err != nil {
+					panic(err)
+				}
+				for i, vNicInfo := range vNicInfoList {
+					fmt.Println("[", i, "] ", *vNicInfo)
+				}
+				showTestHandlerInfo()
+
+			case 7:
 				fmt.Println("Exit Test ResourceHandler Program")
 				break Loop
 			}
