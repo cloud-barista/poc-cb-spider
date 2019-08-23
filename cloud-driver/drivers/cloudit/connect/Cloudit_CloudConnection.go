@@ -41,9 +41,10 @@ func (cloudConn *ClouditCloudConnection) CreateKeyPairHandler() (irs.KeyPairHand
 	return nil, nil
 }
 
-func (ClouditCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+func (cloudConn ClouditCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateVNicHandler()!")
-	return nil, nil
+	vNicHandler := cirs.ClouditNicHandler{Client:&cloudConn.Client}
+	return &vNicHandler, nil
 }
 
 func (cloudConn ClouditCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {

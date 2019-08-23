@@ -116,7 +116,7 @@ func main() {
 	testVMHandler()
 }
 
-type Config struct {
+/*type Config struct {
 	Cloudit struct {
 		IdentityEndpoint string `yaml:"identity_endpoint"`
 		Username         string `yaml:"user_id"`
@@ -141,3 +141,4 @@ func readConfigFile() Config {
 	}
 	return config
 }
+*/
