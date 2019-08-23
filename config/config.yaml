@@ -81,3 +81,15 @@ azure:
   network_interface:
     group_name: {group_name}
     name: {name}
+
+
+## Config for Cloudit ##
+cloudit:
+
+  # Cloudit Credential Info
+  identity_endpoint: http://localhost:9090
+  user_id: cloudit
+  password: cloudit
+  tenant_id: test-tenant
+
+  server_id: test-server-id
