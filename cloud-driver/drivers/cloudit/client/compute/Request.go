@@ -6,10 +6,6 @@ import (
 	"time"
 )
 
-const (
-	CLOUDIT_ENGINE = "ACE"
-)
-
 /*type VolumeInfo struct {
 }
 
@@ -83,7 +79,7 @@ type ServerInfo struct {
 }
 
 func List(restClient *client.RestClient) (*[]ServerInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(CLOUDIT_ENGINE, "servers")
+	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
 	fmt.Println(requestURL)
 	
 	var result client.Result
@@ -107,7 +103,7 @@ func List(restClient *client.RestClient) (*[]ServerInfo, error) {
 }
 
 func Get(restClient *client.RestClient, id string) (*ServerInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(CLOUDIT_ENGINE, "servers", id)
+	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
 	fmt.Println(requestURL)
 	
 	var result client.Result

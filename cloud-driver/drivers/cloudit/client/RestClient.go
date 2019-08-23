@@ -15,6 +15,14 @@ const (
 	DefaultUserAgent = "cloudit/1.0.0"
 )
 
+// ClouditEngine is type of cloud service in cloudit
+type ClouditEngine string
+const (
+	IAM ClouditEngine = "iam"
+	ACE ClouditEngine = "ace"
+	DNA ClouditEngine = "dna"
+)
+
 // UserAgent represents a User-Agent header.
 type UserAgent struct {
 	// prepend is the slice of User-Agent strings to prepend to DefaultUserAgent.
@@ -357,9 +365,9 @@ func (r Result) ExtractInto(to interface{}) error {
 	return err
 }
 
-func (client *RestClient) CreateRequestBaseURL(engine string, parts ...string) string {
-	engine = strings.ToLower(engine)
-	baseURL := strings.Join([]string{client.IdentityBase, "cloudit", client.ClouditVersion, engine, "v1.0", client.TenantID,}, "/")
+func (client *RestClient) CreateRequestBaseURL(engine ClouditEngine, parts ...string) string {
+	engineName := fmt.Sprint(engine)
+	baseURL := strings.Join([]string{client.IdentityBase, "cloudit", client.ClouditVersion, engineName, "v1.0", client.TenantID,}, "/")
 	customURI := strings.Join(parts, "/")
 	return  baseURL + "/" + customURI
 }
