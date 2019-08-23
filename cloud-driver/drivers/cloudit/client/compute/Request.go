@@ -6,23 +6,20 @@ import (
 	"time"
 )
 
-/*type VolumeInfo struct {
-}
-
-type NicInfo struct {
-	Name    string
-	Count   int
-	Address string
-}
-
-type PoolInfo struct {
-	Name       string
-	Count      int
-	PoolID     string
-	Filesystem string
-}*/
-
 type ServerInfo struct {
+	VolumeInfoList struct{}
+	VmNicInfoList  struct{}
+	NicMapInfo     []struct {
+		Name    string
+		Count   int
+		Address string
+	}
+	PoolMapInfo []struct {
+		Name       string
+		Count      int
+		PoolID     string
+		Filesystem string
+	}
 	ID                string
 	TenantID          string
 	CpuNum            float32
@@ -81,34 +78,34 @@ type ServerInfo struct {
 func List(restClient *client.RestClient) (*[]ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
 	fmt.Println(requestURL)
-	
+
 	var result client.Result
 	if _, result.Err = restClient.Get(requestURL, &result.Body, nil); result.Err != nil {
 		return nil, result.Err
 	}
-	
+
 	var server []ServerInfo
 	if err := result.ExtractInto(&server); err != nil {
 		return nil, err
 	}
 	return &server, nil
-	
+
 	/*var serverList []ServerInfo
 	resultBody := result.Body.(map[string]string)
 	for _, body := range resultBody {
 		server := extractServer(body)
 	}
-	
+
 	return nil*/
 }
 
 func Get(restClient *client.RestClient, id string) (*ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
 	fmt.Println(requestURL)
-	
+
 	var result client.Result
 	_, result.Err = restClient.Get(requestURL, &result.Body, nil)
-	
+
 	var server ServerInfo
 	if err := result.ExtractInto(&server); err != nil {
 		return nil, err
@@ -118,7 +115,7 @@ func Get(restClient *client.RestClient, id string) (*ServerInfo, error) {
 }
 
 func extractServer(result client.Result) (*ServerInfo, error) {
-	server := new (ServerInfo)
+	server := new(ServerInfo)
 	if err := result.ExtractInto(&server); err != nil {
 		return nil, err
 	}
