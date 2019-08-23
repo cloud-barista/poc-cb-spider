@@ -17,8 +17,8 @@ type PublicIPReqInfo struct {
 }
 
 type PublicIPInfo struct {
-	name string
-	id   string
+	Name string
+	Id   string
 	// @todo
 }
 
