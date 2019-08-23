@@ -19,15 +19,28 @@ import (
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+
+	cblog "github.com/cloud-barista/cb-log"
 )
+
+var cblogger *logrus.Logger
+
+func init() {
+	// cblog is a global variable.
+	cblogger = cblog.GetLogger("AWS Test")
+	cblog.SetLevel("debug")
+}
 
 // Test VM Deployment
 func createVM() {
-	fmt.Println("Start Create VM ...")
+	cblogger.Debug("Start createVM()")
+
 	vmHandler, err := setVMHandler()
 	if err != nil {
 		panic(err)
+		cblogger.Error(err)
 	}
 	config := readConfigFile()
 
@@ -53,10 +66,13 @@ func createVM() {
 	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
+		cblogger.Error(err)
 	}
-	spew.Dump(vm)
+	cblogger.Info("VM 생성 완료!!")
+	cblogger.Info(vm)
+	//spew.Dump(vm)
 
-	fmt.Println("Finish Create VM")
+	cblogger.Info("Finish Create VM")
 }
 
 /*
@@ -85,19 +101,24 @@ func resumeVM(vmID string) {
 
 // Test VM Lifecycle Management (Create/Suspend/Resume/Reboot/Terminate)
 func handleVM() {
+	cblogger.Debug("Start handleVM()")
+
 	vmHandler, err := setVMHandler()
 	if err != nil {
 		panic(err)
 	}
 	config := readConfigFile()
+	VmID := config.Aws.VmID
 
 	for {
 		fmt.Println("VM Management")
-		fmt.Println("0. Start(Create) VM")
-		fmt.Println("1. Suspend VM")
-		fmt.Println("2. Resume VM")
-		fmt.Println("3. Reboot VM")
-		fmt.Println("4. Terminate VM")
+		fmt.Println("0. Quit")
+		fmt.Println("1. VM Start")
+		fmt.Println("2. VM Info")
+		fmt.Println("3. Suspend VM")
+		fmt.Println("4. Resume VM")
+		fmt.Println("5. Reboot VM")
+		fmt.Println("6. Terminate VM")
 
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -105,35 +126,47 @@ func handleVM() {
 			panic(err)
 		}
 
-		VmID := config.Aws.VmID
-
 		if inputCnt == 1 {
 			switch commandNum {
 			case 0:
-				createVM()
+				return
+
 			case 1:
-				fmt.Println("Start Suspend VM ...")
-				vmHandler.SuspendVM(VmID)
-				fmt.Println("Finish Suspend VM")
+				createVM()
+
 			case 2:
-				fmt.Println("Start Resume  VM ...")
-				vmHandler.ResumeVM(VmID)
-				fmt.Println("Finish Resume VM")
+				vmInfo := vmHandler.GetVM(VmID)
+				cblogger.Info("EC2[%s] 인스턴스 정보", VmID)
+				cblogger.Debug(vmInfo)
+				spew.Dump(vmInfo)
+
 			case 3:
-				fmt.Println("Start Reboot  VM ...")
-				vmHandler.RebootVM(VmID)
-				fmt.Println("Finish Reboot VM")
+				cblogger.Debug("Start Suspend VM ...")
+				vmHandler.SuspendVM(VmID)
+				cblogger.Debug("Finish Suspend VM")
+
 			case 4:
-				fmt.Println("Start Terminate  VM ...")
+				cblogger.Debug("Start Resume  VM ...")
+				vmHandler.ResumeVM(VmID)
+				cblogger.Debug("Finish Resume VM")
+
+			case 5:
+				cblogger.Debug("Start Reboot  VM ...")
+				vmHandler.RebootVM(VmID)
+				cblogger.Debug("Finish Reboot VM")
+
+			case 6:
+				cblogger.Debug("Start Terminate  VM ...")
 				vmHandler.TerminateVM(VmID)
-				fmt.Println("Finish Terminate VM")
+				cblogger.Debug("Finish Terminate VM")
 			}
 		}
 	}
 }
 
 func main() {
-	fmt.Println("AWS Driver Test")
+	cblogger.Info("AWS Driver Test")
+
 	//createVM()
 	//suspendVM(vmID)
 	//RebootVM
@@ -205,6 +238,8 @@ func readConfigFile() Config {
 	rootPath := os.Getenv("CBSPIDER_PATH")
 	//rootpath := "D:/Workspace/mcloud-barista-config"
 	// /mnt/d/Workspace/mcloud-barista-config/config/config.yaml
+	cblogger.Debugf("Test Data 설정파일 : [%]", rootPath+"/config/config.yaml")
+
 	data, err := ioutil.ReadFile(rootPath + "/config/config.yaml")
 	//data, err := ioutil.ReadFile("D:/Workspace/mcloud-bar-config/config/config.yaml")
 	if err != nil {
@@ -217,7 +252,8 @@ func readConfigFile() Config {
 		panic(err)
 	}
 
-	fmt.Println("Loaded ConfigFile...")
-	spew.Dump(config)
+	cblogger.Info("Loaded ConfigFile...")
+	//spew.Dump(config)
+	cblogger.Info(config)
 	return config
 }
