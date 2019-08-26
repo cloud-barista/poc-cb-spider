@@ -83,8 +83,9 @@ func (driver *AwsDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.
 
 	//iConn = acon.AwsCloudConnection{}
 	iConn := acon.AwsCloudConnection{
-		Region:   connectionInfo.RegionInfo,
-		VMClient: vmClient,
+		Region:        connectionInfo.RegionInfo,
+		VMClient:      vmClient,
+		KeyPairClient: vmClient,
 	}
 	return &iConn, nil // return type: (icon.CloudConnection, error)
 }
