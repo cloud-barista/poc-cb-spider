@@ -67,7 +67,7 @@ func handleKeyPair() {
 
 			case 1:
 				result, err := KeyPairHandler.ListKey()
-				if err != nil {
+				if err != nil { ㅠㅕㅠㅐㅍㅍㅍㅍ
 					cblogger.Infof(keyPairName, " 키 페어 목록 조회 실패 : ", err)
 				} else {
 					cblogger.Info("키 페어 목록 조회 결과")
