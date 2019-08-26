@@ -52,6 +52,8 @@ func Connect(region string) *ec2.EC2 {
 	return svc
 }
 
+// 1개의 VM만 생성되도록 수정 (MinCount / MaxCount 이용 안 함)
+// @Todo : SecurityGroupId 배열 처리 방안
 func (vmHandler *AwsVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
 	//fmt.Println("Start VMHandler()::StartVM()")
 	cblogger.Info("Start VMHandler()::StartVM()")
@@ -95,7 +97,7 @@ func (vmHandler *AwsVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, err
 	//fmt.Println("Created instance", *runResult.Instances[0].InstanceId)
 	cblogger.Info("Created instance", *runResult.Instances[0].InstanceId)
 
-	// Add tags to the created instance
+	// Tag에 VM Name 설정
 	_, errtag := vmHandler.Client.CreateTags(&ec2.CreateTagsInput{
 		Resources: []*string{runResult.Instances[0].InstanceId},
 		Tags: []*ec2.Tag{
@@ -318,16 +320,22 @@ func (vmHandler *AwsVMHandler) GetVM(vmID string) irs.VMInfo {
 }
 
 // DescribeInstances결과에서 EC2 세부 정보 추출
+// VM 생성 시에는 Running 이전 상태의 정보가 넘어오기 때문에
+// 최종 정보 기반으로 리턴 받고 싶으면 GetVM에 통합해야 할 듯.
 func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 	//cblogger.Info("ExtractDescribeInstances", reservation)
-	cblogger.Info("Instances[0]", reservation.Instances[0])
-	cblogger.Infof("ImageId : [%s]", *reservation.Instances[0].ImageId)
-
-	if 1 == 2 {
-		return irs.VMInfo{}
-	}
+	cblogger.Debug("Instances[0]", reservation.Instances[0])
+	//cblogger.Info("ImageId : [%s]", *reservation.Instances[0].ImageId)
 
 	//len()
+
+	//Running 상태에서만 체크 가능한 값
+	//"stopped"
+	//"terminated"
+	//"running"
+	var state string
+	state = *reservation.Instances[0].State.Name
+	cblogger.Info("EC2 상태 : [%s]", state)
 
 	vmInfo := irs.VMInfo{
 		//Name = *reservation.Instances[0].Tags[0].Value
@@ -339,13 +347,6 @@ func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 		AdditionalInfo: "State:" + *reservation.Instances[0].State.Name,
 	}
 
-	//Running 상태에서만 체크 가능한 값
-	//"stopped"
-	//"terminated"
-	//"running"
-	var state string
-	state = *reservation.Instances[0].State.Name
-	cblogger.Info("EC2 상태 : [%s]", state)
 	if state == "running" {
 		vmInfo.PublicIP = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicIp
 		vmInfo.PublicDNS = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicDnsName
@@ -405,203 +406,3 @@ func (vmHandler *AwsVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 	var vmStatus []*irs.VMStatusInfo
 	return vmStatus
 }
-
-/*
-func (vmHandler *AwsVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	//fmt.Println("Start VMHandler()::StartVM()")
-	cblogger.Info("Start VMHandler()::StartVM()")
-	spew.Dump(vmReqInfo)
-
-	imageID := vmReqInfo.ImageInfo.Id
-	instanceType := vmReqInfo.SpecID // "t2.micro"
-	minCount := 1
-	maxCount := 1
-	keyName := vmReqInfo.KeyPairInfo.Name
-	securityGroupID := vmReqInfo.SecurityInfo.Id // "sg-0df1c209ea1915e4b"
-	subnetID := vmReqInfo.VNetworkInfo.Id        // "subnet-cf9ccf83"
-	baseName := vmReqInfo.Name                   //"mcloud-barista-VMHandlerTest"
-
-	cblogger.Info("Create EC2 Instance")
-	//fmt.Println("Create EC2 Instance")
-
-	//키페어 이름(예:mcloud-barista)은 아래 URL에 나오는 목록 중 "키페어 이름"의 값을 적으면 됨.
-	//https://ap-northeast-2.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-2#KeyPairs:sort=keyName
-	//instanceIds := ec2handler.CreateInstances(vmHandler.Client, imageID, instanceType, minCount, maxCount,
-	instanceIds := CreateInstances(vmHandler.Client, imageID, instanceType, minCount, maxCount,
-		keyName, securityGroupID, subnetID, baseName)
-
-	// waiting for completion of new instance running.
-	for _, v := range instanceIds {
-		// wait until running status
-		//ec2handler.WaitForRun(vmHandler.Client, *v)
-		WaitForRun(vmHandler.Client, *v)
-		// get public IP
-		//publicIP, err := ec2handler.GetPublicIP(vmHandler.Client, *v)
-		publicIP, err := GetPublicIP(vmHandler.Client, *v)
-		if err != nil {
-			//fmt.Println("Error", err)
-			cblogger.Error(err)
-			return irs.VMInfo{}, err
-		}
-		//fmt.Println(publicIP)
-		cblogger.Info(publicIP)
-	}
-
-	return irs.VMInfo{}, nil
-}
-*/
-
-/*
-func (vmHandler *AwsVMHandler) StartVM2(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	// Set VM Create Information
-	//imageID := vmReqInfo.ImageInfo.Id
-	imageID := "ami-047f7b46bd6dd5d84"
-	instanceType := "t2.micro"
-	minCount := 1
-	maxCount := 1
-	keyName := "mcloud-barista"
-	securityGroupID := "sg-0df1c209ea1915e4b"
-	subnetID := "subnet-cf9ccf83"
-	baseName := "mcloud-barista-VMHandlerTest"
-
-	runResult, err := vmHandler.Client.RunInstances(&ec2.RunInstancesInput{
-		ImageId:      aws.String(imageID),        // set imageID ex) ami-047f7b46bd6dd5d84
-		InstanceType: aws.String(instanceType),   // instance Type, ex) t2.micro
-		MinCount:     aws.Int64(int64(minCount)), //
-		MaxCount:     aws.Int64(int64(maxCount)),
-		KeyName:      aws.String(keyName), // set a keypair Name, ex) aws.powerkim.keypair
-		SecurityGroupIds: []*string{
-			aws.String(securityGroupID), // set a security group.
-		},
-		//SubnetId: aws.String("subnet-8c4a53e4"),     // set a subnet.
-		SubnetId: aws.String(subnetID), // set a subnet.
-	})
-
-	if err != nil {
-		fmt.Println("Could not create instance", err)
-		return irs.VMInfo{}, err
-	}
-
-	// copy Instances's ID
-	instanceIds := make([]*string, len(runResult.Instances))
-	for k, v := range runResult.Instances {
-		instanceIds[k] = v.InstanceId
-	}
-
-	for i := 0; i < maxCount; i++ {
-		// Add tags to the created instance
-		_, errtag := vmHandler.Client.CreateTags(&ec2.CreateTagsInput{
-			Resources: []*string{runResult.Instances[i].InstanceId},
-			Tags: []*ec2.Tag{
-				{
-					Key:   aws.String("Name"),
-					Value: aws.String(baseName + strconv.Itoa(i)),
-				},
-			},
-		})
-		if errtag != nil {
-			log.Println("Could not create tags for instance", runResult.Instances[i].InstanceId, errtag)
-			return irs.VMInfo{}, errtag
-		}
-		fmt.Println("Successfully tagged instance:" + baseName + strconv.Itoa(i))
-	} // end of for
-
-	return irs.VMInfo{}, nil
-}
-*/
-
-/*
-func CreateInstances(svc *ec2.EC2, imageID string, instanceType string,
-	minCount int, maxCount int, keyName string, securityGroupID string,
-	subnetID string, baseName string) []*string {
-
-	runResult, err := svc.RunInstances(&ec2.RunInstancesInput{
-		ImageId:      aws.String(imageID),        // set imageID ex) ami-047f7b46bd6dd5d84
-		InstanceType: aws.String(instanceType),   // instance Type, ex) t2.micro
-		MinCount:     aws.Int64(int64(minCount)), //
-		MaxCount:     aws.Int64(int64(maxCount)),
-		KeyName:      aws.String(keyName), // set a keypair Name, ex) aws.powerkim.keypair
-		SecurityGroupIds: []*string{
-			aws.String(securityGroupID), // set a security group.
-		},
-		//SubnetId: aws.String("subnet-8c4a53e4"),     // set a subnet.
-		SubnetId: aws.String(subnetID), // set a subnet.
-	})
-
-	if err != nil {
-		fmt.Println("Could not create instance", err)
-		return nil
-	}
-
-	// copy Instances's ID
-	instanceIds := make([]*string, len(runResult.Instances))
-	for k, v := range runResult.Instances {
-		instanceIds[k] = v.InstanceId
-	}
-
-	for i := 0; i < maxCount; i++ {
-		// Add tags to the created instance
-		_, errtag := svc.CreateTags(&ec2.CreateTagsInput{
-			Resources: []*string{runResult.Instances[i].InstanceId},
-			Tags: []*ec2.Tag{
-				{
-					Key: aws.String("Name"),
-					//Value: aws.String(baseName + strconv.Itoa(i)),
-					Value: aws.String(baseName),
-				},
-			},
-		})
-		if errtag != nil {
-			log.Println("Could not create tags for instance", runResult.Instances[i].InstanceId, errtag)
-			return nil
-		}
-		fmt.Println("Successfully tagged instance:" + baseName + strconv.Itoa(i))
-	} // end of for
-
-	return instanceIds
-}
-*/
-/*
-func GetPublicIP(svc *ec2.EC2, instanceID string) (string, error) {
-	var publicIP string
-
-	input := &ec2.DescribeInstancesInput{
-		InstanceIds: []*string{
-			aws.String(instanceID),
-		},
-	}
-	// Call to get detailed information on each instance
-	result, err := svc.DescribeInstances(input)
-	if err != nil {
-		fmt.Println("Error", err)
-		return publicIP, err
-	}
-
-	//    fmt.Println(result)
-
-	for i, _ := range result.Reservations {
-		for _, inst := range result.Reservations[i].Instances {
-			publicIP = *inst.PublicIpAddress
-		}
-	}
-	return publicIP, err
-}
-*/
-
-/*
-func DestroyInstances(svc *ec2.EC2, instanceIds []*string) error {
-
-	//input := &ec2.TerminateInstancesInput(instanceIds)
-	input := &ec2.TerminateInstancesInput{
-		InstanceIds: instanceIds,
-	}
-
-	_, err := svc.TerminateInstances(input)
-
-	if err != nil {
-		fmt.Println("Could not termiate instances", err)
-	}
-
-	return err
-}
-*/
