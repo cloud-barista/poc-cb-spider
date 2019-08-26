@@ -227,33 +227,20 @@ func (vmHandler *AwsVMHandler) RebootVM(vmID string) {
 
 func (vmHandler *AwsVMHandler) TerminateVM(vmID string) {
 	cblogger.Infof("vmID : [%s]", vmID)
-
-	instanceIds := []*string{&vmID}
-	//spew.Dump(instanceIds)
-
 	input := &ec2.TerminateInstancesInput{
-		InstanceIds: instanceIds,
+		//InstanceIds: instanceIds,
+		InstanceIds: []*string{
+			aws.String(vmID),
+		},
 	}
-
-	/*
-		input := &ec2.DescribeInstancesInput{
-			InstanceIds: []*string{
-				aws.String(vmID),
-			},
-		}
-	*/
 
 	_, err := vmHandler.Client.TerminateInstances(input)
 	if err != nil {
 		//fmt.Println("Could not termiate instances", err)
-		cblogger.Error(err)
+		cblogger.Error("Could not termiate instances", err)
 	} else {
-		//fmt.Println("Success", result)
 		cblogger.Info("Success")
 	}
-
-	//fmt.Println("End VMHandler()::TerminateVM()")
-
 	return
 }
 
