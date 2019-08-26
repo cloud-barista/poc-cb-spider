@@ -43,6 +43,8 @@ func handleKeyPair() {
 	//config := readConfigFile()
 	//VmID := config.Aws.VmID
 
+	keyPairName := "test123"
+
 	for {
 		fmt.Println("KeyPair Management")
 		fmt.Println("0. Quit")
@@ -65,32 +67,23 @@ func handleKeyPair() {
 			case 1:
 				KeyPairHandler.ListKey()
 			case 2:
+				cblogger.Info("[%s] 키 페어 생성 테스트", keyPairName)
 				keyPairReqInfo := irs.KeyPairReqInfo{
-					Name: "test123",
+					Name: keyPairName,
 				}
 				KeyPairHandler.CreateKey(keyPairReqInfo)
-				/*
-
-					case 3:
-						cblogger.Debug("Start Suspend VM ...")
-						vmHandler.SuspendVM(VmID)
-						cblogger.Debug("Finish Suspend VM")
-
-					case 4:
-						cblogger.Debug("Start Resume  VM ...")
-						vmHandler.ResumeVM(VmID)
-						cblogger.Debug("Finish Resume VM")
-
-					case 5:
-						cblogger.Debug("Start Reboot  VM ...")
-						vmHandler.RebootVM(VmID)
-						cblogger.Debug("Finish Reboot VM")
-
-					case 6:
-						cblogger.Debug("Start Terminate  VM ...")
-						vmHandler.TerminateVM(VmID)
-						cblogger.Debug("Finish Terminate VM")
-				*/
+			case 3:
+				cblogger.Info("[%s] 키 페어 조회 테스트", keyPairName)
+				result, err := KeyPairHandler.GetKey(keyPairName)
+				if err != nil {
+					cblogger.Infof(keyPairName, " 키 페어 조회 실패 : ", err)
+				} else {
+					cblogger.Info("[%s] 키 페어 조회 결과 : [%s]", result)
+				}
+			case 4:
+				cblogger.Info("[%s] 키 페어 삭제 테스트", keyPairName)
+				result, _ := KeyPairHandler.DeleteKey(keyPairName)
+				cblogger.Info("[%s] 키 페어 삭제 결과 : [%s]", result)
 			}
 		}
 	}
