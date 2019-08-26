@@ -33,16 +33,24 @@ type KeyPairInfo struct {
 
 func (keyPairHandler *AwsKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {
 	cblogger.Debug("Start ListKey()")
-	var keyPairList []*KeyPairInfo
+	var keyPairList []*irs.KeyPairInfo
 	//spew.Dump(keyPairHandler)
 	cblogger.Info(keyPairHandler)
 
+	input := &ec2.DescribeKeyPairsInput{
+		KeyNames: []*string{
+			nil,
+		},
+	}
+
 	//  Returns a list of key pairs
-	result, err := keyPairHandler.Client.DescribeKeyPairs(nil)
+	//result, err := keyPairHandler.Client.DescribeKeyPairs(nil)
+	result, err := keyPairHandler.Client.DescribeKeyPairs(input)
+	cblogger.Info(result)
 	if err != nil {
 		//exitErrorf("Unable to get key pairs, %v", err)
 		cblogger.Errorf("Unable to get key pairs, %v", err)
-		return nil, err
+		return keyPairList, err
 	}
 
 	//	fmt.Println("Key Pairs:")
@@ -50,17 +58,17 @@ func (keyPairHandler *AwsKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {
 	for _, pair := range result.KeyPairs {
 		//fmt.Printf("%s: %s\n", *pair.KeyName, *pair.KeyFingerprint)
 		cblogger.Debugf("%s: %s\n", *pair.KeyName, *pair.KeyFingerprint)
-		//keyPairInfo := new(irs.KeyPairInfo)
-		//keyPairInfo.Name = *pair.KeyName
-		//keyPairInfo.Fingerprint = *pair.KeyFingerprint
+		keyPairInfo := new(irs.KeyPairInfo)
+		keyPairInfo.Name = *pair.KeyName
+		keyPairInfo.Id = *pair.KeyFingerprint
 
-		//keyPairList = append(keyPairList, keyPairInfo)
+		keyPairList = append(keyPairList, keyPairInfo)
 	}
 
 	cblogger.Info(keyPairList)
 	//spew.Dump(keyPairList)
 	//return keyPairList, nil
-	return nil, nil
+	return keyPairList, nil
 }
 
 func (keyPairHandler *AwsKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReqInfo) (irs.KeyPairInfo, error) {

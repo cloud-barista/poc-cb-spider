@@ -18,6 +18,7 @@ import (
 	awsdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/aws"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
@@ -65,25 +66,33 @@ func handleKeyPair() {
 				return
 
 			case 1:
-				KeyPairHandler.ListKey()
+				result, err := KeyPairHandler.ListKey()
+				if err != nil {
+					cblogger.Infof(keyPairName, " 키 페어 목록 조회 실패 : ", err)
+				} else {
+					cblogger.Info("키 페어 목록 조회 결과")
+					//cblogger.Info(result)
+					spew.Dump(result)
+				}
+
 			case 2:
-				cblogger.Info("[%s] 키 페어 생성 테스트", keyPairName)
+				cblogger.Infof("[%s] 키 페어 생성 테스트", keyPairName)
 				keyPairReqInfo := irs.KeyPairReqInfo{
 					Name: keyPairName,
 				}
 				KeyPairHandler.CreateKey(keyPairReqInfo)
 			case 3:
-				cblogger.Info("[%s] 키 페어 조회 테스트", keyPairName)
+				cblogger.Infof("[%s] 키 페어 조회 테스트", keyPairName)
 				result, err := KeyPairHandler.GetKey(keyPairName)
 				if err != nil {
 					cblogger.Infof(keyPairName, " 키 페어 조회 실패 : ", err)
 				} else {
-					cblogger.Info("[%s] 키 페어 조회 결과 : [%s]", result)
+					cblogger.Infof("[%s] 키 페어 조회 결과 : [%s]", result)
 				}
 			case 4:
-				cblogger.Info("[%s] 키 페어 삭제 테스트", keyPairName)
+				cblogger.Infof("[%s] 키 페어 삭제 테스트", keyPairName)
 				result, _ := KeyPairHandler.DeleteKey(keyPairName)
-				cblogger.Info("[%s] 키 페어 삭제 결과 : [%s]", result)
+				cblogger.Infof("[%s] 키 페어 삭제 결과 : [%s]", result)
 			}
 		}
 	}
