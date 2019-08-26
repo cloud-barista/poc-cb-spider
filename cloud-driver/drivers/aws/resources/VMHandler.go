@@ -209,10 +209,21 @@ func (vmHandler *AwsVMHandler) RebootVM(vmID string) {
 		DryRun: aws.Bool(true),
 	}
 	result, err := vmHandler.Client.RebootInstances(input)
+	cblogger.Info("result 값 : ", result)
+	cblogger.Info("err 값 : ", err)
+
 	awsErr, ok := err.(awserr.Error)
+	cblogger.Info("ok 값 : ", ok)
+	cblogger.Info("awsErr 값 : ", awsErr)
 	if ok && awsErr.Code() == "DryRunOperation" {
+		cblogger.Info("Reboot 권한 있음 - awsErr.Code() : ", awsErr.Code())
+
+		//DryRun 권한 해제 후 리부팅을 요청 함.
+		cblogger.Info("DryRun 권한 해제 후 리부팅을 요청 함.")
 		input.DryRun = aws.Bool(false)
 		result, err = vmHandler.Client.RebootInstances(input)
+		cblogger.Info("result 값 : ", result)
+		cblogger.Info("err 값 : ", err)
 		if err != nil {
 			//fmt.Println("Error", err)
 			cblogger.Error(err)
@@ -222,7 +233,8 @@ func (vmHandler *AwsVMHandler) RebootVM(vmID string) {
 		}
 	} else { // This could be due to a lack of permissions
 		//fmt.Println("Error", err)
-		cblogger.Error(err)
+		cblogger.Info("리부팅 권한이 없는 것같음.")
+		cblogger.Error("Error", err)
 	}
 	return
 }
