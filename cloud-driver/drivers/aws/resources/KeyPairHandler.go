@@ -85,61 +85,81 @@ func (keyPairHandler *AwsKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReq
 }
 
 func (keyPairHandler *AwsKeyPairHandler) GetKey(keyPairID string) (irs.KeyPairInfo, error) {
-	return irs.KeyPairInfo{}, nil
+	cblogger.Infof("GetKey : [%s]", keyPairID)
+
+	input := &ec2.DescribeKeyPairsInput{
+		KeyNames: []*string{
+			aws.String(keyPairID),
+		},
+	}
+
+	result, err := keyPairHandler.Client.DescribeKeyPairs(input)
+	cblogger.Info("result : ", result)
+	cblogger.Info("err : ", err)
+
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			cblogger.Info("aerr : ", aerr)
+			cblogger.Info("aerr.Code()  : ", aerr.Code())
+			cblogger.Info("ok : ", ok)
+			switch aerr.Code() {
+			default:
+				//fmt.Println(aerr.Error())
+				cblogger.Error(aerr.Error())
+				return irs.KeyPairInfo{}, aerr
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			//fmt.Println(err.Error())
+			cblogger.Error(err.Error())
+			return irs.KeyPairInfo{}, err
+		}
+		return irs.KeyPairInfo{}, nil
+	}
+
+	cblogger.Info("KeyName : ", *result.KeyPairs[0].KeyName)
+	cblogger.Info("Fingerprint : ", *result.KeyPairs[0].KeyFingerprint)
+
+	keyPairInfo := irs.KeyPairInfo{
+		Name: *result.KeyPairs[0].KeyName,
+		Id:   *result.KeyPairs[0].KeyFingerprint,
+	}
+
+	/*
+		keyPairInfo := KeyPairInfo{
+			Name:        *result.KeyPairs[0].KeyName,
+			Fingerprint: *result.KeyPairs[0].KeyFingerprint,
+		}
+	*/
+	return keyPairInfo, nil
 }
 
 func (keyPairHandler *AwsKeyPairHandler) DeleteKey(keyPairID string) (bool, error) {
-	return false, nil
+	cblogger.Infof("DeleteKeyPaid : [%s]", keyPairID)
+	// Delete the key pair by name
+	_, err := keyPairHandler.Client.DeleteKeyPair(&ec2.DeleteKeyPairInput{
+		KeyName: aws.String(keyPairID),
+	})
+
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "InvalidKeyPair.Duplicate" {
+			//exitErrorf("Key pair %q does not exist.", pairName)
+			cblogger.Error("Key pair %q does not exist.", keyPairID)
+			return false, err
+		}
+		//exitErrorf("Unable to delete key pair: %s, %v.", keyPairID, err)
+		cblogger.Errorf("Unable to delete key pair: %s, %v.", keyPairID, err)
+		return false, err
+	}
+
+	//fmt.Printf("Successfully deleted %q key pair\n", keyPairID)
+	cblogger.Infof("Successfully deleted %q key pair\n", keyPairID)
+
+	return true, nil
 }
 
 func exitErrorf(msg string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, msg+"\n", args...)
 	os.Exit(1)
 }
-
-/*
-func (keyPairInfo *KeyPairInfo) setter(keypair keypairs.KeyPair) *KeyPairInfo {
-	keyPairInfo.Name = keypair.Name
-	keyPairInfo.Fingerprint = keypair.Fingerprint
-	keyPairInfo.PublicKey = keypair.PublicKey
-	keyPairInfo.PrivateKey = keypair.PrivateKey
-	keyPairInfo.UserID = keypair.UserID
-
-	return keyPairInfo
-}
-
-func (keyPairHandler *OpenStackKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReqInfo) (irs.KeyPairInfo, error) {
-
-	create0pts := keypairs.CreateOpts{
-		Name: keyPairReqInfo.Name,
-	}
-	keyPairInfo, err := keypairs.Create(keyPairHandler.Client, create0pts).Extract()
-	if err != nil {
-		return irs.KeyPairInfo{}, err
-	}
-
-	spew.Dump(keyPairInfo)
-	return irs.KeyPairInfo{}, nil
-}
-
-
-func (keyPairHandler *OpenStackKeyPairHandler) GetKey(keyPairID string) (irs.KeyPairInfo, error) {
-	keyPair, err := keypairs.Get(keyPairHandler.Client, keyPairID).Extract()
-	if err != nil {
-		return irs.KeyPairInfo{}, nil
-	}
-
-	keyPairInfo := new(KeyPairInfo).setter(*keyPair)
-
-	spew.Dump(keyPairInfo)
-	return irs.KeyPairInfo{}, nil
-}
-
-func (keyPairHandler *OpenStackKeyPairHandler) DeleteKey(keyPairID string) (bool, error) {
-	err := keypairs.Delete(keyPairHandler.Client, keyPairID).ExtractErr()
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-*/
