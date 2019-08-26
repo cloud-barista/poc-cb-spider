@@ -121,6 +121,10 @@ func handleVM() {
 		fmt.Println("5. Reboot VM")
 		fmt.Println("6. Terminate VM")
 
+		fmt.Println("7. GetVMStatus VM")
+		fmt.Println("8. ListVMStatus VM")
+		fmt.Println("9. ListVM")
+
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
 		if err != nil {
@@ -160,6 +164,28 @@ func handleVM() {
 				cblogger.Debug("Start Terminate  VM ...")
 				vmHandler.TerminateVM(VmID)
 				cblogger.Debug("Finish Terminate VM")
+
+			case 7:
+				cblogger.Debug("Start Get VM Status...")
+				vmStatus := vmHandler.GetVMStatus(VmID)
+				cblogger.Debug("Finish Get VM Status")
+
+				cblogger.Info(vmStatus)
+
+			case 8:
+				cblogger.Debug("Start ListVMStatus ...")
+				vmStatusInfos := vmHandler.ListVMStatus()
+				cblogger.Info("리턴 값")
+				cblogger.Info(vmStatusInfos)
+				spew.Dump(vmStatusInfos)
+				cblogger.Debug("Finish ListVMStatus")
+
+			case 9:
+				cblogger.Debug("Start ListVM ...")
+				vmInfos := vmHandler.ListVM()
+				cblogger.Info("=========== VM 목록 ================")
+				spew.Dump(vmInfos)
+				cblogger.Debug("Finish ListVM")
 			}
 		}
 	}

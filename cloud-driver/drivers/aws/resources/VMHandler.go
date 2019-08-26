@@ -9,6 +9,7 @@ package resources
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -258,10 +259,6 @@ func (vmHandler *AwsVMHandler) TerminateVM(vmID string) {
 	return
 }
 
-func (vmHandler *AwsVMHandler) GetVMStatus(vmID string) irs.VMStatus {
-	return ""
-}
-
 func (vmHandler *AwsVMHandler) GetVM(vmID string) irs.VMInfo {
 	cblogger.Infof("vmID : [%s]", vmID)
 
@@ -360,8 +357,12 @@ func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 	}
 
 	if state == "running" {
-		vmInfo.PublicIP = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicIp
-		vmInfo.PublicDNS = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicDnsName
+		//vmInfo.PublicIP = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicIp
+		//vmInfo.PublicDNS = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicDnsName
+
+		//cblogger.Info("=======>타입 : ", reflect.TypeOf(*reservation.Instances[0]))
+		//vmInfo.PublicIP = *reservation.Instances[0].PublicIpAddress
+		//vmInfo.PublicDNS = *reservation.Instances[0].PublicDnsName
 
 		vmInfo.GuestBlockDisk = *reservation.Instances[0].BlockDeviceMappings[0].DeviceName
 	}
@@ -375,8 +376,10 @@ func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 		vmInfo.SecurityID = *reservation.Instances[0].NetworkInterfaces[0].Groups[0].GroupId
 		//SecurityName: *reservation.Instances[0].NetworkInterfaces[0].Groups[0].GroupName,
 		vmInfo.VNIC = "eth0 - 값 위치 확인 필요"
-		vmInfo.PrivateIP = *reservation.Instances[0].NetworkInterfaces[0].PrivateIpAddress
-		vmInfo.PrivateDNS = *reservation.Instances[0].NetworkInterfaces[0].PrivateDnsName
+		//vmInfo.PrivateIP = *reservation.Instances[0].NetworkInterfaces[0].PrivateIpAddress	//없는 경우 존재 - i-0b75cac73c4575386
+		//vmInfo.PrivateDNS = *reservation.Instances[0].NetworkInterfaces[0].PrivateDnsName		//없는 경우 존재 - i-0b75cac73c4575386
+		vmInfo.PrivateIP = *reservation.Instances[0].PrivateIpAddress
+		vmInfo.PrivateDNS = *reservation.Instances[0].PrivateDnsName
 		vmInfo.GuestBootDisk = *reservation.Instances[0].RootDeviceName
 	}
 
@@ -410,11 +413,132 @@ func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 }
 
 func (vmHandler *AwsVMHandler) ListVM() []*irs.VMInfo {
-	var vmList []*irs.VMInfo
-	return vmList
+	cblogger.Infof("Start")
+	var vmInfoList []*irs.VMInfo
+
+	input := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{
+			nil,
+		},
+	}
+
+	result, err := vmHandler.Client.DescribeInstances(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				//fmt.Println(aerr.Error())
+				cblogger.Error(aerr.Error())
+				return vmInfoList
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
+			//fmt.Println(err.Error())
+			cblogger.Error(err.Error())
+			return vmInfoList
+		}
+		return vmInfoList
+	}
+
+	cblogger.Info("Success")
+
+	for _, i := range result.Reservations {
+		for _, vm := range i.Instances {
+			cblogger.Info("[%s] EC2 정보 조회", *vm.InstanceId)
+			vmInfo := vmHandler.GetVM(*vm.InstanceId)
+			//cblogger.Info(vmStatusInfo.VmId, " EC2 Status : ", vmStatusInfo.VmStatus)
+			vmInfoList = append(vmInfoList, &vmInfo)
+		}
+	}
+
+	return vmInfoList
+}
+
+func (vmHandler *AwsVMHandler) GetVMStatus(vmID string) irs.VMStatus {
+	cblogger.Infof("vmID : [%s]", vmID)
+
+	//vmStatus := "pending"
+	//return irs.VMStatus(vmStatus)
+
+	input := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{
+			aws.String(vmID),
+		},
+	}
+
+	result, err := vmHandler.Client.DescribeInstances(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				//fmt.Println(aerr.Error())
+				cblogger.Error(aerr.Error())
+				return irs.VMStatus("")
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
+			//fmt.Println(err.Error())
+			cblogger.Error(err.Error())
+			return irs.VMStatus("")
+		}
+		return irs.VMStatus("")
+	}
+
+	cblogger.Info("Success", result)
+	for _, i := range result.Reservations {
+		for _, vm := range i.Instances {
+			vmStatus := strings.ToUpper(*vm.State.Name)
+			cblogger.Info(vmID, " EC2 Status : ", vmStatus)
+			return irs.VMStatus(vmStatus)
+		}
+	}
+
+	return irs.VMStatus("")
 }
 
 func (vmHandler *AwsVMHandler) ListVMStatus() []*irs.VMStatusInfo {
-	var vmStatus []*irs.VMStatusInfo
-	return vmStatus
+	cblogger.Infof("Start")
+	var vmStatusList []*irs.VMStatusInfo
+
+	input := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{
+			nil,
+		},
+	}
+
+	result, err := vmHandler.Client.DescribeInstances(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				//fmt.Println(aerr.Error())
+				cblogger.Error(aerr.Error())
+				return vmStatusList
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
+			//fmt.Println(err.Error())
+			cblogger.Error(err.Error())
+			return vmStatusList
+		}
+		return vmStatusList
+	}
+
+	cblogger.Info("Success")
+
+	for _, i := range result.Reservations {
+		for _, vm := range i.Instances {
+			//*vm.State.Name
+			//*vm.InstanceId
+			vmStatusInfo := irs.VMStatusInfo{
+				VmId: *vm.InstanceId,
+				//VmStatus: vmHandler.GetVMStatus(*vm.InstanceId),
+				VmStatus: irs.VMStatus(strings.ToUpper(*vm.State.Name)),
+			}
+			cblogger.Info(vmStatusInfo.VmId, " EC2 Status : ", vmStatusInfo.VmStatus)
+			vmStatusList = append(vmStatusList, &vmStatusInfo)
+		}
+	}
+
+	return vmStatusList
 }
