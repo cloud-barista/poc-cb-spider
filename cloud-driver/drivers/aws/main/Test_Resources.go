@@ -18,7 +18,6 @@ import (
 	awsdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/aws"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
@@ -29,97 +28,28 @@ var cblogger *logrus.Logger
 
 func init() {
 	// cblog is a global variable.
-	cblogger = cblog.GetLogger("AWS Test")
+	cblogger = cblog.GetLogger("AWS Resource Test")
 	cblog.SetLevel("debug")
 }
 
-// Test VM Deployment
-func createVM() {
-	cblogger.Debug("Start createVM()")
-
-	vmHandler, err := setVMHandler()
-	if err != nil {
-		panic(err)
-		cblogger.Error(err)
-	}
-	config := readConfigFile()
-
-	//minCount := aws.Int64(int64(config.Aws.MinCount))
-	//maxCount := aws.Int64(config.Aws.MaxCount)
-
-	vmReqInfo := irs.VMReqInfo{
-		Name: config.Aws.BaseName,
-		ImageInfo: irs.ImageInfo{
-			Id: config.Aws.ImageID,
-		},
-		SpecID: config.Aws.InstanceType,
-		SecurityInfo: irs.SecurityInfo{
-			Id: config.Aws.SecurityGroupID,
-		},
-		KeyPairInfo: irs.KeyPairInfo{
-			Name: config.Aws.KeyName,
-		},
-		VNetworkInfo: irs.VNetworkInfo{
-			Id: config.Aws.SubnetID,
-		},
-	}
-
-	vmInfo, err := vmHandler.StartVM(vmReqInfo)
-	if err != nil {
-		panic(err)
-		cblogger.Error(err)
-	}
-	cblogger.Info("VM 생성 완료!!", vmInfo)
-	//cblogger.Info(vm)
-	spew.Dump(vmInfo)
-
-	cblogger.Info("Finish Create VM")
-}
-
-/*
-func suspendVM(vmID string) {
-	fmt.Println("Start Suspend VM Test.. [" + vmID + "]")
-	vmHandler, err := setVMHandler()
-	if err != nil {
-		panic(err)
-	}
-
-	vmHandler.SuspendVM(vmID)
-	fmt.Println("Finish Suspend VM")
-}
-
-func resumeVM(vmID string) {
-	fmt.Println("Start ResumeVM VM Test.. [" + vmID + "]")
-	vmHandler, err := setVMHandler()
-	if err != nil {
-		panic(err)
-	}
-
-	vmHandler.ResumeVM(vmID)
-	fmt.Println("Finish ResumeVM VM")
-}
-*/
-
 // Test VM Lifecycle Management (Create/Suspend/Resume/Reboot/Terminate)
-func handleVM() {
-	cblogger.Debug("Start handleVM()")
+func handleKeyPair() {
+	cblogger.Debug("Start KeyPair Resource Test")
 
-	vmHandler, err := setVMHandler()
+	KeyPairHandler, err := setKeyPairHandler()
 	if err != nil {
 		panic(err)
 	}
-	config := readConfigFile()
-	VmID := config.Aws.VmID
+	//config := readConfigFile()
+	//VmID := config.Aws.VmID
 
 	for {
-		fmt.Println("VM Management")
+		fmt.Println("KeyPair Management")
 		fmt.Println("0. Quit")
-		fmt.Println("1. VM Start")
-		fmt.Println("2. VM Info")
-		fmt.Println("3. Suspend VM")
-		fmt.Println("4. Resume VM")
-		fmt.Println("5. Reboot VM")
-		fmt.Println("6. Terminate VM")
+		fmt.Println("1. KeyPair List")
+		fmt.Println("2. KeyPair Create")
+		fmt.Println("3. KeyPair Get")
+		fmt.Println("4. KeyPair Delete")
 
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -133,49 +63,46 @@ func handleVM() {
 				return
 
 			case 1:
-				createVM()
-
+				KeyPairHandler.ListKey()
 			case 2:
-				vmInfo := vmHandler.GetVM(VmID)
-				cblogger.Info("EC2[%s] 인스턴스 정보", VmID)
-				cblogger.Debug(vmInfo)
-				spew.Dump(vmInfo)
+				keyPairReqInfo := irs.KeyPairReqInfo{
+					Name: "test123",
+				}
+				KeyPairHandler.CreateKey(keyPairReqInfo)
+				/*
 
-			case 3:
-				cblogger.Debug("Start Suspend VM ...")
-				vmHandler.SuspendVM(VmID)
-				cblogger.Debug("Finish Suspend VM")
+					case 3:
+						cblogger.Debug("Start Suspend VM ...")
+						vmHandler.SuspendVM(VmID)
+						cblogger.Debug("Finish Suspend VM")
 
-			case 4:
-				cblogger.Debug("Start Resume  VM ...")
-				vmHandler.ResumeVM(VmID)
-				cblogger.Debug("Finish Resume VM")
+					case 4:
+						cblogger.Debug("Start Resume  VM ...")
+						vmHandler.ResumeVM(VmID)
+						cblogger.Debug("Finish Resume VM")
 
-			case 5:
-				cblogger.Debug("Start Reboot  VM ...")
-				vmHandler.RebootVM(VmID)
-				cblogger.Debug("Finish Reboot VM")
+					case 5:
+						cblogger.Debug("Start Reboot  VM ...")
+						vmHandler.RebootVM(VmID)
+						cblogger.Debug("Finish Reboot VM")
 
-			case 6:
-				cblogger.Debug("Start Terminate  VM ...")
-				vmHandler.TerminateVM(VmID)
-				cblogger.Debug("Finish Terminate VM")
+					case 6:
+						cblogger.Debug("Start Terminate  VM ...")
+						vmHandler.TerminateVM(VmID)
+						cblogger.Debug("Finish Terminate VM")
+				*/
 			}
 		}
 	}
 }
 
 func main() {
-	cblogger.Info("AWS Driver Test")
+	cblogger.Info("AWS Resource Test")
 
-	//createVM()
-	//suspendVM(vmID)
-	//RebootVM
-	//resumeVM(vmID)
-	handleVM()
+	handleKeyPair()
 }
 
-func setVMHandler() (irs.VMHandler, error) {
+func setKeyPairHandler() (irs.KeyPairHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(awsdrv.AwsDriver)
 
@@ -195,11 +122,11 @@ func setVMHandler() (irs.VMHandler, error) {
 		return nil, err
 	}
 
-	vmHandler, err := cloudConnection.CreateVMHandler()
+	keyPairHandler, err := cloudConnection.CreateKeyPairHandler()
 	if err != nil {
 		return nil, err
 	}
-	return vmHandler, nil
+	return keyPairHandler, nil
 }
 
 // Region : 사용할 리전명 (ex) ap-northeast-2
