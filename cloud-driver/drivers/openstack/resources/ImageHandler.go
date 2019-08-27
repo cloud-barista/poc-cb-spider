@@ -2,6 +2,7 @@ package resources
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
@@ -64,16 +65,25 @@ func (imageHandler *OpenStackImageHandler) CreateImage(imageReqInfo irs.ImageReq
 		ContainerFormat: reqInfo.ContainerFormat,
 		DiskFormat:      reqInfo.DiskFormat,
 	}
-
+	
+	rootPath := os.Getenv("CBSPIDER_PATH")
+	
+	// Check Image file exists
+	imageFilePath := rootPath + "/image/mcb_custom_image.iso"
+	if _, err := os.Stat(imageFilePath); os.IsNotExist(err) {
+		errMsg := fmt.Sprintf("Image files in path %s not exist", imageFilePath)
+		createErr := errors.New(errMsg)
+		return irs.ImageInfo{}, createErr
+	}
+	
 	// Create Image
 	image, err := imgsvc.Create(imageHandler.ImageClient, createOpts).Extract()
 	if err != nil {
 		return irs.ImageInfo{}, err
 	}
 	spew.Dump(image)
-
+	
 	// Upload Image file
-	rootPath := os.Getenv("CBSPIDER_PATH")
 	imageBytes, err := ioutil.ReadFile(rootPath + "/image/mcb_custom_image.iso")
 	if err != nil {
 		return irs.ImageInfo{}, err

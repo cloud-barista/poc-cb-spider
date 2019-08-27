@@ -57,6 +57,8 @@ func testVMHandler() {
 	fmt.Println("9. Terminate VM")
 	fmt.Println("10. Exit")
 	
+	var vmId string
+	
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -76,7 +78,7 @@ func testVMHandler() {
 				fmt.Println("Finish List VM")
 			case 2:
 				fmt.Println("Start Get VM ...")
-				vmInfo := vmHandler.GetVM(config.Openstack.ServerId)
+				vmInfo := vmHandler.GetVM(vmId)
 				spew.Dump(vmInfo)
 				fmt.Println("Finish Get VM")
 			case 3:
@@ -88,7 +90,7 @@ func testVMHandler() {
 				fmt.Println("Finish List VMStatus")
 			case 4:
 				fmt.Println("Start Get VMStatus ...")
-				vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
+				vmStatus := vmHandler.GetVMStatus(vmId)
 				fmt.Println(vmStatus)
 				fmt.Println("Finish Get VMStatus")
 			case 5:
@@ -97,19 +99,19 @@ func testVMHandler() {
 				fmt.Println("Finish Create VM")
 			case 6:
 				fmt.Println("Start Suspend VM ...")
-				vmHandler.SuspendVM(config.Openstack.ServerId)
+				vmHandler.SuspendVM(vmId)
 				fmt.Println("Finish Suspend VM")
 			case 7:
 				fmt.Println("Start Resume  VM ...")
-				vmHandler.ResumeVM(config.Openstack.ServerId)
+				vmHandler.ResumeVM(vmId)
 				fmt.Println("Finish Resume VM")
 			case 8:
 				fmt.Println("Start Reboot  VM ...")
-				vmHandler.RebootVM(config.Openstack.ServerId)
+				vmHandler.RebootVM(vmId)
 				fmt.Println("Finish Reboot VM")
 			case 9:
 				fmt.Println("Start Terminate  VM ...")
-				vmHandler.TerminateVM(config.Openstack.ServerId)
+				vmHandler.TerminateVM(vmId)
 				fmt.Println("Finish Terminate VM")
 			}
 		}
