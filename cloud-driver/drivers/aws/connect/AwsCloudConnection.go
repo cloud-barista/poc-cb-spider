@@ -11,8 +11,6 @@
 package connect
 
 import (
-	"fmt"
-
 	cblog "github.com/cloud-barista/cb-log"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
@@ -44,32 +42,12 @@ func init() {
 	cblogger = cblog.GetLogger("AWS Connect")
 }
 
-func (cloudConn *AwsCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
-	fmt.Println("TEST AWS Cloud Driver: called CreateVNetworkHandler()!")
-	return nil, nil
-}
-
-func (cloudConn *AwsCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
-	return nil, nil
-}
-
-func (cloudConn *AwsCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
-	return nil, nil
-}
-
 func (cloudConn *AwsCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
 	cblogger.Info("Start CreateKeyPairHandler()")
 
 	keyPairHandler := ars.AwsKeyPairHandler{cloudConn.Region, cloudConn.KeyPairClient}
 
 	return &keyPairHandler, nil
-}
-
-func (cloudConn *AwsCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
-	return nil, nil
-}
-func (cloudConn *AwsCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
-	return nil, nil
 }
 
 func (cloudConn *AwsCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
@@ -86,7 +64,6 @@ func (cloudConn *AwsCloudConnection) Close() error {
 	return nil
 }
 
-/*
 func (cloudConn *AwsCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
 	cblogger.Info("Start")
 	handler := ars.AwsVNetworkHandler{cloudConn.Region, cloudConn.KeyPairClient}
@@ -120,4 +97,3 @@ func (cloudConn *AwsCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandle
 
 	return &handler, nil
 }
-*/

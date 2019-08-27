@@ -33,7 +33,7 @@ func init() {
 	cblog.SetLevel("debug")
 }
 
-// Test VM Lifecycle Management (Create/Suspend/Resume/Reboot/Terminate)
+// Test KeyPair
 func handleKeyPair() {
 	cblogger.Debug("Start KeyPair Resource Test")
 
@@ -68,7 +68,7 @@ func handleKeyPair() {
 			case 1:
 				result, err := KeyPairHandler.ListKey()
 				if err != nil {
-					cblogger.Infof(keyPairName, " 키 페어 목록 조회 실패 : ", err)
+					cblogger.Infof(" 키 페어 목록 조회 실패 : ", err)
 				} else {
 					cblogger.Info("키 페어 목록 조회 결과")
 					//cblogger.Info(result)
@@ -107,9 +107,80 @@ func handleKeyPair() {
 	}
 }
 
+// Test KeyPair
+func handleVNetwork() {
+	cblogger.Debug("Start KeyPair Resource Test")
+
+	vNetworkHandler, err := setVNetworkHandler()
+	if err != nil {
+		panic(err)
+	}
+
+	keyId := "test123"
+
+	for {
+		fmt.Println("VNetworkHandler Management")
+		fmt.Println("0. Quit")
+		fmt.Println("1. VNetwork List")
+		fmt.Println("2. VNetwork Create")
+		fmt.Println("3. VNetwork Get")
+		fmt.Println("4. VNetwork Delete")
+
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+
+		if inputCnt == 1 {
+			switch commandNum {
+			case 0:
+				return
+
+			case 1:
+				result, err := vNetworkHandler.ListVNetwork()
+				if err != nil {
+					cblogger.Infof(" VNetwork 목록 조회 실패 : ", err)
+				} else {
+					cblogger.Info("VNetwork 목록 조회 결과")
+					//cblogger.Info(result)
+					spew.Dump(result)
+				}
+
+			case 2:
+				cblogger.Infof("[%s] VNetwork 생성 테스트", keyId)
+				vNetworkReqInfo := irs.VNetworkReqInfo{}
+				result, err := vNetworkHandler.CreateVNetwork(vNetworkReqInfo)
+				if err != nil {
+					cblogger.Infof(keyId, " VNetwork 생성 실패 : ", err)
+				} else {
+					cblogger.Infof("VNetwork 생성 결과 : ", result)
+				}
+			case 3:
+				cblogger.Infof("[%s] VNetwork 조회 테스트", keyId)
+				result, err := vNetworkHandler.GetVNetwork(keyId)
+				if err != nil {
+					cblogger.Infof("[%s] VNetwork 조회 실패 : ", keyId, err)
+				} else {
+					cblogger.Infof("[%s] VNetwork 조회 결과 : [%s]", keyId, result)
+				}
+			case 4:
+				cblogger.Infof("[%s] VNetwork 삭제 테스트", keyId)
+				result, err := vNetworkHandler.DeleteVNetwork(keyId)
+				if err != nil {
+					cblogger.Infof("[%s] VNetwork 삭제 실패 : ", keyId, err)
+				} else {
+					cblogger.Infof("[%s] VNetwork 삭제 결과 : [%s]", keyId, result)
+				}
+			}
+		}
+	}
+}
+
 func main() {
 	cblogger.Info("AWS Resource Test")
-	handleKeyPair()
+	//handleKeyPair()
+	handleVNetwork()
 	/*
 		KeyPairHandler, err := setKeyPairHandler()
 		if err != nil {
@@ -153,6 +224,33 @@ func setKeyPairHandler() (irs.KeyPairHandler, error) {
 		return nil, err
 	}
 	return keyPairHandler, nil
+}
+
+func setVNetworkHandler() (irs.VNetworkHandler, error) {
+	var cloudDriver idrv.CloudDriver
+	cloudDriver = new(awsdrv.AwsDriver)
+
+	config := readConfigFile()
+	connectionInfo := idrv.ConnectionInfo{
+		CredentialInfo: idrv.CredentialInfo{
+			ClientId:     config.Aws.AawsAccessKeyID,
+			ClientSecret: config.Aws.AwsSecretAccessKey,
+		},
+		RegionInfo: idrv.RegionInfo{
+			Region: config.Aws.Region,
+		},
+	}
+
+	cloudConnection, err := cloudDriver.ConnectCloud(connectionInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	handler, err := cloudConnection.CreateVNetworkHandler()
+	if err != nil {
+		return nil, err
+	}
+	return handler, nil
 }
 
 // Region : 사용할 리전명 (ex) ap-northeast-2
