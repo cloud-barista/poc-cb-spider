@@ -29,6 +29,12 @@ type AwsCloudConnection struct {
 	Region        idrv.RegionInfo
 	KeyPairClient *ec2.EC2
 	VMClient      *ec2.EC2
+
+	VNetworkClient *ec2.EC2
+	VNicClient     *ec2.EC2
+	ImageClient    *ec2.EC2
+	PublicIPClient *ec2.EC2
+	SecurityClient *ec2.EC2
 }
 
 var cblogger *logrus.Logger
@@ -79,3 +85,39 @@ func (cloudConn *AwsCloudConnection) IsConnected() (bool, error) {
 func (cloudConn *AwsCloudConnection) Close() error {
 	return nil
 }
+
+/*
+func (cloudConn *AwsCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsVNetworkHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+
+func (cloudConn *AwsCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsImageHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+
+func (cloudConn *AwsCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsSecurityHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+
+func (cloudConn *AwsCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsVNicHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+func (cloudConn *AwsCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsPublicIPHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+*/
