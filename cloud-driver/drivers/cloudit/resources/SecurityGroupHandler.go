@@ -27,8 +27,8 @@ func (securityHandler *ClouditSecurityHandler) ListSecurity() ([]*irs.SecurityIn
 }
 
 func (securityHandler *ClouditSecurityHandler) GetSecurity(securityID string) (irs.SecurityInfo, error) {
-	//security, _ := securitygroup.Get(securityHandler.Client,"b77a1163-01ef-4e14-9ffc-9fb626b367be")
-	//spew.Dump(security)
+	security, _ := securitygroup.Get(securityHandler.Client,securityID)
+	spew.Dump(security)
 
 	return irs.SecurityInfo{}, nil
 }

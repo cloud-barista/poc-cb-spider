@@ -81,7 +81,8 @@ func testSecurityHandler(config Config) {
 	//fmt.Println("4. DeleteSecurity()")
 	fmt.Println("5. Exit")
 
-	var securityId string
+	//var securityId string
+	securityId := "b77a1163-01ef-4e14-9ffc-9fb626b367be"
 
 Loop:
 	for {
