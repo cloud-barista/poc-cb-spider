@@ -37,7 +37,7 @@ func (AwsDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	drvCapabilityInfo.ImageHandler = false
 	drvCapabilityInfo.VNetworkHandler = false
 	drvCapabilityInfo.SecurityHandler = false
-	drvCapabilityInfo.KeyPairHandler = false
+	drvCapabilityInfo.KeyPairHandler = true
 	drvCapabilityInfo.VNicHandler = false
 	drvCapabilityInfo.PublicIPHandler = false
 	drvCapabilityInfo.VMHandler = true
@@ -86,7 +86,14 @@ func (driver *AwsDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.
 		Region:        connectionInfo.RegionInfo,
 		VMClient:      vmClient,
 		KeyPairClient: vmClient,
+
+		VNetworkClient: vmClient,
+		VNicClient:     vmClient,
+		ImageClient:    vmClient,
+		PublicIPClient: vmClient,
+		SecurityClient: vmClient,
 	}
+
 	return &iConn, nil // return type: (icon.CloudConnection, error)
 }
 
