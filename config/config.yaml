@@ -5,6 +5,7 @@ openstack:
 
   # OpenStack Credential Info
   domain_name: {domain_name}
+  # identity_endpoint: http://{ip}/identity/v3   # for devstak-queens
   identity_endpoint: http://{ip}:5000/v3
   password: {password}
   project_id: {project_id}
