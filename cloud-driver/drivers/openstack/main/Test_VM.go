@@ -6,11 +6,14 @@ import (
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
+	"os"
 )
 
 // Create Instance
 func createVM(config Config, vmHandler irs.VMHandler) {
-
+	
 	vmReqInfo := irs.VMReqInfo{
 		Name: config.Openstack.VMName,
 		ImageInfo: irs.ImageInfo{
@@ -27,7 +30,7 @@ func createVM(config Config, vmHandler irs.VMHandler) {
 			Name: config.Openstack.KeypairName,
 		},
 	}
-
+	
 	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
@@ -41,7 +44,7 @@ func testVMHandler() {
 		panic(err)
 	}
 	config := readConfigFile()
-
+	
 	fmt.Println("Test VMHandler")
 	fmt.Println("1. List VM")
 	fmt.Println("2. Get VM")
@@ -53,7 +56,9 @@ func testVMHandler() {
 	fmt.Println("8. Reboot VM")
 	fmt.Println("9. Terminate VM")
 	fmt.Println("10. Exit")
-
+	
+	var vmId string
+	
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -73,7 +78,7 @@ func testVMHandler() {
 				fmt.Println("Finish List VM")
 			case 2:
 				fmt.Println("Start Get VM ...")
-				vmInfo := vmHandler.GetVM(config.Openstack.ServerId)
+				vmInfo := vmHandler.GetVM(vmId)
 				spew.Dump(vmInfo)
 				fmt.Println("Finish Get VM")
 			case 3:
@@ -85,7 +90,7 @@ func testVMHandler() {
 				fmt.Println("Finish List VMStatus")
 			case 4:
 				fmt.Println("Start Get VMStatus ...")
-				vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
+				vmStatus := vmHandler.GetVMStatus(vmId)
 				fmt.Println(vmStatus)
 				fmt.Println("Finish Get VMStatus")
 			case 5:
@@ -94,19 +99,19 @@ func testVMHandler() {
 				fmt.Println("Finish Create VM")
 			case 6:
 				fmt.Println("Start Suspend VM ...")
-				vmHandler.SuspendVM(config.Openstack.ServerId)
+				vmHandler.SuspendVM(vmId)
 				fmt.Println("Finish Suspend VM")
 			case 7:
 				fmt.Println("Start Resume  VM ...")
-				vmHandler.ResumeVM(config.Openstack.ServerId)
+				vmHandler.ResumeVM(vmId)
 				fmt.Println("Finish Resume VM")
 			case 8:
 				fmt.Println("Start Reboot  VM ...")
-				vmHandler.RebootVM(config.Openstack.ServerId)
+				vmHandler.RebootVM(vmId)
 				fmt.Println("Finish Reboot VM")
 			case 9:
 				fmt.Println("Start Terminate  VM ...")
-				vmHandler.TerminateVM(config.Openstack.ServerId)
+				vmHandler.TerminateVM(vmId)
 				fmt.Println("Finish Terminate VM")
 			}
 		}
@@ -143,7 +148,6 @@ func main() {
 	testVMHandler()
 }
 
-/*
 type Config struct {
 	Openstack struct {
 		DomainName       string `yaml:"domain_name"`
@@ -158,22 +162,22 @@ type Config struct {
 		NetworkId        string `yaml:"network_id"`
 		SecurityGroups   string `yaml:"security_groups"`
 		KeypairName      string `yaml:"keypair_name"`
-
+		
 		ServerId   string `yaml:"server_id"`
 		PublicIPID string `yaml:"public_ip_id"`
-
+		
 		Image struct {
 			Name string `yaml:"name"`
 		} `yaml:"image_info"`
-
+		
 		KeyPair struct {
 			Name string `yaml:"name"`
 		} `yaml:"keypair_info"`
-
+		
 		SecurityGroup struct {
 			Name string `yaml:"name"`
 		} `yaml:"security_group_info"`
-
+		
 		VirtualNetwork struct {
 			Name string `yaml:"name"`
 		} `yaml:"vnet_info"`
@@ -187,7 +191,7 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-
+	
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
@@ -195,4 +199,3 @@ func readConfigFile() Config {
 	}
 	return config
 }
-*/
