@@ -179,8 +179,8 @@ func handleVNetwork() {
 
 func main() {
 	cblogger.Info("AWS Resource Test")
-	//handleKeyPair()
-	handleVNetwork()
+	handleKeyPair()
+	//handleVNetwork()	//VPC
 	/*
 		KeyPairHandler, err := setKeyPairHandler()
 		if err != nil {
