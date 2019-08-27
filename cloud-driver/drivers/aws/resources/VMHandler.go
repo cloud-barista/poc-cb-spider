@@ -9,6 +9,7 @@ package resources
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -338,16 +339,14 @@ func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 
 	//len()
 
+	//"stopped" / "terminated" / "running"
 	//Running 상태에서만 체크 가능한 값
-	//"stopped"
-	//"terminated"
-	//"running"
 	var state string
 	state = *reservation.Instances[0].State.Name
 	cblogger.Info("EC2 상태 : [%s]", state)
 
+	//VM상태와 무관하게 항상 값이 존재하는 항목들만 초기화
 	vmInfo := irs.VMInfo{
-		//Name = *reservation.Instances[0].Tags[0].Value
 		Id:             *reservation.Instances[0].InstanceId,
 		ImageID:        *reservation.Instances[0].ImageId,
 		SpecID:         *reservation.Instances[0].InstanceType,
@@ -356,59 +355,79 @@ func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 		AdditionalInfo: "State:" + *reservation.Instances[0].State.Name,
 	}
 
-	if state == "running" {
-		//vmInfo.PublicIP = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicIp
-		//vmInfo.PublicDNS = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicDnsName
+	//cblogger.Info("=======>타입 : ", reflect.TypeOf(*reservation.Instances[0]))
+	//cblogger.Info("===> PublicIpAddress TypeOf : ", reflect.TypeOf(reservation.Instances[0].PublicIpAddress))
+	//cblogger.Info("===> PublicIpAddress ValueOf : ", reflect.ValueOf(reservation.Instances[0].PublicIpAddress))
 
-		//cblogger.Info("=======>타입 : ", reflect.TypeOf(*reservation.Instances[0]))
-		//vmInfo.PublicIP = *reservation.Instances[0].PublicIpAddress
-		//vmInfo.PublicDNS = *reservation.Instances[0].PublicDnsName
+	//vmInfo.PublicIP = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicIp
+	//vmInfo.PublicDNS = *reservation.Instances[0].NetworkInterfaces[0].Association.PublicDnsName
 
-		vmInfo.GuestBlockDisk = *reservation.Instances[0].BlockDeviceMappings[0].DeviceName
+	// 특정 항목(예:EIP)은 VM 상태와 무관하게 동작하므로 VM 상태와 무관하게 Nil처리로 모든 필드를 처리 함.
+	if !reflect.ValueOf(reservation.Instances[0].PublicIpAddress).IsNil() {
+		vmInfo.PublicIP = *reservation.Instances[0].PublicIpAddress
 	}
 
-	if state != "terminated" {
+	if !reflect.ValueOf(reservation.Instances[0].PublicDnsName).IsNil() {
+		vmInfo.PublicDNS = *reservation.Instances[0].PublicDnsName
+	}
+
+	cblogger.Info("===> BlockDeviceMappings ValueOf : ", reflect.ValueOf(reservation.Instances[0].BlockDeviceMappings))
+	if !reflect.ValueOf(reservation.Instances[0].BlockDeviceMappings).IsNil() {
+		if !reflect.ValueOf(reservation.Instances[0].BlockDeviceMappings[0].DeviceName).IsNil() {
+			vmInfo.GuestBlockDisk = *reservation.Instances[0].BlockDeviceMappings[0].DeviceName
+		}
+	}
+
+	if !reflect.ValueOf(reservation.Instances[0].Placement.AvailabilityZone).IsNil() {
 		vmInfo.Region = irs.RegionInfo{
 			Region: *reservation.Instances[0].Placement.AvailabilityZone,
 		}
-		vmInfo.VNetworkID = *reservation.Instances[0].NetworkInterfaces[0].VpcId
-		vmInfo.SubNetworkID = *reservation.Instances[0].NetworkInterfaces[0].SubnetId
-		vmInfo.SecurityID = *reservation.Instances[0].NetworkInterfaces[0].Groups[0].GroupId
-		//SecurityName: *reservation.Instances[0].NetworkInterfaces[0].Groups[0].GroupName,
-		vmInfo.VNIC = "eth0 - 값 위치 확인 필요"
-		//vmInfo.PrivateIP = *reservation.Instances[0].NetworkInterfaces[0].PrivateIpAddress	//없는 경우 존재 - i-0b75cac73c4575386
-		//vmInfo.PrivateDNS = *reservation.Instances[0].NetworkInterfaces[0].PrivateDnsName		//없는 경우 존재 - i-0b75cac73c4575386
+	}
+
+	//NetworkInterfaces 배열 값들
+	if !reflect.ValueOf(reservation.Instances[0].NetworkInterfaces).IsNil() {
+		if !reflect.ValueOf(reservation.Instances[0].NetworkInterfaces[0].VpcId).IsNil() {
+			vmInfo.VNetworkID = *reservation.Instances[0].NetworkInterfaces[0].VpcId
+		}
+
+		if !reflect.ValueOf(reservation.Instances[0].NetworkInterfaces[0].SubnetId).IsNil() {
+			vmInfo.SubNetworkID = *reservation.Instances[0].NetworkInterfaces[0].SubnetId
+		}
+
+		if !reflect.ValueOf(reservation.Instances[0].NetworkInterfaces[0].Groups).IsNil() {
+			if !reflect.ValueOf(reservation.Instances[0].NetworkInterfaces[0].Groups[0].GroupId).IsNil() {
+				vmInfo.SecurityID = *reservation.Instances[0].NetworkInterfaces[0].Groups[0].GroupId
+			}
+		}
+	}
+
+	//SecurityName: *reservation.Instances[0].NetworkInterfaces[0].Groups[0].GroupName,
+	vmInfo.VNIC = "eth0 - 값 위치 확인 필요"
+
+	//vmInfo.PrivateIP = *reservation.Instances[0].NetworkInterfaces[0].PrivateIpAddress	//없는 경우 존재해서 Instances[0].PrivateIpAddress로 대체 - i-0b75cac73c4575386
+	if !reflect.ValueOf(reservation.Instances[0].PrivateIpAddress).IsNil() {
 		vmInfo.PrivateIP = *reservation.Instances[0].PrivateIpAddress
+	}
+
+	//vmInfo.PrivateDNS = *reservation.Instances[0].NetworkInterfaces[0].PrivateDnsName		//없는 경우 존재해서 Instances[0].PrivateDnsName로 대체 - i-0b75cac73c4575386
+	if !reflect.ValueOf(reservation.Instances[0].PrivateDnsName).IsNil() {
 		vmInfo.PrivateDNS = *reservation.Instances[0].PrivateDnsName
+	}
+
+	if !reflect.ValueOf(reservation.Instances[0].RootDeviceName).IsNil() {
 		vmInfo.GuestBootDisk = *reservation.Instances[0].RootDeviceName
 	}
 
-	//EC2 Name 찾기
+	//Name은 Tag의 "Name" 속성에만 저장됨
 	cblogger.Debug("Name Tag 찾기")
 	for _, t := range reservation.Instances[0].Tags {
 		if *t.Key == "Name" {
-			//nt = *t.Value
 			vmInfo.Name = *t.Value
 			cblogger.Debug("EC2 명칭 : ", vmInfo.Name)
 			break
 		}
 	}
-	//fmt.Println(nt, *i.InstanceID, *i.State.Name)
 
-	/*
-		for _, i := range reservation.Instances {
-			//var nt string
-			for _, t := range i.Tags {
-				if *t.Key == "Name" {
-					//nt = *t.Value
-					vmInfo.Name = *t.Value
-					break
-				}
-			}
-			//fmt.Println(nt, *i.InstanceID, *i.State.Name)
-			cblogger.Info("EC2 명칭 : ", vmInfo.Name, *i.InstanceId, *i.State.Name)
-		}
-	*/
 	return vmInfo
 }
 
@@ -454,6 +473,7 @@ func (vmHandler *AwsVMHandler) ListVM() []*irs.VMInfo {
 	return vmInfoList
 }
 
+//SHUTTING-DOWN / TERMINATED
 func (vmHandler *AwsVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 	cblogger.Infof("vmID : [%s]", vmID)
 
