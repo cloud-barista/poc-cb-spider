@@ -8,7 +8,6 @@ package resources
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 
@@ -26,7 +25,6 @@ import (
 
 type AwsVMHandler struct {
 	Region idrv.RegionInfo
-	//Client *ec2drv.EC2
 	Client *ec2.EC2
 }
 
@@ -54,10 +52,11 @@ func Connect(region string) *ec2.EC2 {
 	return svc
 }
 
-// 1개의 VM만 생성되도록 수정 (MinCount / MaxCount 이용 안 함)
 // @Todo : SecurityGroupId 배열 처리 방안
+// 1개의 VM만 생성되도록 수정 (MinCount / MaxCount 이용 안 함)
+//키페어 이름(예:mcloud-barista)은 아래 URL에 나오는 목록 중 "키페어 이름"의 값을 적으면 됨.
+//https://ap-northeast-2.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-2#KeyPairs:sort=keyName
 func (vmHandler *AwsVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	//fmt.Println("Start VMHandler()::StartVM()")
 	cblogger.Info("Start VMHandler()::StartVM()")
 	spew.Dump(vmReqInfo)
 
@@ -71,34 +70,25 @@ func (vmHandler *AwsVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, err
 	baseName := vmReqInfo.Name                   //"mcloud-barista-VMHandlerTest"
 
 	cblogger.Info("Create EC2 Instance")
-	//fmt.Println("Create EC2 Instance")
-
-	//키페어 이름(예:mcloud-barista)은 아래 URL에 나오는 목록 중 "키페어 이름"의 값을 적으면 됨.
-	//https://ap-northeast-2.console.aws.amazon.com/ec2/v2/home?region=ap-northeast-2#KeyPairs:sort=keyName
 
 	// Specify the details of the instance that you want to create.
 	runResult, err := vmHandler.Client.RunInstances(&ec2.RunInstancesInput{
-		// An Amazon Linux AMI ID for t2.micro instances in the us-west-2 region
 		ImageId:      aws.String(imageID),
 		InstanceType: aws.String(instanceType),
 		MinCount:     minCount,
 		MaxCount:     maxCount,
-		KeyName:      aws.String(keyName), // set a keypair Name, ex) aws.powerkim.keypair
+		KeyName:      aws.String(keyName),
 		SecurityGroupIds: []*string{
 			aws.String(securityGroupID), // set a security group.
 		},
 		SubnetId: aws.String(subnetID), // set a subnet.
 	})
-
 	if err != nil {
-		//fmt.Println("Could not create instance", err)
 		cblogger.Errorf("Could not create instance", err)
 		return irs.VMInfo{}, err
 	}
 
-	//fmt.Println("Created instance", *runResult.Instances[0].InstanceId)
 	cblogger.Info("Created instance", *runResult.Instances[0].InstanceId)
-
 	// Tag에 VM Name 설정
 	_, errtag := vmHandler.Client.CreateTags(&ec2.CreateTagsInput{
 		Resources: []*string{runResult.Instances[0].InstanceId},
@@ -109,10 +99,9 @@ func (vmHandler *AwsVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, err
 			},
 		},
 	})
-
 	if errtag != nil {
-		log.Println("Could not create tags for instance", runResult.Instances[0].InstanceId, errtag)
-		return irs.VMInfo{}, err
+		cblogger.Error("Could not create tags for instance", runResult.Instances[0].InstanceId, errtag)
+		return irs.VMInfo{}, errtag
 	}
 
 	//빠른 생성을 위해 Running 상태를 대기하지 않고 최소한의 정보만 리턴 함.
@@ -124,14 +113,15 @@ func (vmHandler *AwsVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, err
 	//cblogger.Info("EC2 Running 상태 완료 : ", runResult.Instances[0].State.Name)
 
 	vmInfo := ExtractDescribeInstances(runResult)
+	//속도상 VM 정보를 다시 조회하지 않았기 때문에 Tag 정보가 누락되어서 Name 정보가 설정되어 있지 않음.
 	if vmInfo.Name == "" {
 		vmInfo.Name = baseName
 	}
 
 	return vmInfo, nil
-	//return irs.VMInfo{}, nil
 }
 
+//VM이 Running 상태일때까지 대기 함.
 func WaitForRun(svc *ec2.EC2, instanceID string) {
 	cblogger.Infof("EC2 ID : [%s]", instanceID)
 
@@ -142,7 +132,6 @@ func WaitForRun(svc *ec2.EC2, instanceID string) {
 	}
 	err := svc.WaitUntilInstanceRunning(input)
 	if err != nil {
-		//fmt.Println("failed to wait until instances exist: %v", err)
 		cblogger.Errorf("failed to wait until instances exist: %v", err)
 	}
 	cblogger.Info("=========WaitForRun() 종료")
@@ -190,15 +179,12 @@ func (vmHandler *AwsVMHandler) SuspendVM(vmID string) {
 		input.DryRun = aws.Bool(false)
 		result, err = vmHandler.Client.StopInstances(input)
 		if err != nil {
-			//fmt.Println("Error", err)
 			cblogger.Error(err)
 		} else {
-			//fmt.Println("Success", result.StoppingInstances)
 			cblogger.Info("Success", result.StoppingInstances)
 		}
 	} else {
-		//fmt.Println("Error", err)
-		cblogger.Error(err)
+		cblogger.Error("Error", err)
 	}
 }
 
@@ -227,14 +213,11 @@ func (vmHandler *AwsVMHandler) RebootVM(vmID string) {
 		cblogger.Info("result 값 : ", result)
 		cblogger.Info("err 값 : ", err)
 		if err != nil {
-			//fmt.Println("Error", err)
-			cblogger.Error(err)
+			cblogger.Error("Error", err)
 		} else {
-			//fmt.Println("Success", result)
 			cblogger.Info("Success", result)
 		}
 	} else { // This could be due to a lack of permissions
-		//fmt.Println("Error", err)
 		cblogger.Info("리부팅 권한이 없는 것같음.")
 		cblogger.Error("Error", err)
 	}
@@ -252,7 +235,6 @@ func (vmHandler *AwsVMHandler) TerminateVM(vmID string) {
 
 	_, err := vmHandler.Client.TerminateInstances(input)
 	if err != nil {
-		//fmt.Println("Could not termiate instances", err)
 		cblogger.Error("Could not termiate instances", err)
 	} else {
 		cblogger.Info("Success")
@@ -260,6 +242,8 @@ func (vmHandler *AwsVMHandler) TerminateVM(vmID string) {
 	return
 }
 
+//- 보안그룹의 경우 멀티개 설정이 가능한데 현재는 1개만 입력 받음
+// @Todo : SecurityID에 보안그룹 Name을 할당하는게 맞는지 확인 필요
 func (vmHandler *AwsVMHandler) GetVM(vmID string) irs.VMInfo {
 	cblogger.Infof("vmID : [%s]", vmID)
 
@@ -274,12 +258,10 @@ func (vmHandler *AwsVMHandler) GetVM(vmID string) irs.VMInfo {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				//fmt.Println(aerr.Error())
 				cblogger.Error(aerr.Error())
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
-			//fmt.Println(err.Error())
 			cblogger.Error(err.Error())
 		}
 		return irs.VMInfo{}
@@ -297,36 +279,9 @@ func (vmHandler *AwsVMHandler) GetVM(vmID string) irs.VMInfo {
 		vmInfo = ExtractDescribeInstances(i)
 	}
 
-	/*
-		vmInfo := irs.VMInfo{
-			Name: *result.Reservations[0].Instances[0].Tags[0].Value,
-			Id:   *result.Reservations[0].Instances[0].InstanceId,
-			Region: irs.RegionInfo{
-				Region: *result.Reservations[0].Instances[0].Placement.AvailabilityZone,
-			},
-			ImageID:      *result.Reservations[0].Instances[0].ImageId,
-			SpecID:       *result.Reservations[0].Instances[0].InstanceType,
-			VNetworkID:   *result.Reservations[0].Instances[0].NetworkInterfaces[0].VpcId,
-			SubNetworkID: *result.Reservations[0].Instances[0].NetworkInterfaces[0].SubnetId,
-			SecurityID:   *result.Reservations[0].Instances[0].NetworkInterfaces[0].Groups[0].GroupId,
-			//SecurityName: *result.Reservations[0].Instances[0].NetworkInterfaces[0].Groups[0].GroupName,
-			VNIC:           "eth0 - 값 위치 확인 필요",
-			PublicIP:       *result.Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicIp,
-			PublicDNS:      *result.Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicDnsName,
-			PrivateIP:      *result.Reservations[0].Instances[0].NetworkInterfaces[0].PrivateIpAddress,
-			PrivateDNS:     *result.Reservations[0].Instances[0].NetworkInterfaces[0].PrivateDnsName,
-			KeyPairID:      *result.Reservations[0].Instances[0].KeyName,
-			GuestUserID:    "",
-			GuestBootDisk:  *result.Reservations[0].Instances[0].RootDeviceName,
-			GuestBlockDisk: *result.Reservations[0].Instances[0].BlockDeviceMappings[0].DeviceName,
-			AdditionalInfo: "",
-		}
-	*/
-
 	cblogger.Info("vmInfo", vmInfo)
 
 	return vmInfo
-	//return irs.VMInfo{}
 }
 
 // DescribeInstances결과에서 EC2 세부 정보 추출
@@ -335,12 +290,8 @@ func (vmHandler *AwsVMHandler) GetVM(vmID string) irs.VMInfo {
 func ExtractDescribeInstances(reservation *ec2.Reservation) irs.VMInfo {
 	//cblogger.Info("ExtractDescribeInstances", reservation)
 	cblogger.Debug("Instances[0]", reservation.Instances[0])
-	//cblogger.Info("ImageId : [%s]", *reservation.Instances[0].ImageId)
 
-	//len()
-
-	//"stopped" / "terminated" / "running"
-	//Running 상태에서만 체크 가능한 값
+	//"stopped" / "terminated" / "running" ...
 	var state string
 	state = *reservation.Instances[0].State.Name
 	cblogger.Info("EC2 상태 : [%s]", state)
@@ -446,13 +397,11 @@ func (vmHandler *AwsVMHandler) ListVM() []*irs.VMInfo {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				//fmt.Println(aerr.Error())
 				cblogger.Error(aerr.Error())
 				return vmInfoList
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
-			//fmt.Println(err.Error())
 			cblogger.Error(err.Error())
 			return vmInfoList
 		}
@@ -465,7 +414,6 @@ func (vmHandler *AwsVMHandler) ListVM() []*irs.VMInfo {
 		for _, vm := range i.Instances {
 			cblogger.Info("[%s] EC2 정보 조회", *vm.InstanceId)
 			vmInfo := vmHandler.GetVM(*vm.InstanceId)
-			//cblogger.Info(vmStatusInfo.VmId, " EC2 Status : ", vmStatusInfo.VmStatus)
 			vmInfoList = append(vmInfoList, &vmInfo)
 		}
 	}
@@ -491,13 +439,11 @@ func (vmHandler *AwsVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				//fmt.Println(aerr.Error())
 				cblogger.Error(aerr.Error())
 				return irs.VMStatus("")
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
-			//fmt.Println(err.Error())
 			cblogger.Error(err.Error())
 			return irs.VMStatus("")
 		}
@@ -531,13 +477,11 @@ func (vmHandler *AwsVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			default:
-				//fmt.Println(aerr.Error())
 				cblogger.Error(aerr.Error())
 				return vmStatusList
 			}
 		} else {
 			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
-			//fmt.Println(err.Error())
 			cblogger.Error(err.Error())
 			return vmStatusList
 		}
