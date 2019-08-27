@@ -29,103 +29,101 @@ var cblogger *logrus.Logger
 
 func init() {
 	// cblog is a global variable.
-	cblogger = cblog.GetLogger("AWS Resource Test")
+	cblogger = cblog.GetLogger("AWS Test")
 	cblog.SetLevel("debug")
 }
 
-// Test KeyPair
-func handleKeyPair() {
-	cblogger.Debug("Start KeyPair Resource Test")
+// Test VM Deployment
+func createVM() {
+	cblogger.Debug("Start createVM()")
+
+	vmHandler, err := setVMHandler()
+	if err != nil {
+		panic(err)
+		cblogger.Error(err)
+	}
+	config := readConfigFile()
 
 	KeyPairHandler, err := setKeyPairHandler()
 	if err != nil {
 		panic(err)
 	}
-	config := readConfigFile()
-	//VmID := config.Aws.VmID
 
-	//keyPairName := "test123"
 	keyPairName := config.Aws.KeyName
+	cblogger.Infof("[%s] 키 페어 조회 테스트", keyPairName)
+	keyPairInfo, err := KeyPairHandler.GetKey(keyPairName)
+	if err != nil {
+		cblogger.Infof(keyPairName, " 키 페어 조회 실패 : ", err)
 
-	for {
-		fmt.Println("KeyPair Management")
-		fmt.Println("0. Quit")
-		fmt.Println("1. KeyPair List")
-		fmt.Println("2. KeyPair Create")
-		fmt.Println("3. KeyPair Get")
-		fmt.Println("4. KeyPair Delete")
-
-		var commandNum int
-		inputCnt, err := fmt.Scan(&commandNum)
+		cblogger.Infof("[%s] 키 페어 생성 테스트", keyPairName)
+		keyPairReqInfo := irs.KeyPairReqInfo{
+			Name: keyPairName,
+		}
+		keyPairInfo, err = KeyPairHandler.CreateKey(keyPairReqInfo)
 		if err != nil {
-			panic(err)
+			cblogger.Infof(keyPairName, " 키 페어 생성 실패 : ", err)
+			return
+		} else {
+			cblogger.Infof("[%s] 키 페어 생성 결과 : [%s]", keyPairName, keyPairInfo)
 		}
-
-		if inputCnt == 1 {
-			switch commandNum {
-			case 0:
-				return
-
-			case 1:
-				result, err := KeyPairHandler.ListKey()
-				if err != nil {
-					cblogger.Infof(" 키 페어 목록 조회 실패 : ", err)
-				} else {
-					cblogger.Info("키 페어 목록 조회 결과")
-					//cblogger.Info(result)
-					spew.Dump(result)
-				}
-
-			case 2:
-				cblogger.Infof("[%s] 키 페어 생성 테스트", keyPairName)
-				keyPairReqInfo := irs.KeyPairReqInfo{
-					Name: keyPairName,
-				}
-				result, err := KeyPairHandler.CreateKey(keyPairReqInfo)
-				if err != nil {
-					cblogger.Infof(keyPairName, " 키 페어 생성 실패 : ", err)
-				} else {
-					cblogger.Infof("[%s] 키 페어 생성 결과 : [%s]", keyPairName, result)
-				}
-			case 3:
-				cblogger.Infof("[%s] 키 페어 조회 테스트", keyPairName)
-				result, err := KeyPairHandler.GetKey(keyPairName)
-				if err != nil {
-					cblogger.Infof(keyPairName, " 키 페어 조회 실패 : ", err)
-				} else {
-					cblogger.Infof("[%s] 키 페어 조회 결과 : [%s]", keyPairName, result)
-				}
-			case 4:
-				cblogger.Infof("[%s] 키 페어 삭제 테스트", keyPairName)
-				result, err := KeyPairHandler.DeleteKey(keyPairName)
-				if err != nil {
-					cblogger.Infof(keyPairName, " 키 페어 삭제 실패 : ", err)
-				} else {
-					cblogger.Infof("[%s] 키 페어 삭제 결과 : [%s]", keyPairName, result)
-				}
-			}
-		}
+	} else {
+		cblogger.Infof("[%s] 키 페어 조회 결과 : [%s]", keyPairName, keyPairInfo)
 	}
+
+	vmReqInfo := irs.VMReqInfo{
+		Name: config.Aws.BaseName,
+		ImageInfo: irs.ImageInfo{
+			Id: config.Aws.ImageID,
+		},
+		SpecID: config.Aws.InstanceType,
+		SecurityInfo: irs.SecurityInfo{
+			Id: config.Aws.SecurityGroupID,
+		},
+		//KeyPairInfo: irs.KeyPairInfo{
+		//	Name: config.Aws.KeyName,
+		//},
+		KeyPairInfo: keyPairInfo,
+		VNetworkInfo: irs.VNetworkInfo{
+			Id: config.Aws.SubnetID,
+		},
+	}
+
+	vmInfo, err := vmHandler.StartVM(vmReqInfo)
+	if err != nil {
+		panic(err)
+		cblogger.Error(err)
+	}
+	cblogger.Info("VM 생성 완료!!", vmInfo)
+	//cblogger.Info(vm)
+	spew.Dump(vmInfo)
+
+	cblogger.Info("Finish Create VM")
 }
 
-// Test KeyPair
-func handleVNetwork() {
-	cblogger.Debug("Start KeyPair Resource Test")
+// Test VM Lifecycle Management (Create/Suspend/Resume/Reboot/Terminate)
+func handleVM() {
+	cblogger.Debug("Start handleVM()")
 
-	vNetworkHandler, err := setVNetworkHandler()
+	vmHandler, err := setVMHandler()
 	if err != nil {
 		panic(err)
 	}
-
-	keyId := "test123"
+	config := readConfigFile()
+	VmID := config.Aws.VmID
 
 	for {
-		fmt.Println("VNetworkHandler Management")
+		fmt.Println("VM Management")
 		fmt.Println("0. Quit")
-		fmt.Println("1. VNetwork List")
-		fmt.Println("2. VNetwork Create")
-		fmt.Println("3. VNetwork Get")
-		fmt.Println("4. VNetwork Delete")
+		fmt.Println("1. VM Start")
+		fmt.Println("2. VM Info")
+		fmt.Println("3. Suspend VM")
+		fmt.Println("4. Resume VM")
+		fmt.Println("5. Reboot VM")
+		fmt.Println("6. Terminate VM")
+
+		fmt.Println("7. GetVMStatus VM")
+		fmt.Println("8. ListVMStatus VM")
+		fmt.Println("9. ListVM")
 
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -139,65 +137,68 @@ func handleVNetwork() {
 				return
 
 			case 1:
-				result, err := vNetworkHandler.ListVNetwork()
-				if err != nil {
-					cblogger.Infof(" VNetwork 목록 조회 실패 : ", err)
-				} else {
-					cblogger.Info("VNetwork 목록 조회 결과")
-					//cblogger.Info(result)
-					spew.Dump(result)
-				}
+				createVM()
 
 			case 2:
-				cblogger.Infof("[%s] VNetwork 생성 테스트", keyId)
-				vNetworkReqInfo := irs.VNetworkReqInfo{}
-				result, err := vNetworkHandler.CreateVNetwork(vNetworkReqInfo)
-				if err != nil {
-					cblogger.Infof(keyId, " VNetwork 생성 실패 : ", err)
-				} else {
-					cblogger.Infof("VNetwork 생성 결과 : ", result)
-				}
+				vmInfo := vmHandler.GetVM(VmID)
+				cblogger.Info("EC2[%s] 인스턴스 정보", VmID)
+				cblogger.Debug(vmInfo)
+				spew.Dump(vmInfo)
+
 			case 3:
-				cblogger.Infof("[%s] VNetwork 조회 테스트", keyId)
-				result, err := vNetworkHandler.GetVNetwork(keyId)
-				if err != nil {
-					cblogger.Infof("[%s] VNetwork 조회 실패 : ", keyId, err)
-				} else {
-					cblogger.Infof("[%s] VNetwork 조회 결과 : [%s]", keyId, result)
-				}
+				cblogger.Debug("Start Suspend VM ...")
+				vmHandler.SuspendVM(VmID)
+				cblogger.Debug("Finish Suspend VM")
+
 			case 4:
-				cblogger.Infof("[%s] VNetwork 삭제 테스트", keyId)
-				result, err := vNetworkHandler.DeleteVNetwork(keyId)
-				if err != nil {
-					cblogger.Infof("[%s] VNetwork 삭제 실패 : ", keyId, err)
-				} else {
-					cblogger.Infof("[%s] VNetwork 삭제 결과 : [%s]", keyId, result)
-				}
+				cblogger.Debug("Start Resume  VM ...")
+				vmHandler.ResumeVM(VmID)
+				cblogger.Debug("Finish Resume VM")
+
+			case 5:
+				cblogger.Debug("Start Reboot  VM ...")
+				vmHandler.RebootVM(VmID)
+				cblogger.Debug("Finish Reboot VM")
+
+			case 6:
+				cblogger.Debug("Start Terminate  VM ...")
+				vmHandler.TerminateVM(VmID)
+				cblogger.Debug("Finish Terminate VM")
+
+			case 7:
+				cblogger.Debug("Start Get VM Status...")
+				vmStatus := vmHandler.GetVMStatus(VmID)
+				cblogger.Debug("Finish Get VM Status")
+
+				cblogger.Info(vmStatus)
+
+			case 8:
+				cblogger.Debug("Start ListVMStatus ...")
+				vmStatusInfos := vmHandler.ListVMStatus()
+				cblogger.Info("리턴 값")
+				cblogger.Info(vmStatusInfos)
+				spew.Dump(vmStatusInfos)
+				cblogger.Debug("Finish ListVMStatus")
+
+			case 9:
+				cblogger.Debug("Start ListVM ...")
+				vmInfos := vmHandler.ListVM()
+				cblogger.Info("=========== VM 목록 ================")
+				spew.Dump(vmInfos)
+				cblogger.Debug("Finish ListVM")
 			}
 		}
 	}
 }
 
 func main() {
-	cblogger.Info("AWS Resource Test")
-	handleKeyPair()
-	//handleVNetwork()	//VPC
-	/*
-		KeyPairHandler, err := setKeyPairHandler()
-		if err != nil {
-			panic(err)
-		}
+	cblogger.Info("AWS Driver Test")
 
-		keyPairName := "test123"
-		cblogger.Infof("[%s] 키 페어 조회 테스트", keyPairName)
-		result, err := KeyPairHandler.GetKey(keyPairName)
-		if err != nil {
-			cblogger.Infof(keyPairName, " 키 페어 조회 실패 : ", err)
-		} else {
-			cblogger.Infof("[%s] 키 페어 조회 결과")
-			spew.Dump(result)
-		}
-	*/
+	//createVM()
+	//suspendVM(vmID)
+	//RebootVM
+	//resumeVM(vmID)
+	handleVM()
 }
 
 func setKeyPairHandler() (irs.KeyPairHandler, error) {
@@ -227,7 +228,7 @@ func setKeyPairHandler() (irs.KeyPairHandler, error) {
 	return keyPairHandler, nil
 }
 
-func setVNetworkHandler() (irs.VNetworkHandler, error) {
+func setVMHandler() (irs.VMHandler, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(awsdrv.AwsDriver)
 
@@ -247,11 +248,11 @@ func setVNetworkHandler() (irs.VNetworkHandler, error) {
 		return nil, err
 	}
 
-	handler, err := cloudConnection.CreateVNetworkHandler()
+	vmHandler, err := cloudConnection.CreateVMHandler()
 	if err != nil {
 		return nil, err
 	}
-	return handler, nil
+	return vmHandler, nil
 }
 
 // Region : 사용할 리전명 (ex) ap-northeast-2
