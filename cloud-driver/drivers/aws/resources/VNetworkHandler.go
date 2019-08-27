@@ -8,6 +8,7 @@
 //
 // by powerkim@etri.re.kr, 2019.06.
 
+//VPC 처리
 package resources
 
 import (
