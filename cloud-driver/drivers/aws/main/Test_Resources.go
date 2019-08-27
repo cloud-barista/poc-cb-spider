@@ -67,7 +67,7 @@ func handleKeyPair() {
 
 			case 1:
 				result, err := KeyPairHandler.ListKey()
-				if err != nil { ㅠㅕㅠㅐㅍㅍㅍㅍ
+				if err != nil {
 					cblogger.Infof(keyPairName, " 키 페어 목록 조회 실패 : ", err)
 				} else {
 					cblogger.Info("키 페어 목록 조회 결과")
@@ -80,19 +80,28 @@ func handleKeyPair() {
 				keyPairReqInfo := irs.KeyPairReqInfo{
 					Name: keyPairName,
 				}
-				KeyPairHandler.CreateKey(keyPairReqInfo)
+				result, err := KeyPairHandler.CreateKey(keyPairReqInfo)
+				if err != nil {
+					cblogger.Infof(keyPairName, " 키 페어 생성 실패 : ", err)
+				} else {
+					cblogger.Infof("[%s] 키 페어 생성 결과 : [%s]", keyPairName, result)
+				}
 			case 3:
 				cblogger.Infof("[%s] 키 페어 조회 테스트", keyPairName)
 				result, err := KeyPairHandler.GetKey(keyPairName)
 				if err != nil {
 					cblogger.Infof(keyPairName, " 키 페어 조회 실패 : ", err)
 				} else {
-					cblogger.Infof("[%s] 키 페어 조회 결과 : [%s]", result)
+					cblogger.Infof("[%s] 키 페어 조회 결과 : [%s]", keyPairName, result)
 				}
 			case 4:
 				cblogger.Infof("[%s] 키 페어 삭제 테스트", keyPairName)
-				result, _ := KeyPairHandler.DeleteKey(keyPairName)
-				cblogger.Infof("[%s] 키 페어 삭제 결과 : [%s]", result)
+				result, err := KeyPairHandler.DeleteKey(keyPairName)
+				if err != nil {
+					cblogger.Infof(keyPairName, " 키 페어 삭제 실패 : ", err)
+				} else {
+					cblogger.Infof("[%s] 키 페어 삭제 결과 : [%s]", keyPairName, result)
+				}
 			}
 		}
 	}
@@ -100,8 +109,23 @@ func handleKeyPair() {
 
 func main() {
 	cblogger.Info("AWS Resource Test")
-
 	handleKeyPair()
+	/*
+		KeyPairHandler, err := setKeyPairHandler()
+		if err != nil {
+			panic(err)
+		}
+
+		keyPairName := "test123"
+		cblogger.Infof("[%s] 키 페어 조회 테스트", keyPairName)
+		result, err := KeyPairHandler.GetKey(keyPairName)
+		if err != nil {
+			cblogger.Infof(keyPairName, " 키 페어 조회 실패 : ", err)
+		} else {
+			cblogger.Infof("[%s] 키 페어 조회 결과")
+			spew.Dump(result)
+		}
+	*/
 }
 
 func setKeyPairHandler() (irs.KeyPairHandler, error) {
