@@ -1,24 +1,13 @@
 package resources
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"github.com/davecgh/go-spew/spew"
 )
-
-/*
-var cblogger *logrus.Logger
-
-func init() {
-	// cblog is a global variable.
-	cblogger = cblog.GetLogger("AWS VMHandler")
-}
-*/
 
 type AwsKeyPairHandler struct {
 	Region idrv.RegionInfo
@@ -29,6 +18,7 @@ type AwsKeyPairHandler struct {
 type KeyPairInfo struct {
 	Name        string
 	Fingerprint string
+	KeyMaterial string //RSA PRIVATE KEY
 }
 
 func (keyPairHandler *AwsKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {
@@ -44,19 +34,15 @@ func (keyPairHandler *AwsKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {
 	}
 
 	//  Returns a list of key pairs
-	//result, err := keyPairHandler.Client.DescribeKeyPairs(nil)
 	result, err := keyPairHandler.Client.DescribeKeyPairs(input)
 	cblogger.Info(result)
 	if err != nil {
-		//exitErrorf("Unable to get key pairs, %v", err)
 		cblogger.Errorf("Unable to get key pairs, %v", err)
 		return keyPairList, err
 	}
 
-	//	fmt.Println("Key Pairs:")
-	cblogger.Info("Key Pairs:")
+	cblogger.Debugf("Key Pairs:")
 	for _, pair := range result.KeyPairs {
-		//fmt.Printf("%s: %s\n", *pair.KeyName, *pair.KeyFingerprint)
 		cblogger.Debugf("%s: %s\n", *pair.KeyName, *pair.KeyFingerprint)
 		keyPairInfo := new(irs.KeyPairInfo)
 		keyPairInfo.Name = *pair.KeyName
@@ -66,8 +52,7 @@ func (keyPairHandler *AwsKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {
 	}
 
 	cblogger.Info(keyPairList)
-	//spew.Dump(keyPairList)
-	//return keyPairList, nil
+	spew.Dump(keyPairList)
 	return keyPairList, nil
 }
 
@@ -80,24 +65,38 @@ func (keyPairHandler *AwsKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReq
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "InvalidKeyPair.Duplicate" {
-			exitErrorf("Keypair %q already exists.", keyPairReqInfo.Name)
+			cblogger.Errorf("Keypair %q already exists.", keyPairReqInfo.Name)
+			return irs.KeyPairInfo{}, err
 		}
-		exitErrorf("Unable to create key pair: %s, %v.", keyPairReqInfo.Name, err)
+		cblogger.Errorf("Unable to create key pair: %s, %v.", keyPairReqInfo.Name, err)
+		return irs.KeyPairInfo{}, err
 	}
 
-	fmt.Printf("Created key pair %q %s\n%s\n",
-		*result.KeyName, *result.KeyFingerprint,
-		*result.KeyMaterial)
+	cblogger.Infof("Created key pair %q %s\n%s\n", *result.KeyName, *result.KeyFingerprint, *result.KeyMaterial)
+	spew.Dump(result)
+	keyPairInfo := irs.KeyPairInfo{
+		Name: *result.KeyName,
+		Id:   *result.KeyFingerprint,
+	}
 
-	return irs.KeyPairInfo{}, nil
+	return keyPairInfo, nil
 }
 
-func (keyPairHandler *AwsKeyPairHandler) GetKey(keyPairID string) (irs.KeyPairInfo, error) {
-	cblogger.Infof("GetKey : [%s]", keyPairID)
+func Test() KeyPairInfo {
+	keyPairInfo := KeyPairInfo{
+		Name:        "키이름",
+		Fingerprint: "핑거프린트",
+	}
+	return keyPairInfo
+}
 
+//혼선을 피하기 위해 keyPairID 대신 keyPairName으로 변경 함.
+func (keyPairHandler *AwsKeyPairHandler) GetKey(keyPairName string) (irs.KeyPairInfo, error) {
+	//keyPairID := keyPairName
+	cblogger.Infof("GetKey : [%s]", keyPairName)
 	input := &ec2.DescribeKeyPairsInput{
 		KeyNames: []*string{
-			aws.String(keyPairID),
+			aws.String(keyPairName),
 		},
 	}
 
@@ -117,9 +116,7 @@ func (keyPairHandler *AwsKeyPairHandler) GetKey(keyPairID string) (irs.KeyPairIn
 				return irs.KeyPairInfo{}, aerr
 			}
 		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			//fmt.Println(err.Error())
+			// Print the error, cast err to awserr.Error to get the Code and Message from an error.
 			cblogger.Error(err.Error())
 			return irs.KeyPairInfo{}, err
 		}
@@ -143,31 +140,23 @@ func (keyPairHandler *AwsKeyPairHandler) GetKey(keyPairID string) (irs.KeyPairIn
 	return keyPairInfo, nil
 }
 
-func (keyPairHandler *AwsKeyPairHandler) DeleteKey(keyPairID string) (bool, error) {
-	cblogger.Infof("DeleteKeyPaid : [%s]", keyPairID)
+func (keyPairHandler *AwsKeyPairHandler) DeleteKey(keyPairName string) (bool, error) {
+	cblogger.Infof("DeleteKeyPaid : [%s]", keyPairName)
 	// Delete the key pair by name
 	_, err := keyPairHandler.Client.DeleteKeyPair(&ec2.DeleteKeyPairInput{
-		KeyName: aws.String(keyPairID),
+		KeyName: aws.String(keyPairName),
 	})
 
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == "InvalidKeyPair.Duplicate" {
-			//exitErrorf("Key pair %q does not exist.", pairName)
-			cblogger.Error("Key pair %q does not exist.", keyPairID)
+			cblogger.Error("Key pair %q does not exist.", keyPairName)
 			return false, err
 		}
-		//exitErrorf("Unable to delete key pair: %s, %v.", keyPairID, err)
-		cblogger.Errorf("Unable to delete key pair: %s, %v.", keyPairID, err)
+		cblogger.Errorf("Unable to delete key pair: %s, %v.", keyPairName, err)
 		return false, err
 	}
 
-	//fmt.Printf("Successfully deleted %q key pair\n", keyPairID)
-	cblogger.Infof("Successfully deleted %q key pair\n", keyPairID)
+	cblogger.Infof("Successfully deleted %q key pair\n", keyPairName)
 
 	return true, nil
-}
-
-func exitErrorf(msg string, args ...interface{}) {
-	fmt.Fprintf(os.Stderr, msg+"\n", args...)
-	os.Exit(1)
 }
