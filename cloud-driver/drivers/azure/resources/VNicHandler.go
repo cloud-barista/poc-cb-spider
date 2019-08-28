@@ -72,35 +72,37 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 
 	// @TODO: VNicInfo 생성 요청 파라미터 정의 필요
 	type VNicIPReqInfo struct {
-		Name string
+		Name                      string
 		PrivateIPAllocationMethod string
+		PublicIPId                string
 	}
 	type VNicReqInfo struct {
 		Id                string
 		VNetworkName      string
 		SubnetName        string
-		SecurityGroupName string
+		SecurityGroupId string
 		IP                []VNicIPReqInfo
 	}
 
 	reqInfo := VNicReqInfo{
-		//VNetworkName: "inno-platform1-rsrc-grup-vnet",
+		//VNetworkName: "mcb-test-vnet",
 		// edited by powerkim for test, 2019.08.13
 		VNetworkName: "cb-vnet",
-		SubnetName:   "default",
+		SubnetName: "default",
 		IP: []VNicIPReqInfo{
 			{
 				Name:                      "ipConfig1",
 				PrivateIPAllocationMethod: "Dynamic",
+				PublicIPId:                "/subscriptions/cb592624-b77b-4a8f-bb13-0e5a48cae40f/resourceGroups/inno-platform1-rsrc-grup/providers/Microsoft.Network/publicIPAddresses/mcb-test-publicip",
 			},
 		},
-		//SecurityGroupName: "inno-test-vm-nsg",
-		// edited by powerkim for test, 2019.08.13
-		SecurityGroupName: "cb-security-group",
+		//SecurityGroupId: "/subscriptions/cb592624-b77b-4a8f-bb13-0e5a48cae40f/resourceGroups/inno-platform1-rsrc-grup/providers/Microsoft.Network/networkSecurityGroups/mcb-test-sg",
+		//edited by powerkim for test, 2019.08.13
+		SecurityGroupId: "cb-security-group",
 	}
 
 	vNicIdArr := strings.Split(vNicReqInfo.Id, ":")
-
+	
 	// Check vNic Exists
 	vNic, err := vNicHandler.NicClient.Get(vNicHandler.Ctx, vNicIdArr[0], vNicIdArr[1], "")
 	if vNic.ID != nil {
@@ -118,6 +120,9 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 			InterfaceIPConfigurationPropertiesFormat: &network.InterfaceIPConfigurationPropertiesFormat{
 				Subnet:                    &subnet,
 				PrivateIPAllocationMethod: network.IPAllocationMethod(ipReqInfo.PrivateIPAllocationMethod),
+				PublicIPAddress: &network.PublicIPAddress{
+					ID: &ipReqInfo.PublicIPId,
+				},
 			},
 		}
 		ipConfigArr = append(ipConfigArr, ipConfig)
@@ -126,10 +131,14 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 	createOpts := network.Interface{
 		InterfacePropertiesFormat: &network.InterfacePropertiesFormat{
 			IPConfigurations: &ipConfigArr,
+			NetworkSecurityGroup: &network.SecurityGroup{
+				ID: &reqInfo.SecurityGroupId,
+			},
 		},
 		Location: &vNicHandler.Region.Region,
+		//NetworkSecurityGroup:
 	}
-
+	
 	future, err := vNicHandler.NicClient.CreateOrUpdate(vNicHandler.Ctx, vNicIdArr[0], vNicIdArr[1], createOpts)
 	if err != nil {
 		return irs.VNicInfo{}, err
