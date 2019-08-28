@@ -56,7 +56,7 @@ azure:
     compute_name: {compute_name}
     admin_username: {admin_username}
     admin_password: {admin_password}
-  network:
+  nic:
     id: {id}
 
   # Azure Test VM Info

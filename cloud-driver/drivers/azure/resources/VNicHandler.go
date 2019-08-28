@@ -80,7 +80,7 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 		Id                string
 		VNetworkName      string
 		SubnetName        string
-		SecurityGroupName string
+		SecurityGroupId string
 		IP                []VNicIPReqInfo
 	}
 
@@ -96,14 +96,13 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 				PublicIPId:                "/subscriptions/cb592624-b77b-4a8f-bb13-0e5a48cae40f/resourceGroups/inno-platform1-rsrc-grup/providers/Microsoft.Network/publicIPAddresses/mcb-test-publicip",
 			},
 		},
-		//SecurityGroupName: "mcb-test-sg",
-		//SecurityGroupName: "/subscriptions/cb592624-b77b-4a8f-bb13-0e5a48cae40f/resourceGroups/inno-platform1-rsrc-grup/providers/Microsoft.Network/networkSecurityGroups/mcb-test-sg",
+		//SecurityGroupId: "/subscriptions/cb592624-b77b-4a8f-bb13-0e5a48cae40f/resourceGroups/inno-platform1-rsrc-grup/providers/Microsoft.Network/networkSecurityGroups/mcb-test-sg",
 		//edited by powerkim for test, 2019.08.13
-		SecurityGroupName: "cb-security-group",
+		SecurityGroupId: "cb-security-group",
 	}
 
 	vNicIdArr := strings.Split(vNicReqInfo.Id, ":")
-
+	
 	// Check vNic Exists
 	vNic, err := vNicHandler.NicClient.Get(vNicHandler.Ctx, vNicIdArr[0], vNicIdArr[1], "")
 	if vNic.ID != nil {
@@ -133,7 +132,7 @@ func (vNicHandler *AzureVNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 		InterfacePropertiesFormat: &network.InterfacePropertiesFormat{
 			IPConfigurations: &ipConfigArr,
 			NetworkSecurityGroup: &network.SecurityGroup{
-				ID: &reqInfo.SecurityGroupName,
+				ID: &reqInfo.SecurityGroupId,
 			},
 		},
 		Location: &vNicHandler.Region.Region,
