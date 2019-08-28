@@ -67,10 +67,10 @@ func (vNetworkHandler *AzureVNetworkHandler) CreateVNetwork(vNetworkReqInfo irs.
 		Name:            vNicIdArr[1],
 		AddressPrefixes: []string{"130.0.0.0/8"},
 		Subnets:         &[]SubnetInfo{
-			/*{
-				Name: "test-subnet1",
-				AddressPrefix: "10.0.0.0/16",
-			},*/
+			{
+				Name: "default",
+				AddressPrefix: "130.1.0.0/16",
+			},
 		},
 	}
 

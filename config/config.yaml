@@ -5,6 +5,7 @@ openstack:
 
   # OpenStack Credential Info
   domain_name: {domain_name}
+  # identity_endpoint: http://{ip}/identity/v3   # for devstak-queens
   identity_endpoint: http://{ip}:5000/v3
   password: {password}
   project_id: {project_id}
@@ -55,7 +56,7 @@ azure:
     compute_name: {compute_name}
     admin_username: {admin_username}
     admin_password: {admin_password}
-  network:
+  nic:
     id: {id}
 
   # Azure Test VM Info
@@ -81,3 +82,15 @@ azure:
   network_interface:
     group_name: {group_name}
     name: {name}
+
+
+## Config for Cloudit ##
+cloudit:
+
+  # Cloudit Credential Info
+  identity_endpoint: http://localhost:9090
+  user_id: cloudit
+  password: cloudit
+  tenant_id: test-tenant
+
+  server_id: test-server-id
