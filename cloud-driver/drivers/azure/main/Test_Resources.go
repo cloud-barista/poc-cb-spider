@@ -159,11 +159,10 @@ Loop:
 			case 3:
 				fmt.Println("Start CreateSecurity() ...")
 				reqInfo := irs.SecurityReqInfo{Id: securityGroupId}
-				securityGroup, err := securityHandler.CreateSecurity(reqInfo)
+				_, err := securityHandler.CreateSecurity(reqInfo)
 				if err != nil {
 					panic(err)
 				}
-				securityGroupId = securityGroup.Id
 				fmt.Println("Finish CreateSecurity()")
 			case 4:
 				fmt.Println("Start DeleteSecurity() ...")

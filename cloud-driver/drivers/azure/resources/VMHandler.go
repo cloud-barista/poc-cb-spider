@@ -18,6 +18,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -31,12 +33,25 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 	// Set VM Create Information
 	imageId := vmReqInfo.ImageInfo.Id
 	imageIdArr := strings.Split(imageId, ":")
-	//sshKeyPath := ""
+	
+	//sshKeyPath := "test"
 	//sshKeyData := ""
-
+	
+	rootPath := os.Getenv("CBSPIDER_PATH")
+	sshPublicKeyPath := rootPath + "/key/mcb-test-key.pub"
+	var sshKeyData string
+	if _, err := os.Stat(sshPublicKeyPath); err == nil {
+		sshBytes, err := ioutil.ReadFile(sshPublicKeyPath)
+		if err != nil {
+			//log.Fatalf("failed to read SSH key data: %v", err)
+			return irs.VMInfo{}, err
+		}
+		sshKeyData = string(sshBytes)
+	}
+	
 	vmName := vmReqInfo.Name
 	vmNameArr := strings.Split(vmName, ":")
-
+	
 	// Check VM Exists
 	vm, err := vmHandler.Client.Get(vmHandler.Ctx, vmNameArr[0], vmNameArr[1], compute.InstanceView)
 	if vm.ID != nil {
@@ -44,7 +59,7 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 		createErr := errors.New(errMsg)
 		return irs.VMInfo{}, createErr
 	}
-
+	
 	vmOpts := compute.VirtualMachine{
 		Location: &vmHandler.Region.Region,
 		VirtualMachineProperties: &compute.VirtualMachineProperties{
@@ -60,19 +75,19 @@ func (vmHandler *AzureVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, e
 				},
 			},
 			OsProfile: &compute.OSProfile{
-				ComputerName:  &vmNameArr[0],
+				ComputerName:  &vmNameArr[1],
 				AdminUsername: &vmReqInfo.LoginInfo.AdminUsername,
-				AdminPassword: &vmReqInfo.LoginInfo.AdminPassword,
-				/*LinuxConfiguration: &compute.LinuxConfiguration{
+				//AdminPassword: &vmReqInfo.LoginInfo.AdminPassword,
+				LinuxConfiguration: &compute.LinuxConfiguration{
 					SSH: &compute.SSHConfiguration{
 						PublicKeys: &[]compute.SSHPublicKey{
 							{
-								Path: &sshKeyPath,
+								Path: to.StringPtr(fmt.Sprintf("/home/%s/.ssh/authorized_keys", vmReqInfo.LoginInfo.AdminUsername)),
 								KeyData: &sshKeyData,
 							},
 						},
 					},
-				},*/
+				},
 			},
 			NetworkProfile: &compute.NetworkProfile{
 				NetworkInterfaces: &[]compute.NetworkInterfaceReference{
@@ -170,16 +185,14 @@ func (vmHandler *AzureVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 	var vmStatusList []*irs.VMStatusInfo
 	for _, s := range serverList.Values() {
 		if s.InstanceView != nil {
-			/*if s.InstanceView != nil {
-			    statusStr := getVmStatus(*s.InstanceView)
-			    status := irs.VMStatus(statusStr)
-			    status := vmHandler.GetVMStatus(*s.ID)
-			    vmStatusInfo := irs.VMStatusInfo{
-			        VmId:     *s.ID,
-			        VmStatus: status,
-			    }
-			    vmStatusList = append(vmStatusList, &vmStatusInfo)
-			}*/
+			statusStr := getVmStatus(*s.InstanceView)
+			status := irs.VMStatus(statusStr)
+			vmStatusInfo := irs.VMStatusInfo{
+				VmId:     *s.ID,
+				VmStatus: status,
+			}
+			vmStatusList = append(vmStatusList, &vmStatusInfo)
+		} else {
 			vmIdArr := strings.Split(*s.ID, "/")
 			vmId := vmIdArr[4] + ":" + vmIdArr[8]
 			status := vmHandler.GetVMStatus(vmId)
