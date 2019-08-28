@@ -47,12 +47,11 @@ Loop:
 				fmt.Println("Finish GetImage()")
 			case 3:
 				fmt.Println("Start CreateImage() ...")
-				reqInfo := irs.ImageReqInfo{Name: config.Azure.ImageInfo.Name}
-				image, err := imageHandler.CreateImage(reqInfo)
+				reqInfo := irs.ImageReqInfo{Id: imageId}
+				_, err := imageHandler.CreateImage(reqInfo)
 				if err != nil {
 					panic(err)
 				}
-				imageId =  config.Azure.ImageInfo.GroupName + ":" + image.Id
 				fmt.Println("Finish CreateImage()")
 			case 4:
 				fmt.Println("Start DeleteImage() ...")
@@ -80,8 +79,8 @@ func testPublicIPHanlder(config Config) {
 	fmt.Println("3. CreatePublicIP()")
 	fmt.Println("4. DeletePublicIP()")
 	fmt.Println("5. Exit")
-
-	var publicIPId string
+	
+	publicIPId := config.Azure.PublicIP.GroupName + ":" + config.Azure.PublicIP.Name
 
 Loop:
 	for {
@@ -91,8 +90,6 @@ Loop:
 			panic(err)
 		}
 		
-		publicIPID := config.Azure.PublicIP.GroupName + ":" + config.Azure.PublicIP.Name
-		
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
@@ -101,20 +98,19 @@ Loop:
 				fmt.Println("Finish ListPublicIP()")
 			case 2:
 				fmt.Println("Start GetPublicIP() ...")
-				publicIPHandler.GetPublicIP(publicIPID)
+				publicIPHandler.GetPublicIP(publicIPId)
 				fmt.Println("Finish GetPublicIP()")
 			case 3:
 				fmt.Println("Start CreatePublicIP() ...")
 				reqInfo := irs.PublicIPReqInfo{Id: publicIPId}
-				publicIP, err := publicIPHandler.CreatePublicIP(reqInfo)
+				_, err := publicIPHandler.CreatePublicIP(reqInfo)
 				if err != nil {
 					panic(err)
 				}
-				publicIPId = publicIP.Id
 				fmt.Println("Finish CreatePublicIP()")
 			case 4:
 				fmt.Println("Start DeletePublicIP() ...")
-				publicIPHandler.DeletePublicIP(publicIPID)
+				publicIPHandler.DeletePublicIP(publicIPId)
 				fmt.Println("Finish DeletePublicIP()")
 			case 5:
 				fmt.Println("Exit")
@@ -138,9 +134,9 @@ func testSecurityHandler(config Config) {
 	fmt.Println("3. CreateSecurity()")
 	fmt.Println("4. DeleteSecurity()")
 	fmt.Println("5. Exit")
-
-	var securityGroupId string
-
+	
+	securityGroupId := config.Azure.Security.GroupName + ":" + config.Azure.Security.Name
+	
 Loop:
 
 	for {
@@ -149,8 +145,6 @@ Loop:
 		if err != nil {
 			panic(err)
 		}
-		
-		securityId := config.Azure.Security.GroupName + ":" + config.Azure.Security.Name
 		
 		if inputCnt == 1 {
 			switch commandNum {
@@ -164,7 +158,7 @@ Loop:
 				fmt.Println("Finish GetSecurity()")
 			case 3:
 				fmt.Println("Start CreateSecurity() ...")
-				reqInfo := irs.SecurityReqInfo{Id: securityId}
+				reqInfo := irs.SecurityReqInfo{Id: securityGroupId}
 				securityGroup, err := securityHandler.CreateSecurity(reqInfo)
 				if err != nil {
 					panic(err)
@@ -198,8 +192,8 @@ func testVNetworkHandler(config Config) {
 	fmt.Println("4. DeleteVNetwork()")
 	fmt.Println("5. Exit")
 
-	var vNetworkId string
-
+	vNetworkId := config.Azure.VNetwork.GroupName + ":" + config.Azure.VNetwork.Name
+	
 Loop:
 
 	for {
@@ -208,8 +202,6 @@ Loop:
 		if err != nil {
 			panic(err)
 		}
-		
-		networkId := config.Azure.VNetwork.GroupName + ":" + config.Azure.VNetwork.Name
 		
 		if inputCnt == 1 {
 			switch commandNum {
@@ -223,12 +215,11 @@ Loop:
 				fmt.Println("Finish GetVNetwork()")
 			case 3:
 				fmt.Println("Start CreateVNetwork() ...")
-				reqInfo := irs.VNetworkReqInfo{Id: networkId}
-				vNetwork, err := vNetworkHandler.CreateVNetwork(reqInfo)
+				reqInfo := irs.VNetworkReqInfo{Id: vNetworkId}
+				_, err := vNetworkHandler.CreateVNetwork(reqInfo)
 				if err != nil {
 					panic(err)
 				}
-				vNetworkId = vNetwork.Id
 				fmt.Println("Finish CreateVNetwork()")
 			case 4:
 				fmt.Println("Start DeleteVNetwork() ...")
@@ -256,7 +247,9 @@ func testVNicHandler(config Config) {
 	fmt.Println("3. CreateVNic()")
 	fmt.Println("4. DeleteVNic()")
 	fmt.Println("5. Exit Program")
-
+	
+	vNicId := config.Azure.VNic.GroupName + ":" + config.Azure.VNic.Name
+	
 Loop:
 	for {
 		var commandNum int
@@ -264,8 +257,6 @@ Loop:
 		if err != nil {
 			panic(err)
 		}
-		
-		vNicId := config.Azure.VNic.GroupName + ":" + config.Azure.VNic.Name
 		
 		if inputCnt == 1 {
 			switch commandNum {
