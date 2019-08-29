@@ -84,13 +84,37 @@ azure:
     name: {name}
 
 
+aws:
+
+  # AWS Credential Info
+  aws_access_key_id: None
+  aws_secret_access_key: None
+  region: ap-northeast-2
+
+  # AMI
+  image_id: ami-047f7b46bd6dd5d84
+
+  # EC2
+  ec2_instance_id: i-04f1693f5e94c1c79
+  base_name: mcloud-barista
+  instance_type: t2.micro
+#  key_name: mcloud-barista-keypair
+  key_name: powerkimkeypair
+  min_count: 1
+  max_count: 1
+
+  # Network
+  subnet_id: subnet-c3b446ab
+  security_group_id: sg-07ec42983dbc5e36e
+
+
 ## Config for Cloudit ##
 cloudit:
 
   # Cloudit Credential Info
   identity_endpoint: http://localhost:9090
-  user_id: cloudit
-  password: cloudit
+  user_id: xxx
+  password: xxx
   tenant_id: test-tenant
 
   server_id: test-server-id
