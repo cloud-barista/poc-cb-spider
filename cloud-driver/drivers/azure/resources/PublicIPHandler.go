@@ -36,8 +36,12 @@ func (publicIP *PublicIPInfo) setter(address network.PublicIPAddress) *PublicIPI
 	publicIP.PublicIPAddressSku = fmt.Sprint(address.Sku.Name)
 	publicIP.PublicIPAddressVersion = fmt.Sprint(address.PublicIPAddressVersion)
 	publicIP.PublicIPAllocationMethod = fmt.Sprint(address.PublicIPAllocationMethod)
-	publicIP.IPAddress = *address.IPAddress
-	publicIP.IdleTimeoutInMinutes = *address.IdleTimeoutInMinutes
+	if address.IPAddress != nil {
+		publicIP.IPAddress = *address.IPAddress
+	}
+	if address.IdleTimeoutInMinutes != nil {
+		publicIP.IdleTimeoutInMinutes = *address.IdleTimeoutInMinutes
+	}
 
 	return publicIP
 }
