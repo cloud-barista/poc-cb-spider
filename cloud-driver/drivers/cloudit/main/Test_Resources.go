@@ -5,9 +5,6 @@ import (
 	cidrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"os"
 )
 
 func testPublicIPHanlder(config Config) {
@@ -176,6 +173,7 @@ Loop:
 	}
 }
 
+/*
 type Config struct {
 	Cloudit struct {
 		IdentityEndpoint string `yaml:"identity_endpoint"`
@@ -200,4 +198,4 @@ func readConfigFile() Config {
 		panic(err)
 	}
 	return config
-}
+}*/
