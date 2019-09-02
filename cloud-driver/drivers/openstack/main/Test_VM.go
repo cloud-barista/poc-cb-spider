@@ -6,14 +6,11 @@ import (
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"os"
 )
 
 // Create Instance
 func createVM(config Config, vmHandler irs.VMHandler) {
-	
+
 	vmReqInfo := irs.VMReqInfo{
 		Name: config.Openstack.VMName,
 		ImageInfo: irs.ImageInfo{
@@ -30,7 +27,7 @@ func createVM(config Config, vmHandler irs.VMHandler) {
 			Name: config.Openstack.KeypairName,
 		},
 	}
-	
+
 	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
@@ -44,7 +41,7 @@ func testVMHandler() {
 		panic(err)
 	}
 	config := readConfigFile()
-	
+
 	fmt.Println("Test VMHandler")
 	fmt.Println("1. List VM")
 	fmt.Println("2. Get VM")
@@ -56,7 +53,7 @@ func testVMHandler() {
 	fmt.Println("8. Reboot VM")
 	fmt.Println("9. Terminate VM")
 	fmt.Println("10. Exit")
-	
+
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -146,6 +143,7 @@ func main() {
 	testVMHandler()
 }
 
+/*
 type Config struct {
 	Openstack struct {
 		DomainName       string `yaml:"domain_name"`
@@ -160,22 +158,22 @@ type Config struct {
 		NetworkId        string `yaml:"network_id"`
 		SecurityGroups   string `yaml:"security_groups"`
 		KeypairName      string `yaml:"keypair_name"`
-		
+
 		ServerId   string `yaml:"server_id"`
 		PublicIPID string `yaml:"public_ip_id"`
-		
+
 		Image struct {
 			Name string `yaml:"name"`
 		} `yaml:"image_info"`
-		
+
 		KeyPair struct {
 			Name string `yaml:"name"`
 		} `yaml:"keypair_info"`
-		
+
 		SecurityGroup struct {
 			Name string `yaml:"name"`
 		} `yaml:"security_group_info"`
-		
+
 		VirtualNetwork struct {
 			Name string `yaml:"name"`
 		} `yaml:"vnet_info"`
@@ -189,7 +187,7 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
@@ -197,3 +195,4 @@ func readConfigFile() Config {
 	}
 	return config
 }
+*/

@@ -61,8 +61,8 @@ func List(restClient *client.RestClient) (*[]SecurityGroupInfo, error) {
 }
 
 // 단일조회
-func Get(restClient *client.RestClient, securityId string) (*SecurityGroupInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.IAM, "securitygroups", securityId)
+func Get(restClient *client.RestClient, Id string) (*SecurityGroupInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.IAM, "securitygroups", Id)
 	fmt.Println(requestURL)
 
 	var result client.Result

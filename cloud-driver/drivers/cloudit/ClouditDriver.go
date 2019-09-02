@@ -7,7 +7,7 @@ import (
 	icon "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/connect"
 )
 
-type ClouditDriver struct {}
+type ClouditDriver struct{}
 
 func (ClouditDriver) GetDriverVersion() string {
 	return "CLOUDIT DRIVER Version 1.0"
@@ -15,7 +15,7 @@ func (ClouditDriver) GetDriverVersion() string {
 
 func (ClouditDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	var drvCapabilityInfo idrv.DriverCapabilityInfo
-	
+
 	drvCapabilityInfo.ImageHandler = false
 	drvCapabilityInfo.VNetworkHandler = false
 	drvCapabilityInfo.SecurityHandler = false
@@ -23,7 +23,7 @@ func (ClouditDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	drvCapabilityInfo.VNicHandler = false
 	drvCapabilityInfo.PublicIPHandler = false
 	drvCapabilityInfo.VMHandler = true
-	
+
 	return drvCapabilityInfo
 }
 
@@ -32,24 +32,25 @@ func (driver *ClouditDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (i
 	// 2. create a client object(or service  object) of Test A Cloud with credential info.
 	// 3. create CloudConnection Instance of "connect/TDA_CloudConnection".
 	// 4. return CloudConnection Interface of TDA_CloudConnection.
-	
+
 	Client, err := getServiceClient(connectionInfo)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	iConn := cicon.ClouditCloudConnection{
-		Client: *Client,
+		CredentialInfo: connectionInfo.CredentialInfo,
+		Client:         *Client,
 	}
-	
+
 	return &iConn, nil
 }
 
 func getServiceClient(connInfo idrv.ConnectionInfo) (*client.RestClient, error) {
 	restClient := client.RestClient{
-		IdentityBase: connInfo.CredentialInfo.IdentityEndpoint,
+		IdentityBase:   connInfo.CredentialInfo.IdentityEndpoint,
 		ClouditVersion: "v4.0",
-		TenantID: connInfo.CredentialInfo.TenantId,
+		TenantID:       connInfo.CredentialInfo.TenantId,
 	}
 	return &restClient, nil
 }

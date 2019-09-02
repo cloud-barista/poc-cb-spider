@@ -87,9 +87,16 @@ azure:
 cloudit:
 
   # Cloudit Credential Info
-  identity_endpoint: http://localhost:9090
+#  identity_endpoint: http://localhost:9090
   user_id: cloudit
   password: cloudit
-  tenant_id: test-tenant
+  identity_endpoint: http://stg.cloudit.co.kr:9090
+  auth_token: ddd8e54a5bac82eea3de7c347ff8a253d0dc563d
+#  user_id: rndplatform1
+#  password: qwe1212!Q
 
-  server_id: test-server-id
+#  tenant_id: test-tenant
+  tenant_id: tnt0008
+
+#  server_id: test-server-id
+  server_id: 7b35148e-b033-4749-a29e-12beddaebbfa

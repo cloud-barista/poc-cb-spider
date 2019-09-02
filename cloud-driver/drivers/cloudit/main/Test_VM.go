@@ -5,10 +5,21 @@ import (
 	cidrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 )
+
+func createVM(config Config, vmHandler irs.VMHandler) {
+	vmReqInfo := irs.VMReqInfo{}
+
+	vm, err := vmHandler.StartVM(vmReqInfo)
+	if err != nil {
+		panic(err)
+	}
+	spew.Dump(vm)
+}
 
 func testVMHandler() {
 	vmHandler, err := getVMHandler()
@@ -40,18 +51,18 @@ func testVMHandler() {
 			switch commandNum {
 			case 1:
 				fmt.Println("Start List VM ...")
-				vmHandler.ListVM()
-				/*vmList := vmHandler.ListVM()
+				//vmHandler.ListVM()
+				vmList := vmHandler.ListVM()
 				for i, vm := range vmList {
 					fmt.Println("[", i, "] ")
 					spew.Dump(vm)
-				}*/
+				}
 				fmt.Println("Finish List VM")
 			case 2:
 				fmt.Println("Start Get VM ...")
-				/*vmInfo := vmHandler.GetVM(config.Cloudit.ServerId)
-				spew.Dump(vmInfo)*/
-				vmHandler.GetVM(config.Cloudit.ServerId)
+				vmInfo := vmHandler.GetVM(config.Cloudit.ServerId)
+				spew.Dump(vmInfo)
+				//vmHandler.GetVM(config.Cloudit.ServerId)
 				fmt.Println("Finish Get VM")
 			case 3:
 				fmt.Println("Start List VMStatus ...")
@@ -62,28 +73,28 @@ func testVMHandler() {
 				fmt.Println("Finish List VMStatus")
 			case 4:
 				fmt.Println("Start Get VMStatus ...")
-				//vmStatus := vmHandler.GetVMStatus(config.Openstack.ServerId)
-				//fmt.Println(vmStatus)
+				vmStatus := vmHandler.GetVMStatus(config.Cloudit.ServerId)
+				fmt.Println(vmStatus)
 				fmt.Println("Finish Get VMStatus")
 			case 5:
 				fmt.Println("Start Create VM ...")
-				//createVM(config, vmHandler)
+				createVM(config, vmHandler)
 				fmt.Println("Finish Create VM")
 			case 6:
 				fmt.Println("Start Suspend VM ...")
-				//vmHandler.SuspendVM(config.Openstack.ServerId)
+				vmHandler.SuspendVM(config.Cloudit.ServerId)
 				fmt.Println("Finish Suspend VM")
 			case 7:
 				fmt.Println("Start Resume  VM ...")
-				//vmHandler.ResumeVM(config.Openstack.ServerId)
+				vmHandler.ResumeVM(config.Cloudit.ServerId)
 				fmt.Println("Finish Resume VM")
 			case 8:
 				fmt.Println("Start Reboot  VM ...")
-				//vmHandler.RebootVM(config.Openstack.ServerId)
+				vmHandler.RebootVM(config.Cloudit.ServerId)
 				fmt.Println("Finish Reboot VM")
 			case 9:
 				fmt.Println("Start Terminate  VM ...")
-				//vmHandler.TerminateVM(config.Openstack.ServerId)
+				vmHandler.TerminateVM(config.Cloudit.ServerId)
 				fmt.Println("Finish Terminate VM")
 			}
 		}
@@ -100,7 +111,8 @@ func getVMHandler() (irs.VMHandler, error) {
 			IdentityEndpoint: config.Cloudit.IdentityEndpoint,
 			Username:         config.Cloudit.Username,
 			Password:         config.Cloudit.Password,
-			TenantId:        config.Cloudit.TenantID,
+			TenantId:         config.Cloudit.TenantID,
+			AuthToken:        config.Cloudit.AuthToken,
 		},
 	}
 
@@ -116,13 +128,14 @@ func main() {
 	testVMHandler()
 }
 
-/*type Config struct {
+type Config struct {
 	Cloudit struct {
 		IdentityEndpoint string `yaml:"identity_endpoint"`
 		Username         string `yaml:"user_id"`
 		Password         string `yaml:"password"`
 		TenantID         string `yaml:"tenant_id"`
-		ServerId string `yaml:"server_id"`
+		ServerId         string `yaml:"server_id"`
+		AuthToken        string `yaml:"auth_token"`
 	} `yaml:"cloudit"`
 }
 
@@ -139,6 +152,7 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Loaded ConfigFile...")
+	spew.Dump(config)
 	return config
 }
-*/

@@ -14,11 +14,13 @@ import (
 	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
 	cirs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/resources"
+	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 )
 
 type ClouditCloudConnection struct {
-	Client client.RestClient
+	CredentialInfo idrv.CredentialInfo
+	Client         client.RestClient
 }
 
 func (cloudConn *ClouditCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
@@ -55,7 +57,7 @@ func (cloudConn ClouditCloudConnection) CreatePublicIPHandler() (irs.PublicIPHan
 }
 func (cloudConn *ClouditCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateVMHandler()!")
-	vmHandler := cirs.ClouditVMHandler{&cloudConn.Client}
+	vmHandler := cirs.ClouditVMHandler{cloudConn.CredentialInfo, &cloudConn.Client}
 	return &vmHandler, nil
 }
 
