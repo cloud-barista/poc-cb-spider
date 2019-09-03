@@ -25,7 +25,8 @@ type ClouditCloudConnection struct {
 
 func (cloudConn *ClouditCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateVNetworkHandler()!")
-	return nil, nil
+	vNetHandler := cirs.ClouditVNetworkHandler{cloudConn.CredentialInfo, &cloudConn.Client}
+	return &vNetHandler, nil
 }
 
 func (cloudConn *ClouditCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {

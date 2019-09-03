@@ -108,15 +108,70 @@ func (vmHandler *ClouditVMHandler) TerminateVM(vmID string) {
 }
 
 func (vmHandler *ClouditVMHandler) ListVMStatus() []*irs.VMStatusInfo {
-	//vm, _ := server.ListStatus()
-	//spew.Dump(vm)
+	var authHeader map[string]string
+	authHeader = make(map[string]string)
+	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	requestOpts := client.RequestOpts{
+		//JSONBody:     nil,
+		//RawBody:      nil,
+		//JSONResponse: nil,
+		//OkCodes:      nil,
+		MoreHeaders: authHeader,
+	}
+
+	vm, _ := server.ListStatus(vmHandler.Client, &requestOpts)
+	spew.Dump(vm)
 
 	return nil
 }
 
+/*
+# OpenStack Credential Info
+  domain_name: {domain_name}
+  identity_endpoint: http://{ip}:5000/v3
+  password: {password}
+  project_id: {project_id}
+  username: {username}
+  region: {region}
+
+  # OpenStack VM Deployment Info
+  vm_name: {vm_name}
+  image_id: {image_id}
+  flavor_id: {flavor_id}
+  network_id: {network_id}
+  security_groups: {security_groups}
+  keypair_name: {keypair_name}
+
+  # OpenStack Test VM Info
+  server_id: {server_id}
+
+  image_info:
+    name: mcb_custom_image.iso
+
+  keypair_info:
+    name: mcb-test-key
+
+  security_group_info:
+    name: mcb-test-security
+
+  vnet_info:
+    name: mcb-test-vnet
+*/
+
 func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
-	//vm,_ := server.GetStatus
-	//spew.Dump(vm)
+	var authHeader map[string]string
+	authHeader = make(map[string]string)
+	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	requestOpts := client.RequestOpts{
+		//JSONBody:     nil,
+		//RawBody:      nil,
+		//JSONResponse: nil,
+		//OkCodes:      nil,
+		MoreHeaders: authHeader,
+	}
+
+	vm, _ := server.GetStatus(vmHandler.Client, vmID, &requestOpts)
+	spew.Dump(vm)
 
 	return irs.VMStatus("")
 }

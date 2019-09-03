@@ -5,9 +5,14 @@ import (
 	cidrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/ghodss/yaml"
+	"io/ioutil"
+	"os"
 )
 
-func testPublicIPHanlder(config Config) {
+//AdaptiveIP
+func testPublicIPHanlder(config ResourceConfig) {
 	resourceHandler, err := getResourceHandler("publicip")
 	if err != nil {
 		panic(err)
@@ -63,7 +68,8 @@ Loop:
 	}
 }
 
-func testSecurityHandler(config Config) {
+//SecurityGroup
+func testSecurityHandler(config ResourceConfig) {
 	resourceHandler, err := getResourceHandler("security")
 	if err != nil {
 		panic(err)
@@ -120,6 +126,64 @@ Loop:
 	}
 }
 
+//Subnet
+func testVNetworkHandler(config ResourceConfig) {
+	resourceHandler, err := getResourceHandler("vnetwork")
+	if err != nil {
+		panic(err)
+	}
+
+	vNetworkHandler := resourceHandler.(irs.VNetworkHandler)
+
+	//fmt.Println("Test vNetworkHandler")
+	fmt.Println("1. ListVNetwork()")
+	//fmt.Println("2. UpdateVNetwork()")
+	//fmt.Println("3. CreateVNetwork()")
+	//fmt.Println("4. DeleteVNetwork()")
+	fmt.Println("5. Exit")
+
+	var vNetworkId string
+	//vNetworkId := "b77a1163-01ef-4e14-9ffc-9fb626b367be"
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListVNetwork() ...")
+				vNetworkHandler.ListVNetwork()
+				fmt.Println("Finish ListVNetwork()")
+			case 2:
+				fmt.Println("Start UpdateVNetwork() ...")
+				vNetworkHandler.GetVNetwork(vNetworkId)
+				fmt.Println("Finish UpdateVNetwork()")
+			case 3:
+				fmt.Println("Start CreateVNetwork() ...")
+				reqInfo := irs.VNetworkReqInfo{}
+				vNetwork, err := vNetworkHandler.CreateVNetwork(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				vNetworkId = vNetwork.Id
+				fmt.Println("Finish CreateVNetwork()")
+			case 4:
+				fmt.Println("Start DeleteVNetwork() ...")
+				vNetworkHandler.DeleteVNetwork(vNetworkId)
+				fmt.Println("Finish DeleteVNetwork()")
+			case 5:
+				fmt.Println("Exit")
+				break Loop
+			}
+		}
+	}
+}
+
 func getResourceHandler(resourceType string) (interface{}, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(cidrv.ClouditDriver)
@@ -131,6 +195,7 @@ func getResourceHandler(resourceType string) (interface{}, error) {
 			Username:         config.Cloudit.Username,
 			Password:         config.Cloudit.Password,
 			TenantId:         config.Cloudit.TenantID,
+			AuthToken:        config.Cloudit.AuthToken,
 		},
 	}
 
@@ -200,21 +265,9 @@ Loop:
 				showTestHandlerInfo()
 			case 4:
 				testSecurityHandler(config)
-				/*resourceHandler, err := getResourceHandler("security")
-				if err != nil {
-					panic(err)
-				}*/
-
-				//1개 get
-				/*securityInfo,err := resourceHandler.(irs.SecurityHandler).GetSecurity("")
-				if err != nil {
-					panic(err)
-				}
-				fmt.Println(securityInfo)*/
-
 				showTestHandlerInfo()
 			case 5:
-				//testVNetworkHandler(config)
+				testVNetworkHandler(config)
 				showTestHandlerInfo()
 			case 6:
 				//testVNicHandler(config)
@@ -239,29 +292,32 @@ Loop:
 	}
 }
 
-/*
-type Config struct {
+type ResourceConfig struct {
 	Cloudit struct {
 		IdentityEndpoint string `yaml:"identity_endpoint"`
 		Username         string `yaml:"user_id"`
 		Password         string `yaml:"password"`
 		TenantID         string `yaml:"tenant_id"`
 		ServerId         string `yaml:"server_id"`
+		AuthToken        string `yaml:"auth_token"`
 	} `yaml:"cloudit"`
 }
 
-func readConfigFile() Config {
-	// Set Environment Value of Project Root Path4
+func readConfigFile() ResourceConfig {
+	// Set Environment Value of Project Root Path
 	rootPath := os.Getenv("CBSPIDER_PATH")
 	data, err := ioutil.ReadFile(rootPath + "/config/config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	var config Config
-	err = yaml.Unmarshal(data, &config)
+	var config ResourceConfig
+	config = ResourceConfig{}
+	/*err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		panic(err)
-	}
+	}*/
+	//fmt.Println("Loaded ConfigFile...")
+	//spew.Dump(config)
 	return config
-}*/
+}
