@@ -2,15 +2,11 @@ package resources
 
 import (
 	"fmt"
-	//"github.com/Azure/azure-sdk-for-go/profiles/latest/recoveryservices/mgmt/backup"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/dna/subnet"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
-	//"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
-	//"github.com/rackspace/gophercloud/openstack/networking/v2/subnets"
-	//"io"
 	"strconv"
 )
 
@@ -37,6 +33,7 @@ func (vNetworkHandler *ClouditVNetworkHandler) CreateVNetwork(vNetReqInfo irs.VN
 		JSONBody:    reqInfo,
 		MoreHeaders: authHeader,
 	}
+
 	subnet, err := subnet.Create(vNetworkHandler.Client, &createOpts)
 	if err != nil {
 		return irs.VNetworkInfo{}, err
@@ -47,9 +44,9 @@ func (vNetworkHandler *ClouditVNetworkHandler) CreateVNetwork(vNetReqInfo irs.VN
 }
 
 func (vNetworkHandler *ClouditVNetworkHandler) ListVNetwork() ([]*irs.VNetworkInfo, error) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vNetworkHandler.CredentialInfo.AuthToken
+	vNetworkHandler.Client.TokenID = vNetworkHandler.CredentialInfo.AuthToken
+	authHeader := vNetworkHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -70,14 +67,15 @@ func (vNetworkHandler *ClouditVNetworkHandler) ListVNetwork() ([]*irs.VNetworkIn
 	return nil, nil
 }
 
+//Todo : GET 없음
 func (vNetworkHandler *ClouditVNetworkHandler) GetVNetwork(vNetworkID string) (irs.VNetworkInfo, error) {
 	return irs.VNetworkInfo{}, nil
 }
 
 func (vNetworkHandler *ClouditVNetworkHandler) DeleteVNetwork(vNetworkID string) (bool, error) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vNetworkHandler.CredentialInfo.AuthToken
+	vNetworkHandler.Client.TokenID = vNetworkHandler.CredentialInfo.AuthToken
+	authHeader := vNetworkHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -89,5 +87,5 @@ func (vNetworkHandler *ClouditVNetworkHandler) DeleteVNetwork(vNetworkID string)
 	vNet, _ := subnet.Delete(vNetworkHandler.Client, vNetworkID, &requestOpts)
 	spew.Dump(vNet)
 
-	return false, nil
+	return true, nil
 }

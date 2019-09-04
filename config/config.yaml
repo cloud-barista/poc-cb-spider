@@ -97,6 +97,11 @@ cloudit:
 
   # Cloudit VNet(Subnet) Info
   virtual_network:
-    name: mcb-subnet-test2
-    addr: 10.0.12.0
+    name: {name}
+    addr: {addr}
+    id  : {id}
+
+  # Cloudit AdativeIP Info
+  public_ip:
+    name: {name}
     id  : {id}

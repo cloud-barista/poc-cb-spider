@@ -148,7 +148,6 @@ func Resume(restClient *client.RestClient, id string, requestOpts *client.Reques
 }
 
 //reboot
-// TODO: 테스트 완료
 func Reboot(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "reboot")
 	fmt.Println(requestURL)
@@ -168,7 +167,6 @@ func Reboot(restClient *client.RestClient, id string, requestOpts *client.Reques
 }
 
 //delete
-// TODO: 테스트 완료
 func Terminate(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
 	fmt.Println(requestURL)
@@ -281,7 +279,6 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Se
 	return nil*/
 }
 
-// TODO: 테스트 완료
 func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
 	fmt.Println(requestURL)

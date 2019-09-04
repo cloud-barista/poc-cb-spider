@@ -22,12 +22,14 @@ func testPublicIPHanlder(config Config) {
 
 	fmt.Println("Test PublicIPHandler")
 	fmt.Println("1. ListPublicIP()")
-	fmt.Println("2. GetPublicIP()")
+	fmt.Println("2. -----PublicIP()")
 	fmt.Println("3. CreatePublicIP()")
 	fmt.Println("4. DeletePublicIP()")
 	fmt.Println("5. Exit")
 
 	var publicIPId string
+	var ip string
+	ip = "182.252.135.55"
 
 Loop:
 	for {
@@ -44,12 +46,12 @@ Loop:
 				publicIPHandler.ListPublicIP()
 				fmt.Println("Finish ListPublicIP()")
 			case 2:
-				fmt.Println("Start GetPublicIP() ...")
+				fmt.Println("Start UpdatePublicIP() ...")
 				publicIPHandler.GetPublicIP(publicIPId)
 				fmt.Println("Finish GetPublicIP()")
 			case 3:
 				fmt.Println("Start CreatePublicIP() ...")
-				reqInfo := irs.PublicIPReqInfo{}
+				reqInfo := irs.PublicIPReqInfo{Name: config.Cloudit.publicIp.Name}
 				publicIP, err := publicIPHandler.CreatePublicIP(reqInfo)
 				if err != nil {
 					panic(err)
@@ -58,7 +60,7 @@ Loop:
 				fmt.Println("Finish CreatePublicIP()")
 			case 4:
 				fmt.Println("Start DeletePublicIP() ...")
-				publicIPHandler.DeletePublicIP(publicIPId)
+				publicIPHandler.DeletePublicIP(ip)
 				fmt.Println("Finish DeletePublicIP()")
 			case 5:
 				fmt.Println("Exit")
@@ -77,15 +79,16 @@ func testSecurityHandler(config Config) {
 
 	securityHandler := resourceHandler.(irs.SecurityHandler)
 
-	//fmt.Println("Test securityHandler")
+	fmt.Println("Test securityHandler")
 	fmt.Println("1. ListSecurity()")
 	fmt.Println("2. GetSecurity()")
-	//fmt.Println("3. CreateSecurity()")
-	//fmt.Println("4. DeleteSecurity()")
+	fmt.Println("3. CreateSecurity()")
+	fmt.Println("4. DeleteSecurity()")
 	fmt.Println("5. Exit")
 
 	//var securityId string
-	securityId := "b77a1163-01ef-4e14-9ffc-9fb626b367be"
+	securityId := "83c9a5ca-4f90-447f-8cc6-97645fb1a63e"
+	securityGroupId := "aa7f11ab-3023-44d6-b8ac-0d78b72cb72d"
 
 Loop:
 	for {
@@ -107,7 +110,7 @@ Loop:
 				fmt.Println("Finish GetSecurity()")
 			case 3:
 				fmt.Println("Start CreateSecurity() ...")
-				reqInfo := irs.SecurityReqInfo{}
+				reqInfo := irs.SecurityReqInfo{Name: config.Cloudit.securityGroup.Name}
 				security, err := securityHandler.CreateSecurity(reqInfo)
 				if err != nil {
 					panic(err)
@@ -116,7 +119,7 @@ Loop:
 				fmt.Println("Finish CreateSecurity()")
 			case 4:
 				fmt.Println("Start DeleteSecurity() ...")
-				securityHandler.DeleteSecurity(securityId)
+				securityHandler.DeleteSecurity(securityGroupId)
 				fmt.Println("Finish DeleteSecurity()")
 			case 5:
 				fmt.Println("Exit")
@@ -135,7 +138,7 @@ func testVNetworkHandler(config Config) {
 
 	vNetworkHandler := resourceHandler.(irs.VNetworkHandler)
 
-	//fmt.Println("Test vNetworkHandler")
+	fmt.Println("Test vNetworkHandler")
 	fmt.Println("1. ListVNetwork()")
 	fmt.Println("2. CreateVNetwork()")
 	fmt.Println("3. -----VNetwork()")
@@ -181,6 +184,40 @@ Loop:
 				vNetworkHandler.DeleteVNetwork(addr)
 				fmt.Println("Finish DeleteVNetwork()")
 			case 5:
+				fmt.Println("Exit")
+				break Loop
+			}
+		}
+	}
+}
+
+func testVNicHandler(config Config) {
+	resourceHandler, err := getResourceHandler("vnic")
+	if err != nil {
+		panic(err)
+	}
+
+	vNicHandler := resourceHandler.(irs.VNicHandler)
+
+	fmt.Println("Test vNicHandler")
+	fmt.Println("1. ListVNicwork()")
+	fmt.Println("2. Exit")
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListVNic() ...")
+				vNicHandler.ListVNic()
+				fmt.Println("Finish ListVNic()")
+			case 2:
 				fmt.Println("Exit")
 				break Loop
 			}
@@ -274,18 +311,7 @@ Loop:
 				testVNetworkHandler(config)
 				showTestHandlerInfo()
 			case 6:
-				//testVNicHandler(config)
-				resourceHandler, err := getResourceHandler("vnic")
-				if err != nil {
-					panic(err)
-				}
-				vNicInfoList, err := resourceHandler.(irs.VNicHandler).ListVNic()
-				if err != nil {
-					panic(err)
-				}
-				for i, vNicInfo := range vNicInfoList {
-					fmt.Println("[", i, "] ", *vNicInfo)
-				}
+				testVNicHandler(config)
 				showTestHandlerInfo()
 
 			case 7:
@@ -310,6 +336,18 @@ type Config struct {
 			Addr string `yaml:"addr"`
 			ID   string `yaml:"id"`
 		} `yaml:"vnet_info"`
+
+		publicIp struct {
+			Name string `yaml:"name"`
+			ID   string `yaml:"id"`
+			IP   string `yaml:"ip"`
+		} `yaml:"publicIp_info"`
+
+		securityGroup struct {
+			Name           string `yaml:"name"`
+			ID             string `yaml:"name"`
+			SecuiryGroupID string `yaml:"securitygroupid"`
+		}
 	} `yaml:"cloudit"`
 }
 
