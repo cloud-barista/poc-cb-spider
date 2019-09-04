@@ -5,10 +5,23 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	"github.com/rackspace/gophercloud/pagination"
 )
 
 type OpenStackRouterHandler struct {
 	Client *gophercloud.ServiceClient
+}
+
+// @TODO: Router 리소스 프로퍼티 정의 필요
+type RouterInfo struct {
+	Id string
+	Name string
+	//GateWayId string
+	//AdminStateUp bool
+}
+
+func (routerInfo *RouterInfo) setter(router routers.Router) *RouterInfo {
+	return routerInfo
 }
 
 func (routerHandler *OpenStackRouterHandler) CreateRouter(routerReqInfo irs.RouterReqInfo) (irs.RouterInfo, error) {
@@ -45,15 +58,47 @@ func (routerHandler *OpenStackRouterHandler) CreateRouter(routerReqInfo irs.Rout
 }
 
 func (routerHandler *OpenStackRouterHandler) ListRouter() ([]*irs.RouterInfo, error) {
+	var routerInfoList []*RouterInfo
+	
+	pager := routers.List(routerHandler.Client, routers.ListOpts{})
+	err := pager.EachPage(func(page pagination.Page) (b bool, e error) {
+		// Get Router
+		list, err := routers.ExtractRouters(page)
+		if err != nil {
+			return false, err
+		}
+		for _, r := range list {
+			routerInfo := new(RouterInfo).setter(r)
+			routerInfoList = append(routerInfoList, routerInfo)
+		}
+		return true, nil
+	})
+	if err != nil {
+		return  nil, err
+	}
+	
+	spew.Dump(routerInfoList)
 	return nil, nil
 }
 
 func (routerHandler *OpenStackRouterHandler) GetRouter(routerID string) (irs.RouterInfo, error) {
+	router, err := routers.Get(routerHandler.Client, routerID).Extract()
+	if err != nil {
+		return irs.RouterInfo{}, err
+	}
+	
+	routerInfo := new(RouterInfo).setter(*router)
+	
+	spew.Dump(routerInfo)
 	return irs.RouterInfo{}, nil
 }
 
 func (routerHandler *OpenStackRouterHandler) DeleteRouter(routerID string) (bool, error) {
-	return false, nil
+	err := routers.Delete(routerHandler.Client, routerID).ExtractErr()
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (routerHandler *OpenStackRouterHandler) AddInterface(interfaceReqInfo irs.InterfaceReqInfo) (irs.InterfaceInfo, error) {
@@ -72,6 +117,17 @@ func (routerHandler *OpenStackRouterHandler) AddInterface(interfaceReqInfo irs.I
 	return irs.InterfaceInfo{}, nil
 }
 
-func (routerHandler *OpenStackRouterHandler) DeleteInterface(interfaceReqInfo irs.InterfaceReqInfo) (irs.InterfaceInfo, error) {
+func (routerHandler *OpenStackRouterHandler) DeleteInterface(routerID string, subnetID string) (irs.InterfaceInfo, error) {
+	deleteOpts := routers.InterfaceOpts{
+		SubnetID: subnetID,
+	}
+	
+	// Delete Interface
+	ir, err := routers.RemoveInterface(routerHandler.Client, routerID, deleteOpts).Extract()
+	if err != nil {
+		return irs.InterfaceInfo{}, err
+	}
+	
+	spew.Dump(ir)
 	return irs.InterfaceInfo{}, nil
 }
