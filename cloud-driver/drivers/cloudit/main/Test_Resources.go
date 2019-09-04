@@ -308,6 +308,7 @@ type Config struct {
 		VirtualNetwork struct {
 			Name string `yaml:"name"`
 			Addr string `yaml:"addr"`
+			ID   string `yaml:"id"`
 		} `yaml:"vnet_info"`
 	} `yaml:"cloudit"`
 }

@@ -100,3 +100,4 @@ cloudit:
   virtual_network:
     name: mcb-subnet-test2
     addr: 10.0.12.0
+    id  : {id}
