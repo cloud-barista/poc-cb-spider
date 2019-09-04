@@ -289,6 +289,14 @@ Loop:
 	}
 }
 
+func testVNicHandler(config Config) {
+
+}
+
+func testRouterHandler(config Config) {
+
+}
+
 func getResourceHandler(resourceType string) (interface{}, error) {
 	var cloudDriver idrv.CloudDriver
 	cloudDriver = new(osdrv.OpenStackDriver)
