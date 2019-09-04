@@ -21,64 +21,6 @@ func createVM(config Config, vmHandler irs.VMHandler) {
 	spew.Dump(vm)
 }
 
-/*
-func testSecurityHandler(config Config) {
-	resourceHandler, err := getResourceHandler("security")
-	if err != nil {
-		panic(err)
-	}
-
-	securityHandler := resourceHandler.(irs.SecurityHandler)
-
-	//fmt.Println("Test securityHandler")
-	fmt.Println("1. ListSecurity()")
-	fmt.Println("2. GetSecurity()")
-	//fmt.Println("3. CreateSecurity()")
-	//fmt.Println("4. DeleteSecurity()")
-	fmt.Println("5. Exit")
-
-	//var securityId string
-	securityId := "b77a1163-01ef-4e14-9ffc-9fb626b367be"
-
-Loop:
-	for {
-		var commandNum int
-		inputCnt, err := fmt.Scan(&commandNum)
-		if err != nil {
-			panic(err)
-		}
-
-		if inputCnt == 1 {
-			switch commandNum {
-			case 1:
-				fmt.Println("Start ListSecurity() ...")
-				securityHandler.ListSecurity()
-				fmt.Println("Finish ListSecurity()")
-			case 2:
-				fmt.Println("Start GetSecurity() ...")
-				securityHandler.GetSecurity(securityId)
-				fmt.Println("Finish GetSecurity()")
-			case 3:
-				fmt.Println("Start CreateSecurity() ...")
-				reqInfo := irs.SecurityReqInfo{}
-				security, err := securityHandler.CreateSecurity(reqInfo)
-				if err != nil {
-					panic(err)
-				}
-				securityId = security.Id
-				fmt.Println("Finish CreateSecurity()")
-			case 4:
-				fmt.Println("Start DeleteSecurity() ...")
-				securityHandler.DeleteSecurity(securityId)
-				fmt.Println("Finish DeleteSecurity()")
-			case 5:
-				fmt.Println("Exit")
-				break Loop
-			}
-		}
-	}
-}*/
-
 func testVMHandler() {
 	vmHandler, err := getVMHandler()
 	if err != nil {
