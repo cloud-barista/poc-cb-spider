@@ -21,29 +21,6 @@ type SubnetInfo struct {
 	Description string
 }
 
-// Todo : 수정 필요 생성 안됨
-/*func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
-	fmt.Println(requestURL)
-
-	var result client.Result
-	//if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil{
-	//	errMsg := fmt.Sprintf("VirtualMachine with name already exist")
-	//	result.Err = errors.New(errMsg)
-	//	return nil, result.Err
-	//}
-
-	if _, result.Err = restClient.Post(requestURL, requestOpts.JSONBody , &result.Body, requestOpts); result.Err != nil {
-		return nil, result.Err
-	}
-
-	var subnet []SubnetInfo
-	if err := result.ExtractInto(&subnet); err != nil {
-		return nil, err
-	}
-	return &subnet, nil
-}*/
-
 func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (SubnetInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
 	fmt.Println(requestURL)
@@ -53,7 +30,7 @@ func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (Sub
 	if result.Err != nil {
 		return SubnetInfo{}, result.Err
 	}
-	
+
 	var subnet SubnetInfo
 	if err := result.ExtractInto(&subnet); err != nil {
 		return SubnetInfo{}, err

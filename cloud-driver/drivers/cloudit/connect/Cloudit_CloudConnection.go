@@ -36,7 +36,8 @@ func (cloudConn *ClouditCloudConnection) CreateImageHandler() (irs.ImageHandler,
 
 func (cloudConn ClouditCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateSecurityHandler()!")
-	return nil, nil
+	securityHandler := cirs.ClouditSecurityHandler{cloudConn.CredentialInfo, &cloudConn.Client}
+	return &securityHandler, nil
 }
 
 func (cloudConn *ClouditCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
@@ -46,13 +47,13 @@ func (cloudConn *ClouditCloudConnection) CreateKeyPairHandler() (irs.KeyPairHand
 
 func (cloudConn ClouditCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateVNicHandler()!")
-	vNicHandler := cirs.ClouditNicHandler{Client:&cloudConn.Client}
+	vNicHandler := cirs.ClouditNicHandler{Client: &cloudConn.Client}
 	return &vNicHandler, nil
 }
 
 func (cloudConn ClouditCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreatePublicIPHandler()!")
-	publicIPHandler := cirs.ClouditPublicIPHandler{&cloudConn.Client}
+	publicIPHandler := cirs.ClouditPublicIPHandler{cloudConn.CredentialInfo, &cloudConn.Client}
 	return &publicIPHandler, nil
 }
 func (cloudConn *ClouditCloudConnection) CreateVMHandler() (irs.VMHandler, error) {

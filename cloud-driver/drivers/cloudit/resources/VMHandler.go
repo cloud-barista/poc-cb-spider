@@ -26,9 +26,9 @@ type ClouditVMHandler struct {
 }
 
 func (vmHandler *ClouditVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -44,9 +44,9 @@ func (vmHandler *ClouditVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo,
 }
 
 func (vmHandler *ClouditVMHandler) SuspendVM(vmID string) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -60,9 +60,9 @@ func (vmHandler *ClouditVMHandler) SuspendVM(vmID string) {
 }
 
 func (vmHandler *ClouditVMHandler) ResumeVM(vmID string) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -76,9 +76,9 @@ func (vmHandler *ClouditVMHandler) ResumeVM(vmID string) {
 }
 
 func (vmHandler *ClouditVMHandler) RebootVM(vmID string) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -92,9 +92,9 @@ func (vmHandler *ClouditVMHandler) RebootVM(vmID string) {
 }
 
 func (vmHandler *ClouditVMHandler) TerminateVM(vmID string) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -108,9 +108,9 @@ func (vmHandler *ClouditVMHandler) TerminateVM(vmID string) {
 }
 
 func (vmHandler *ClouditVMHandler) ListVMStatus() []*irs.VMStatusInfo {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -126,9 +126,9 @@ func (vmHandler *ClouditVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 }
 
 func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -144,9 +144,9 @@ func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 }
 
 func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
@@ -168,9 +168,9 @@ func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
 }
 
 func (vmHandler *ClouditVMHandler) GetVM(vmID string) irs.VMInfo {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vmHandler.CredentialInfo.AuthToken
+	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
+	authHeader := vmHandler.Client.AuthenticatedHeaders()
+
 	requestOpts := client.RequestOpts{
 		//JSONBody:     nil,
 		//RawBody:      nil,
