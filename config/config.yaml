@@ -93,3 +93,9 @@ cloudit:
   auth_token: ddd8e54a5bac82eea3de7c347ff8a253d0dc563d
   tenant_id: tnt0008
   server_id: 7b35148e-b033-4749-a29e-12beddaebbfa
+
+
+  # Cloudit VNet(Subnet) Info
+  virtual_network:
+    name: mcb-subnet-test2
+    addr: 10.0.12.0

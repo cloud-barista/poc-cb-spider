@@ -6,13 +6,13 @@ import (
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/ghodss/yaml"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 )
 
 //AdaptiveIP
-func testPublicIPHanlder(config ResourceConfig) {
+func testPublicIPHanlder(config Config) {
 	resourceHandler, err := getResourceHandler("publicip")
 	if err != nil {
 		panic(err)
@@ -69,7 +69,7 @@ Loop:
 }
 
 //SecurityGroup
-func testSecurityHandler(config ResourceConfig) {
+func testSecurityHandler(config Config) {
 	resourceHandler, err := getResourceHandler("security")
 	if err != nil {
 		panic(err)
@@ -127,7 +127,7 @@ Loop:
 }
 
 //Subnet
-func testVNetworkHandler(config ResourceConfig) {
+func testVNetworkHandler(config Config) {
 	resourceHandler, err := getResourceHandler("vnetwork")
 	if err != nil {
 		panic(err)
@@ -137,13 +137,15 @@ func testVNetworkHandler(config ResourceConfig) {
 
 	//fmt.Println("Test vNetworkHandler")
 	fmt.Println("1. ListVNetwork()")
-	//fmt.Println("2. UpdateVNetwork()")
-	//fmt.Println("3. CreateVNetwork()")
-	//fmt.Println("4. DeleteVNetwork()")
+	fmt.Println("2. CreateVNetwork()")
+	fmt.Println("3. -----VNetwork()")
+	fmt.Println("4. DeleteVNetwork()")
 	fmt.Println("5. Exit")
 
 	var vNetworkId string
-	//vNetworkId := "b77a1163-01ef-4e14-9ffc-9fb626b367be"
+	//vNetworkId := ""
+	var addr string
+	addr = "10.0.12.0"
 
 Loop:
 	for {
@@ -160,21 +162,23 @@ Loop:
 				vNetworkHandler.ListVNetwork()
 				fmt.Println("Finish ListVNetwork()")
 			case 2:
-				fmt.Println("Start UpdateVNetwork() ...")
-				vNetworkHandler.GetVNetwork(vNetworkId)
-				fmt.Println("Finish UpdateVNetwork()")
-			case 3:
 				fmt.Println("Start CreateVNetwork() ...")
-				reqInfo := irs.VNetworkReqInfo{}
+				reqInfo := irs.VNetworkReqInfo{Name: config.Cloudit.VirtualNetwork.Name}
 				vNetwork, err := vNetworkHandler.CreateVNetwork(reqInfo)
 				if err != nil {
 					panic(err)
 				}
 				vNetworkId = vNetwork.Id
 				fmt.Println("Finish CreateVNetwork()")
+
+			case 3:
+				fmt.Println("Start UpdateVNetwork() ...")
+				vNetworkHandler.GetVNetwork(vNetworkId)
+				fmt.Println("Finish UpdateVNetwork()")
 			case 4:
 				fmt.Println("Start DeleteVNetwork() ...")
-				vNetworkHandler.DeleteVNetwork(vNetworkId)
+				//vNetworkHandler.DeleteVNetwork(config.Cloudit.VirtualNetwork.Addr)
+				vNetworkHandler.DeleteVNetwork(addr)
 				fmt.Println("Finish DeleteVNetwork()")
 			case 5:
 				fmt.Println("Exit")
@@ -292,7 +296,7 @@ Loop:
 	}
 }
 
-type ResourceConfig struct {
+type Config struct {
 	Cloudit struct {
 		IdentityEndpoint string `yaml:"identity_endpoint"`
 		Username         string `yaml:"user_id"`
@@ -300,24 +304,27 @@ type ResourceConfig struct {
 		TenantID         string `yaml:"tenant_id"`
 		ServerId         string `yaml:"server_id"`
 		AuthToken        string `yaml:"auth_token"`
+
+		VirtualNetwork struct {
+			Name string `yaml:"name"`
+			Addr string `yaml:"addr"`
+		} `yaml:"vnet_info"`
 	} `yaml:"cloudit"`
 }
 
-func readConfigFile() ResourceConfig {
-	// Set Environment Value of Project Root Path
+func readConfigFile() Config {
+	// Set Environment Value of Project Root Path4
 	rootPath := os.Getenv("CBSPIDER_PATH")
 	data, err := ioutil.ReadFile(rootPath + "/config/config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	var config ResourceConfig
-	config = ResourceConfig{}
-	/*err = yaml.Unmarshal(data, &config)
+	var config Config
+	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		panic(err)
-	}*/
-	//fmt.Println("Loaded ConfigFile...")
-	//spew.Dump(config)
+	}
+	spew.Dump(config)
 	return config
 }

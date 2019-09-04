@@ -204,7 +204,7 @@ func ListStatus(restClient *client.RestClient, requestOpts *client.RequestOpts) 
 	return &server, nil
 }
 
-//Todo 테스트 필요
+//Todo 수정중
 func GetStatus(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "state")
 	fmt.Println(requestURL)
@@ -281,7 +281,7 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Se
 	return nil*/
 }
 
-// TODO: 테스트 필요
+// TODO: 테스트 완료
 func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
 	fmt.Println(requestURL)

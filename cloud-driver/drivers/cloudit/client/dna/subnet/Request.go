@@ -6,20 +6,43 @@ import (
 )
 
 type SubnetInfo struct {
-	ID       string
-	TenantId string
-	Addr     string
-	Prefix   string
-	Gateway  string
-	Creator  string
-	//Protection  int
-	Name  string
-	State string
-	//Vlan        int
+	ID         string
+	TenantId   string
+	Addr       string
+	Prefix     string
+	Gateway    string
+	Creator    string
+	Protection int
+	Name       string
+	State      string
+	Vlan       int
 	//CreatedAt   time.Time
 	NicCount    int
 	Description string
 }
+
+// Todo : 수정 필요 생성 안됨
+/*func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
+	fmt.Println(requestURL)
+
+	var result client.Result
+	//if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil{
+	//	errMsg := fmt.Sprintf("VirtualMachine with name already exist")
+	//	result.Err = errors.New(errMsg)
+	//	return nil, result.Err
+	//}
+
+	if _, result.Err = restClient.Post(requestURL, requestOpts.JSONBody , &result.Body, requestOpts); result.Err != nil {
+		return nil, result.Err
+	}
+
+	var subnet []SubnetInfo
+	if err := result.ExtractInto(&subnet); err != nil {
+		return nil, err
+	}
+	return &subnet, nil
+}*/
 
 func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (SubnetInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
@@ -40,11 +63,30 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Su
 	fmt.Println(requestURL)
 
 	var result client.Result
-	_, result.Err = restClient.Get(requestURL, &result.Body, requestOpts)
+	if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil {
+		return nil, result.Err
+	}
 
 	var subnet []SubnetInfo
 	if err := result.ExtractInto(&subnet); err != nil {
 		return nil, err
 	}
+	return &subnet, nil
+}
+
+func Delete(restClient *client.RestClient, addr string, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets", addr)
+	fmt.Println(requestURL)
+
+	var result client.Result
+	if _, result.Err = restClient.Delete(requestURL, requestOpts); result.Err != nil {
+		return nil, result.Err
+	}
+
+	var subnet []SubnetInfo
+	if err := result.ExtractInto(&subnet); err != nil {
+		return nil, err
+	}
+
 	return &subnet, nil
 }
