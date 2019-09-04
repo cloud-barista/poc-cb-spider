@@ -20,25 +20,21 @@ type ClouditVNetworkHandler struct {
 }
 
 func (vNetworkHandler *ClouditVNetworkHandler) CreateVNetwork(vNetReqInfo irs.VNetworkReqInfo) (irs.VNetworkInfo, error) {
-	var authHeader map[string]string
-	authHeader = make(map[string]string)
-	authHeader["X-Auth-Token"] = vNetworkHandler.CredentialInfo.AuthToken
+	vNetworkHandler.Client.TokenID = vNetworkHandler.CredentialInfo.AuthToken
+	authHeader := vNetworkHandler.Client.AuthenticatedHeaders()
 
 	// @TODO: Subnet 생성 요청 파라미터 정의 필요
 	type VNetworkReqInfo struct {
-		name       string
-		protection int
+		Name       string `json:"name" required:"true"`
+		Protection int    `json:"protection" required:"true"`
 	}
 	reqInfo := VNetworkReqInfo{
-		name:       "test-Dong222",
-		protection: 0,
+		Name:       "test-Dong222",
+		Protection: 0,
 	}
 
 	createOpts := client.RequestOpts{
-		JSONBody: reqInfo,
-		//RawBody: reqInfo,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
+		JSONBody:    reqInfo,
 		MoreHeaders: authHeader,
 	}
 	subnet, err := subnet.Create(vNetworkHandler.Client, &createOpts)
