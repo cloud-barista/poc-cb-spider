@@ -50,7 +50,10 @@ func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (Sub
 
 	var result client.Result
 	_, result.Err = restClient.Post(requestURL, requestOpts.JSONBody, &result.Body, requestOpts)
-
+	if result.Err != nil {
+		return SubnetInfo{}, result.Err
+	}
+	
 	var subnet SubnetInfo
 	if err := result.ExtractInto(&subnet); err != nil {
 		return SubnetInfo{}, err
