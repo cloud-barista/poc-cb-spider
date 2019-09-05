@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 func main() {
@@ -58,7 +59,7 @@ func testCreateVM() {
 
 	// 2. Router 생성 및 인터페이스 등록
 	// Router 생성
-	routerReqInfo := irs.RouterReqInfo{Name: "mcb-router"}
+	routerReqInfo := irs.RouterReqInfo{Name: config.Openstack.Router.Name}
 	router, err := routerHandler.CreateRouter(routerReqInfo)
 	if err != nil {
 		panic(err)
@@ -87,13 +88,13 @@ func testCreateVM() {
 		},
 		SpecID: config.Openstack.FlavorId,
 		VNetworkInfo: irs.VNetworkInfo{
-			Id: "e80202ec-ad00-4421-a40c-f434b66d3dee",
+			Id: vNet.Id,
 		},
 		SecurityInfo: irs.SecurityInfo{
-			Name: "mcb-test-security",
+			Name: sg.Name,
 		},
 		KeyPairInfo: irs.KeyPairInfo{
-			Name: "mcb-test-key",
+			Name: config.Openstack.KeyPair.Name,
 		},
 	}
 
@@ -104,7 +105,21 @@ func testCreateVM() {
 	spew.Dump(vm)
 
 	// 6. PublicIP 생성 및 할당
-	//publicIPHandler.CreatePublicIP()
+	// PublicIP 생성
+	pubIPReqInfo := irs.PublicIPReqInfo{}
+	publicIP, err := publicIPHandler.CreatePublicIP(pubIPReqInfo)
+	if err != nil {
+		panic(err)
+	}
+	
+	time.Sleep(time.Second * 10)
+	
+	// PublicIP 할당
+	openStackPublicIPHandler := publicIPHandler.(*osrs.OpenStackPublicIPHandler)
+	_, err = openStackPublicIPHandler.AssociatePublicIP(vm.Id, publicIP.Id)
+	if err != nil {
+		panic(err)
+	}
 }
 
 type Config struct {
@@ -144,6 +159,7 @@ type Config struct {
 		Router struct {
 			Name string `yaml:"name"`
 		} `yaml:"router_info"`
+		
 	} `yaml:"openstack"`
 }
 

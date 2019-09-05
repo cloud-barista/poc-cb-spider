@@ -111,7 +111,21 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 			FromPort:    3306,
 			ToPort:      3306,
 			IPProtocol:  "TCP",
+			CIDR:       "0.0.0.0/0",
+		},
+		{
+			//ParentGroupID: group.ID,
+			FromPort:    3306,
+			ToPort:      3306,
+			IPProtocol:  "TCP",
 			FromGroupID: group.ID, // 방식 2) 보안그룹 기준 룰 적용
+		},
+		{
+			//ParentGroupID: group.ID,
+			FromPort:    0,
+			ToPort:      0,
+			IPProtocol:  "ICMP",
+			FromGroupID: group.ID,
 		},
 	}
 

@@ -46,9 +46,10 @@ func (cloudConn *OpenStackCloudConnection) CreateKeyPairHandler() (irs.KeyPairHa
 	keypairHandler := osrs.OpenStackKeyPairHandler{cloudConn.Client}
 	return &keypairHandler, nil
 }
-func (OpenStackCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+func (cloudConn *OpenStackCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
 	fmt.Println("OpenStack Cloud Driver: called CreateVNicHandler()!")
-	return nil, nil
+	vNicHandler := osrs.OpenStackVNicworkHandler{cloudConn.NetworkClient}
+	return &vNicHandler, nil
 }
 func (cloudConn OpenStackCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
 	fmt.Println("OpenStack Cloud Driver: called CreatePublicIPHandler()!")
