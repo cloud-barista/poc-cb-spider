@@ -13,53 +13,77 @@ type OpenStackRouterHandler struct {
 }
 
 // @TODO: Router 리소스 프로퍼티 정의 필요
+type RouteInfo struct {
+	NextHop         string
+	DestinationCIDR string
+}
 type RouterInfo struct {
-	Id string
-	Name string
-	//GateWayId string
-	//AdminStateUp bool
+	Id           string
+	Name         string
+	TenantId     string
+	AdminStateUp bool
+	Distributed  bool
+	Routes       []RouteInfo
 }
 
 func (routerInfo *RouterInfo) setter(router routers.Router) *RouterInfo {
+	routerInfo.Id = router.ID
+	routerInfo.Name = router.Name
+	router.TenantID = router.TenantID
+	router.AdminStateUp = router.AdminStateUp
+	router.Distributed = router.Distributed
+	
+	var routeArr []RouteInfo
+	
+	for _, route := range router.Routes {
+		routeInfo := RouteInfo{
+			NextHop: route.NextHop,
+			DestinationCIDR: route.DestinationCIDR,
+		}
+		routeArr = append(routeArr, routeInfo)
+	}
+	
+	routerInfo.Routes = routeArr
+	
 	return routerInfo
 }
 
 func (routerHandler *OpenStackRouterHandler) CreateRouter(routerReqInfo irs.RouterReqInfo) (irs.RouterInfo, error) {
-	
+
 	// @TODO: Router 생성 요청 파라미터 정의 필요
 	type RouterReqInfo struct {
-		Name string
-		GateWayId string
+		Name         string
+		GateWayId    string
 		AdminStateUp bool
 	}
-	
+
 	reqInfo := RouterReqInfo{
-		Name: routerReqInfo.Name,
-		GateWayId: "b6610ceb-8089-48b0-9bfc-3c35e4e245cf",
+		Name:         routerReqInfo.Name,
+		GateWayId:    "b6610ceb-8089-48b0-9bfc-3c35e4e245cf",
 		AdminStateUp: true,
 	}
-	
+
 	createOpts := routers.CreateOpts{
-		Name: reqInfo.Name,
+		Name:         reqInfo.Name,
 		AdminStateUp: &reqInfo.AdminStateUp,
 		GatewayInfo: &routers.GatewayInfo{
 			NetworkID: reqInfo.GateWayId,
 		},
 	}
-	
+
 	// Create Router
 	router, err := routers.Create(routerHandler.Client, createOpts).Extract()
 	if err != nil {
 		return irs.RouterInfo{}, err
 	}
-	
+
 	spew.Dump(router)
 	return irs.RouterInfo{Id: router.ID, Name: router.Name}, nil
 }
 
 func (routerHandler *OpenStackRouterHandler) ListRouter() ([]*irs.RouterInfo, error) {
 	var routerInfoList []*RouterInfo
-	
+
 	pager := routers.List(routerHandler.Client, routers.ListOpts{})
 	err := pager.EachPage(func(page pagination.Page) (b bool, e error) {
 		// Get Router
@@ -74,9 +98,9 @@ func (routerHandler *OpenStackRouterHandler) ListRouter() ([]*irs.RouterInfo, er
 		return true, nil
 	})
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
-	
+
 	spew.Dump(routerInfoList)
 	return nil, nil
 }
@@ -86,9 +110,9 @@ func (routerHandler *OpenStackRouterHandler) GetRouter(routerID string) (irs.Rou
 	if err != nil {
 		return irs.RouterInfo{}, err
 	}
-	
+
 	routerInfo := new(RouterInfo).setter(*router)
-	
+
 	spew.Dump(routerInfo)
 	return irs.RouterInfo{}, nil
 }
@@ -102,17 +126,16 @@ func (routerHandler *OpenStackRouterHandler) DeleteRouter(routerID string) (bool
 }
 
 func (routerHandler *OpenStackRouterHandler) AddInterface(interfaceReqInfo irs.InterfaceReqInfo) (irs.InterfaceInfo, error) {
-	
 	createOpts := routers.InterfaceOpts{
 		SubnetID: interfaceReqInfo.SubnetId,
 	}
-	
+
 	// Add Interface
 	ir, err := routers.AddInterface(routerHandler.Client, interfaceReqInfo.RouterId, createOpts).Extract()
 	if err != nil {
 		return irs.InterfaceInfo{}, err
 	}
-	
+
 	spew.Dump(ir)
 	return irs.InterfaceInfo{}, nil
 }
@@ -121,13 +144,13 @@ func (routerHandler *OpenStackRouterHandler) DeleteInterface(routerID string, su
 	deleteOpts := routers.InterfaceOpts{
 		SubnetID: subnetID,
 	}
-	
+
 	// Delete Interface
 	ir, err := routers.RemoveInterface(routerHandler.Client, routerID, deleteOpts).Extract()
 	if err != nil {
 		return irs.InterfaceInfo{}, err
 	}
-	
+
 	spew.Dump(ir)
 	return irs.InterfaceInfo{}, nil
 }

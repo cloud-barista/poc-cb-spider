@@ -15,7 +15,7 @@ type OpenStackVNicworkHandler struct {
 
 // @TODO: KeyPairInfo 리소스 프로퍼티 정의 필요
 type FixedIPInfo struct {
-	SubnetId string
+	SubnetId  string
 	IPAddress string
 }
 type AddressPairInfo struct {
@@ -23,17 +23,17 @@ type AddressPairInfo struct {
 	MACAddress string
 }
 type PortInfo struct {
-	Id string
-	NetworkId string
-	Name string
-	AdminStateUp bool
-	Status string
-	MACAddress string
-	FixedIPs []FixedIPInfo
-	TenantID string
-	DeviceOwner string
-	SecurityGroups []string
-	DeviceID string
+	Id                  string
+	NetworkId           string
+	Name                string
+	AdminStateUp        bool
+	Status              string
+	MACAddress          string
+	FixedIPs            []FixedIPInfo
+	TenantID            string
+	DeviceOwner         string
+	SecurityGroups      []string
+	DeviceID            string
 	AllowedAddressPairs []AddressPairInfo
 }
 
@@ -47,67 +47,67 @@ func (portInfo *PortInfo) setter(port ports.Port) *PortInfo {
 	portInfo.DeviceOwner = port.DeviceOwner
 	portInfo.SecurityGroups = port.SecurityGroups
 	portInfo.DeviceID = port.DeviceID
-	
+
 	var fixedIPArr []FixedIPInfo
 	var allowedAddressPairArr []AddressPairInfo
-	
+
 	for _, ip := range port.FixedIPs {
 		IPInfo := FixedIPInfo{
-			SubnetId: ip.SubnetID,
+			SubnetId:  ip.SubnetID,
 			IPAddress: ip.IPAddress,
 		}
 		fixedIPArr = append(fixedIPArr, IPInfo)
 	}
-	
+
 	for _, addressPair := range port.AllowedAddressPairs {
 		addressPairInfo := AddressPairInfo{
-			IPAddress: addressPair.IPAddress,
+			IPAddress:  addressPair.IPAddress,
 			MACAddress: addressPair.MACAddress,
 		}
 		allowedAddressPairArr = append(allowedAddressPairArr, addressPairInfo)
 	}
-	
+
 	portInfo.FixedIPs = fixedIPArr
 	portInfo.AllowedAddressPairs = allowedAddressPairArr
-	
+
 	return portInfo
 }
 
 func (vNicHandler *OpenStackVNicworkHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (irs.VNicInfo, error) {
-	
+
 	// @TODO: Port 생성 요청 파라미터 정의 필요
 	type PortReqInfo struct {
-		NetworkId string
-		Name string
+		NetworkId    string
+		Name         string
 		AdminStateUp bool
-		SubnetId string
+		SubnetId     string
 	}
-	
+
 	reqInfo := PortReqInfo{
-		NetworkId: "ccaec0ad-f187-4c41-b26d-23bde011795f",
+		NetworkId:    "ccaec0ad-f187-4c41-b26d-23bde011795f",
 		AdminStateUp: true,
-		SubnetId: "171c1c68-4ab1-4185-87f4-941262b9ff5e",
+		SubnetId:     "171c1c68-4ab1-4185-87f4-941262b9ff5e",
 	}
-	
+
 	createOpts := ports.CreateOpts{
-		NetworkID: reqInfo.NetworkId,
+		NetworkID:    reqInfo.NetworkId,
 		AdminStateUp: to.BoolPtr(true),
 		FixedIPs: []ports.IP{
-			{SubnetID: reqInfo.SubnetId,},
+			{SubnetID: reqInfo.SubnetId},
 		},
 	}
 	port, err := ports.Create(vNicHandler.Client, createOpts).Extract()
 	if err != nil {
 		return irs.VNicInfo{}, err
 	}
-	
+
 	spew.Dump(port)
 	return irs.VNicInfo{Id: port.ID, Name: port.Name}, nil
 }
 
 func (vNicHandler *OpenStackVNicworkHandler) ListVNic() ([]*irs.VNicInfo, error) {
 	var portList []PortInfo
-	
+
 	pager := ports.List(vNicHandler.Client, nil)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		// Get Port
@@ -125,7 +125,7 @@ func (vNicHandler *OpenStackVNicworkHandler) ListVNic() ([]*irs.VNicInfo, error)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	spew.Dump(portList)
 	return nil, nil
 }
@@ -135,9 +135,9 @@ func (vNicHandler *OpenStackVNicworkHandler) GetVNic(vNicID string) (irs.VNicInf
 	if err != nil {
 		return irs.VNicInfo{}, err
 	}
-	
+
 	portInfo := new(PortInfo).setter(*port)
-	
+
 	spew.Dump(portInfo)
 	return irs.VNicInfo{}, nil
 }
