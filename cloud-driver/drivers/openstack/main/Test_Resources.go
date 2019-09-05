@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	osdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack"
+	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/connect"
 	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
@@ -348,13 +349,12 @@ Loop:
 }
 
 func testRouterHandler(config Config) {
-	resourceHandler, err := getResourceHandler("vnic")
+	resourceHandler, err := getResourceHandler("router")
 	if err != nil {
 		panic(err)
 	}
-	
-	//vNicHandler := resourceHandler.(irs.VNicHandler)
-	routerHandler := osrs.OpenStackRouterHandler{}
+
+	routerHandler := resourceHandler.(osrs.OpenStackRouterHandler)
 
 	fmt.Println("Test RouterHandler")
 	fmt.Println("1. ListVNic()")
@@ -441,6 +441,14 @@ func getResourceHandler(resourceType string) (interface{}, error) {
 		resourceHandler, err = cloudConnection.CreateVNetworkHandler()
 	case "vnic":
 		resourceHandler, err = cloudConnection.CreateVNicHandler()
+	case "router":
+		osDriver := osdrv.OpenStackDriver{}
+		cloudConn, err := osDriver.ConnectCloud(connectionInfo)
+		if err != nil {
+			panic(err)
+		}
+		osCloudConn := cloudConn.(*connect.OpenStackCloudConnection)
+		resourceHandler = osrs.OpenStackRouterHandler{Client: osCloudConn.NetworkClient}
 	}
 
 	if err != nil {

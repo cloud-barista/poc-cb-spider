@@ -108,9 +108,9 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 		},
 		{
 			//ParentGroupID: group.ID,
-			FromPort:    3306,
-			ToPort:      3306,
-			IPProtocol:  "TCP",
+			FromPort:   3306,
+			ToPort:     3306,
+			IPProtocol: "TCP",
 			CIDR:       "0.0.0.0/0",
 		},
 		{
@@ -156,7 +156,7 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 	}
 
 	spew.Dump(securityInfo)
-	return irs.SecurityInfo{Id: group.ID, Name: group.Name,}, nil
+	return irs.SecurityInfo{Id: group.ID, Name: group.Name}, nil
 }
 
 func (securityHandler *OpenStackSecurityHandler) ListSecurity() ([]*irs.SecurityInfo, error) {

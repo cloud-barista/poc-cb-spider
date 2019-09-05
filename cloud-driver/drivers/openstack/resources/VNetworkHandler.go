@@ -43,15 +43,15 @@ func (vNetworkHandler *OpenStackVNetworkHandler) CreateVNetwork(vNetworkReqInfo 
 		End   string
 	}
 	type VNetworkReqInfo struct {
-		Name         string
-		AdminStateUp bool
-		CIDR         string
-		IPVersion    int
-		SubnetName   string
-		IPPool       []IPPool
+		Name          string
+		AdminStateUp  bool
+		CIDR          string
+		IPVersion     int
+		SubnetName    string
+		IPPool        []IPPool
 		DNSNameServer []string
 	}
-	
+
 	reqInfo := VNetworkReqInfo{
 		Name:         vNetworkReqInfo.Name,
 		AdminStateUp: *networks.Up,
@@ -79,27 +79,27 @@ func (vNetworkHandler *OpenStackVNetworkHandler) CreateVNetwork(vNetworkReqInfo 
 		return irs.VNetworkInfo{}, err
 	}
 	spew.Dump(network)
-	
+
 	// Set IPPool
 	var AllocationPool []subnets.AllocationPool
 	for _, IPPool := range reqInfo.IPPool {
 		pool := subnets.AllocationPool{
 			Start: IPPool.Start,
-			End: IPPool.End,
+			End:   IPPool.End,
 		}
 		AllocationPool = append(AllocationPool, pool)
 	}
-	
+
 	// Create Subnet
 	subnetCreateOpts := subnets.CreateOpts{
-		NetworkID: network.ID,
-		CIDR:      reqInfo.CIDR,
-		IPVersion: reqInfo.IPVersion,
-		Name:      reqInfo.SubnetName,
+		NetworkID:       network.ID,
+		CIDR:            reqInfo.CIDR,
+		IPVersion:       reqInfo.IPVersion,
+		Name:            reqInfo.SubnetName,
 		AllocationPools: AllocationPool,
-		DNSNameservers: reqInfo.DNSNameServer,
+		DNSNameservers:  reqInfo.DNSNameServer,
 	}
-	
+
 	subnet, err := subnets.Create(vNetworkHandler.Client, subnetCreateOpts).Extract()
 	if err != nil {
 		return irs.VNetworkInfo{}, err
@@ -107,7 +107,7 @@ func (vNetworkHandler *OpenStackVNetworkHandler) CreateVNetwork(vNetworkReqInfo 
 	spew.Dump(subnet)
 
 	// @TODO: 생성된 vNetwork 정보 리턴
-	return irs.VNetworkInfo{Id: network.ID, SubnetId: subnet.ID,}, nil
+	return irs.VNetworkInfo{Id: network.ID, SubnetId: subnet.ID}, nil
 }
 
 func (vNetworkHandler *OpenStackVNetworkHandler) ListVNetwork() ([]*irs.VNetworkInfo, error) {
