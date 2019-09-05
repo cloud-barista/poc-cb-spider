@@ -1,10 +1,11 @@
 package resources
 
 import (
+	"github.com/Azure/go-autorest/autorest/to"
+	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/rackspace/gophercloud"
 	"github.com/rackspace/gophercloud/openstack/networking/v2/ports"
-	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/rackspace/gophercloud/pagination"
 )
 
@@ -13,20 +14,95 @@ type OpenStackVNicworkHandler struct {
 }
 
 // @TODO: KeyPairInfo 리소스 프로퍼티 정의 필요
+type FixedIPInfo struct {
+	SubnetId string
+	IPAddress string
+}
+type AddressPairInfo struct {
+	IPAddress  string
+	MACAddress string
+}
 type PortInfo struct {
 	Id string
+	NetworkId string
 	Name string
+	AdminStateUp bool
+	Status string
+	MACAddress string
+	FixedIPs []FixedIPInfo
+	TenantID string
+	DeviceOwner string
+	SecurityGroups []string
+	DeviceID string
+	AllowedAddressPairs []AddressPairInfo
 }
 
 func (portInfo *PortInfo) setter(port ports.Port) *PortInfo {
 	portInfo.Id = port.ID
-	port.Name = port.Name
+	portInfo.NetworkId = port.NetworkID
+	portInfo.Name = port.Name
+	portInfo.AdminStateUp = port.AdminStateUp
+	portInfo.MACAddress = port.MACAddress
+	portInfo.TenantID = port.TenantID
+	portInfo.DeviceOwner = port.DeviceOwner
+	portInfo.SecurityGroups = port.SecurityGroups
+	portInfo.DeviceID = port.DeviceID
+	
+	var fixedIPArr []FixedIPInfo
+	var allowedAddressPairArr []AddressPairInfo
+	
+	for _, ip := range port.FixedIPs {
+		IPInfo := FixedIPInfo{
+			SubnetId: ip.SubnetID,
+			IPAddress: ip.IPAddress,
+		}
+		fixedIPArr = append(fixedIPArr, IPInfo)
+	}
+	
+	for _, addressPair := range port.AllowedAddressPairs {
+		addressPairInfo := AddressPairInfo{
+			IPAddress: addressPair.IPAddress,
+			MACAddress: addressPair.MACAddress,
+		}
+		allowedAddressPairArr = append(allowedAddressPairArr, addressPairInfo)
+	}
+	
+	portInfo.FixedIPs = fixedIPArr
+	portInfo.AllowedAddressPairs = allowedAddressPairArr
+	
 	return portInfo
 }
 
 func (vNicHandler *OpenStackVNicworkHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (irs.VNicInfo, error) {
 	
-	return irs.VNicInfo{}, nil
+	// @TODO: Port 생성 요청 파라미터 정의 필요
+	type PortReqInfo struct {
+		NetworkId string
+		Name string
+		AdminStateUp bool
+		SubnetId string
+	}
+	
+	reqInfo := PortReqInfo{
+		NetworkId: "ccaec0ad-f187-4c41-b26d-23bde011795f",
+		AdminStateUp: true,
+		SubnetId: "171c1c68-4ab1-4185-87f4-941262b9ff5e",
+	}
+	
+	createOpts := ports.CreateOpts{
+		NetworkID: reqInfo.NetworkId,
+		AdminStateUp: to.BoolPtr(true),
+		FixedIPs: []ports.IP{
+			{SubnetID: reqInfo.SubnetId,},
+		},
+	}
+	port, err := ports.Create(vNicHandler.Client, createOpts).Extract()
+	if err != nil {
+		return irs.VNicInfo{}, err
+	}
+	
+	spew.Dump(port)
+	return irs.VNicInfo{Id: port.ID, Name: port.Name}, nil
 }
 
 func (vNicHandler *OpenStackVNicworkHandler) ListVNic() ([]*irs.VNicInfo, error) {
@@ -49,6 +125,8 @@ func (vNicHandler *OpenStackVNicworkHandler) ListVNic() ([]*irs.VNicInfo, error)
 	if err != nil {
 		return nil, err
 	}
+	
+	spew.Dump(portList)
 	return nil, nil
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	osdrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack"
+	osrs "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/openstack/resources"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"gopkg.in/yaml.v3"
@@ -17,7 +18,7 @@ func testImageHandler(config Config) {
 	}
 
 	imageHandler := resourceHandler.(irs.ImageHandler)
- 
+
 	fmt.Println("Test ImageHandler")
 	fmt.Println("1. ListImage()")
 	fmt.Println("2. GetImage()")
@@ -71,9 +72,9 @@ func testKeyPairHandler(config Config) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	keyPairHandler := resourceHandler.(irs.KeyPairHandler)
-	
+
 	fmt.Println("Test KeyPairHandler")
 	fmt.Println("1. ListKey()")
 	fmt.Println("2. GetKey()")
@@ -124,9 +125,9 @@ func testPublicIPHanlder(config Config) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	publicIPHandler := resourceHandler.(irs.PublicIPHandler)
-	
+
 	fmt.Println("Test PublicIPHandler")
 	fmt.Println("1. ListPublicIP()")
 	fmt.Println("2. GetPublicIP()")
@@ -180,9 +181,9 @@ func testSecurityHandler(config Config) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	securityHandler := resourceHandler.(irs.SecurityHandler)
-	
+
 	fmt.Println("Test SecurityHandler")
 	fmt.Println("1. ListSecurity()")
 	fmt.Println("2. GetSecurity()")
@@ -237,9 +238,9 @@ func testVNetworkHandler(config Config) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	vNetworkHandler := resourceHandler.(irs.VNetworkHandler)
-	
+
 	fmt.Println("Test VNetworkHandler")
 	fmt.Println("1. ListVNetwork()")
 	fmt.Println("2. GetVNetwork()")
@@ -290,11 +291,118 @@ Loop:
 }
 
 func testVNicHandler(config Config) {
+	resourceHandler, err := getResourceHandler("vnic")
+	if err != nil {
+		panic(err)
+	}
 
+	vNicHandler := resourceHandler.(irs.VNicHandler)
+
+	fmt.Println("Test VNicHandler")
+	fmt.Println("1. ListVNic()")
+	fmt.Println("2. GetVNic()")
+	fmt.Println("3. CreateVNic()")
+	fmt.Println("4. DeleteVNic()")
+	fmt.Println("5. Exit")
+
+	var vNicId string
+
+Loop:
+
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListVNic() ...")
+				vNicHandler.ListVNic()
+				fmt.Println("Finish ListVNic()")
+			case 2:
+				fmt.Println("Start GetVNic() ...")
+				vNicHandler.GetVNic(vNicId)
+				fmt.Println("Finish GetVNic()")
+			case 3:
+				fmt.Println("Start CreateVNic() ...")
+				reqInfo := irs.VNicReqInfo{}
+				vNic, err := vNicHandler.CreateVNic(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				vNicId = vNic.Id
+				fmt.Println("Finish CreateVNic()")
+			case 4:
+				fmt.Println("Start DeleteVNic() ...")
+				vNicHandler.DeleteVNic(vNicId)
+				fmt.Println("Finish DeleteVNic()")
+			case 5:
+				fmt.Println("Exit")
+				break Loop
+			}
+		}
+	}
 }
 
 func testRouterHandler(config Config) {
+	resourceHandler, err := getResourceHandler("vnic")
+	if err != nil {
+		panic(err)
+	}
+	
+	//vNicHandler := resourceHandler.(irs.VNicHandler)
+	routerHandler := osrs.OpenStackRouterHandler{}
 
+	fmt.Println("Test RouterHandler")
+	fmt.Println("1. ListVNic()")
+	fmt.Println("2. GetVNic()")
+	fmt.Println("3. CreateVNic()")
+	fmt.Println("4. DeleteVNic()")
+	fmt.Println("5. Exit")
+
+	var routerId string
+
+Loop:
+
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListRouter() ...")
+				routerHandler.ListRouter()
+				fmt.Println("Finish ListRouter()")
+			case 2:
+				fmt.Println("Start GetRouter() ...")
+				routerHandler.GetRouter(routerId)
+				fmt.Println("Finish GetRouter()")
+			case 3:
+				fmt.Println("Start CreateRouter() ...")
+				reqInfo := irs.RouterReqInfo{}
+				router, err := routerHandler.CreateRouter(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				routerId = router.Id
+				fmt.Println("Finish CreateRouter()")
+			case 4:
+				fmt.Println("Start DeleteRouter() ...")
+				routerHandler.DeleteRouter(routerId)
+				fmt.Println("Finish DeleteRouter()")
+			case 5:
+				fmt.Println("Exit")
+				break Loop
+			}
+		}
+	}
 }
 
 func getResourceHandler(resourceType string) (interface{}, error) {
@@ -331,8 +439,10 @@ func getResourceHandler(resourceType string) (interface{}, error) {
 		resourceHandler, err = cloudConnection.CreateSecurityHandler()
 	case "vnetwork":
 		resourceHandler, err = cloudConnection.CreateVNetworkHandler()
+	case "vnic":
+		resourceHandler, err = cloudConnection.CreateVNicHandler()
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -347,7 +457,9 @@ func showTestHandlerInfo() {
 	fmt.Println("3. PublicIPHandler")
 	fmt.Println("4. SecurityHandler")
 	fmt.Println("5. VNetworkHandler")
-	fmt.Println("6. Exit")
+	fmt.Println("6. VNicHandler")
+	fmt.Println("7. RouterHandler")
+	fmt.Println("8. Exit")
 	fmt.Println("==========================================================")
 }
 
@@ -383,6 +495,12 @@ Loop:
 				testVNetworkHandler(config)
 				showTestHandlerInfo()
 			case 6:
+				testVNicHandler(config)
+				showTestHandlerInfo()
+			case 7:
+				testRouterHandler(config)
+				showTestHandlerInfo()
+			case 8:
 				fmt.Println("Exit Test ResourceHandler Program")
 				break Loop
 			}
@@ -415,11 +533,11 @@ type Config struct {
 		KeyPair struct {
 			Name string `yaml:"name"`
 		} `yaml:"keypair_info"`
-		
+
 		SecurityGroup struct {
 			Name string `yaml:"name"`
 		} `yaml:"security_group_info"`
-		
+
 		VirtualNetwork struct {
 			Name string `yaml:"name"`
 		} `yaml:"vnet_info"`
