@@ -35,6 +35,14 @@ openstack:
   vnet_info:
     name: mcb-test-vnet
 
+  subnet_info:
+      id: {subnet_id}
+
+  router_info:
+    name: mcb-router
+    gateway_id: {gateway_id}
+    adminstatup: true
+
 ## Config for AZURE ##
 azure:
 
