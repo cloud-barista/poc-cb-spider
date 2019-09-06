@@ -28,12 +28,8 @@ type ClouditVMHandler struct {
 func (vmHandler *ClouditVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-
+	
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
@@ -48,63 +44,55 @@ func (vmHandler *ClouditVMHandler) SuspendVM(vmID string) {
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
-
-	vm, _ := server.Suspend(vmHandler.Client, vmID, &requestOpts)
-	spew.Dump(vm)
+	
+	err := server.Suspend(vmHandler.Client, vmID, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (vmHandler *ClouditVMHandler) ResumeVM(vmID string) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-
+	
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
-
-	vm, _ := server.Resume(vmHandler.Client, vmID, &requestOpts)
-	spew.Dump(vm)
+	
+	err := server.Resume(vmHandler.Client, vmID, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (vmHandler *ClouditVMHandler) RebootVM(vmID string) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-
+	
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
-	vm, _ := server.Reboot(vmHandler.Client, vmID, &requestOpts)
-	spew.Dump(vm)
+	err := server.Reboot(vmHandler.Client, vmID, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (vmHandler *ClouditVMHandler) TerminateVM(vmID string) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-
+	
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
-	vm, _ := server.Terminate(vmHandler.Client, vmID, &requestOpts)
-	spew.Dump(vm)
+	err := server.Terminate(vmHandler.Client, vmID, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (vmHandler *ClouditVMHandler) ListVMStatus() []*irs.VMStatusInfo {
@@ -112,17 +100,25 @@ func (vmHandler *ClouditVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
-
-	vm, _ := server.ListStatus(vmHandler.Client, &requestOpts)
-	spew.Dump(vm)
-
-	return nil
+	
+	vmList, err := server.List(vmHandler.Client, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
+	
+	var vmStatusList []*irs.VMStatusInfo
+	
+	for _, vm := range *vmList {
+		vmStatusInfo := irs.VMStatusInfo{
+			VmId: vm.ID,
+			VmStatus: irs.VMStatus(vm.State),
+		}
+		vmStatusList = append(vmStatusList, &vmStatusInfo)
+	}
+	
+	return vmStatusList
 }
 
 func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
@@ -130,17 +126,11 @@ func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
-
-	vm, _ := server.GetStatus(vmHandler.Client, vmID, &requestOpts)
-	spew.Dump(vm)
-
-	return irs.VMStatus("")
+	
+	vm, _ := server.Get(vmHandler.Client, vmID, &requestOpts)
+	return irs.VMStatus(vm.State)
 }
 
 func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
@@ -148,10 +138,6 @@ func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
@@ -172,18 +158,10 @@ func (vmHandler *ClouditVMHandler) GetVM(vmID string) irs.VMInfo {
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
 	vm, _ := server.Get(vmHandler.Client, vmID, &requestOpts)
 	spew.Dump(vm)
-	return irs.VMInfo{}
-}
-
-func mappingServerInfo(server interface{}) irs.VMInfo {
 	return irs.VMInfo{}
 }
