@@ -27,12 +27,12 @@ func (publicIPInfo *PublicIPInfo) setter(floatingIp floatingip.FloatingIP) *Publ
 	publicIPInfo.InstanceID = floatingIp.InstanceID
 	publicIPInfo.IP = floatingIp.IP
 	publicIPInfo.Pool = floatingIp.Pool
-	
+
 	return publicIPInfo
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo irs.PublicIPReqInfo) (irs.PublicIPInfo, error) {
-	
+
 	// @TODO: PublicIP 생성 요청 파라미터 정의 필요
 	type PublicIPReqInfo struct {
 		Pool string
@@ -40,7 +40,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo 
 	reqInfo := PublicIPReqInfo{
 		Pool: "public1", // Floating IP가 할당되는 IP Pool 정보
 	}
-	
+
 	createOpts := floatingip.CreateOpts{
 		Pool: reqInfo.Pool,
 	}
@@ -48,14 +48,14 @@ func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo 
 	if err != nil {
 		return irs.PublicIPInfo{}, err
 	}
-	
+
 	spew.Dump(publicIPInfo)
 	return irs.PublicIPInfo{Id: publicIPInfo.ID}, nil
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIPInfo, error) {
 	var publicIPList []*PublicIPInfo
-	
+
 	pager := floatingip.List(publicIPHandler.Client)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		// Get PublicIP
@@ -73,7 +73,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIP
 	if err != nil {
 		return nil, err
 	}
-	
+
 	spew.Dump(publicIPList)
 	return nil, nil
 }
@@ -83,15 +83,27 @@ func (publicIPHandler *OpenStackPublicIPHandler) GetPublicIP(publicIPID string) 
 	if err != nil {
 		return irs.PublicIPInfo{}, err
 	}
-	
+
 	publicIPInfo := new(PublicIPInfo).setter(*floatingIP)
-	
+
 	spew.Dump(publicIPInfo)
-	return irs.PublicIPInfo{}, nil
+	return irs.PublicIPInfo{Id: publicIPInfo.IP}, nil
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) DeletePublicIP(publicIPID string) (bool, error) {
 	err := floatingip.Delete(publicIPHandler.Client, publicIPID).ExtractErr()
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (publicIPHandler *OpenStackPublicIPHandler) AssociatePublicIP(serverID string, publicIPID string) (bool, error) {
+	associateOpts := floatingip.AssociateOpts{
+		ServerID:   serverID,
+		FloatingIP: publicIPID,
+	}
+	err := floatingip.AssociateInstance(publicIPHandler.Client, associateOpts).ExtractErr()
 	if err != nil {
 		return false, err
 	}
