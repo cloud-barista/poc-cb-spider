@@ -19,19 +19,15 @@ func (nicHandler *ClouditNicHandler) CreateVNic(vNicReqInfo irs.VNicReqInfo) (ir
 	return irs.VNicInfo{}, nil
 }
 
-//Todo : 401에러 수정 중
 func (nicHandler *ClouditNicHandler) ListVNic() ([]*irs.VNicInfo, error) {
 	nicHandler.Client.TokenID = nicHandler.CredentialInfo.AuthToken
 	authHeader := nicHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
-	serverId := "7b35148e-b033-4749-a29e-12beddaebbfa"
+
+	serverId := "025e5edc-54ad-4b98-9292-6eeca4c36a6d"
 	vNicList, err := nic.List(nicHandler.Client, serverId, &requestOpts)
 	if err != nil {
 		panic(err)

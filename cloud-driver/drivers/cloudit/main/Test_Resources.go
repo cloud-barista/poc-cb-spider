@@ -5,7 +5,7 @@ import (
 	cidrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
@@ -29,7 +29,7 @@ func testPublicIPHanlder(config Config) {
 
 	var publicIPId string
 	var ip string
-	ip = "182.252.135.55"
+	ip = "182.252.135.54"
 
 Loop:
 	for {
@@ -88,7 +88,7 @@ func testSecurityHandler(config Config) {
 
 	//var securityId string
 	securityId := "83c9a5ca-4f90-447f-8cc6-97645fb1a63e"
-	securityGroupId := "aa7f11ab-3023-44d6-b8ac-0d78b72cb72d"
+	securityGroupId := "f27f9d91-5c77-4016-b548-dbdab31f2662"
 
 Loop:
 	for {
@@ -203,6 +203,9 @@ func testVNicHandler(config Config) {
 	fmt.Println("1. ListVNicwork()")
 	fmt.Println("2. Exit")
 
+	//var serverId string
+	//serverId = ""
+
 Loop:
 	for {
 		var commandNum int
@@ -313,7 +316,6 @@ Loop:
 			case 6:
 				testVNicHandler(config)
 				showTestHandlerInfo()
-
 			case 7:
 				fmt.Println("Exit Test ResourceHandler Program")
 				break Loop
@@ -364,6 +366,6 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-	spew.Dump(config)
+	//spew.Dump(config)
 	return config
 }

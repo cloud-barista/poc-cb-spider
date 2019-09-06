@@ -23,17 +23,17 @@ func (securityHandler *ClouditSecurityHandler) CreateSecurity(securityReqInfo ir
 	type SecurityReqInfo struct {
 		Name       string `json:"name" required:"true"`
 		Protection int    `json:"protection" required:"false"`
-		Rules      []struct {
+		/*Rules      []struct {
 			Name     string `json:"name" required:"false"`
 			Protocol string `json:"protocol" required:"false"`
 			Port     int    `json:"port" required:"false"`
 			Target   string `json:"target" required:"false"`
 			Type     string `json:"type" required:"false"`
-		} `json:"rules" required:"false"`
+		} `json:"rules" required:"false"`*/
 	}
 
 	reqInfo := SecurityReqInfo{
-		Name:       "test-Dong333",
+		Name:       "test-Dong1",
 		Protection: 0,
 		//Rules : "",
 	}
@@ -47,8 +47,8 @@ func (securityHandler *ClouditSecurityHandler) CreateSecurity(securityReqInfo ir
 	if err != nil {
 		return irs.SecurityInfo{}, err
 	}
-
 	spew.Dump(security)
+
 	return irs.SecurityInfo{}, nil
 }
 
@@ -57,10 +57,6 @@ func (securityHandler *ClouditSecurityHandler) ListSecurity() ([]*irs.SecurityIn
 	authHeader := securityHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
@@ -106,15 +102,13 @@ func (securityHandler *ClouditSecurityHandler) DeleteSecurity(securityID string)
 	authHeader := securityHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
-	security, _ := securitygroup.Delete(securityHandler.Client, securityID, &requestOpts)
-	spew.Dump(security)
+	err := securitygroup.Delete(securityHandler.Client, securityID, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 
 	return true, nil
 }
