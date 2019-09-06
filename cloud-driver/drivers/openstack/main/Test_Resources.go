@@ -357,11 +357,13 @@ func testRouterHandler(config Config) {
 	routerHandler := resourceHandler.(osrs.OpenStackRouterHandler)
 
 	fmt.Println("Test RouterHandler")
-	fmt.Println("1. ListVNic()")
-	fmt.Println("2. GetVNic()")
-	fmt.Println("3. CreateVNic()")
-	fmt.Println("4. DeleteVNic()")
-	fmt.Println("5. Exit")
+	fmt.Println("1. ListRouter()")
+	fmt.Println("2. GetRouter()")
+	fmt.Println("3. CreateRouter()")
+	fmt.Println("4. DeleteRouter()")
+	fmt.Println("5. AddInterface()")
+	fmt.Println("6. DeleteInterface()")
+	fmt.Println("7. Exit")
 
 	var routerId string
 
@@ -386,7 +388,11 @@ Loop:
 				fmt.Println("Finish GetRouter()")
 			case 3:
 				fmt.Println("Start CreateRouter() ...")
-				reqInfo := irs.RouterReqInfo{}
+				reqInfo := osrs.RouterReqInfo{
+					Name:         config.Openstack.Router.Name,
+					GateWayId:    config.Openstack.Router.GateWayId,
+					AdminStateUp: config.Openstack.Router.AdminStateUp,
+				}
 				router, err := routerHandler.CreateRouter(reqInfo)
 				if err != nil {
 					panic(err)
@@ -398,6 +404,24 @@ Loop:
 				routerHandler.DeleteRouter(routerId)
 				fmt.Println("Finish DeleteRouter()")
 			case 5:
+				fmt.Println("Start AddInterface() ...")
+				reqInfo := osrs.InterfaceReqInfo{
+					SubnetId: config.Openstack.Subnet.Id,
+					RouterId: routerId,
+				}
+				_, err := routerHandler.AddInterface(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish AddInterface()")
+			case 6:
+				fmt.Println("Start DeleteInterface() ...")
+				_, err := routerHandler.DeleteInterface(routerId, config.Openstack.Subnet.Id)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish DeleteInterface()")
+			case 7:
 				fmt.Println("Exit")
 				break Loop
 			}
@@ -549,6 +573,16 @@ type Config struct {
 		VirtualNetwork struct {
 			Name string `yaml:"name"`
 		} `yaml:"vnet_info"`
+
+		Subnet struct {
+			Id string `yaml:"id"`
+		} `yaml:"subnet_info"`
+
+		Router struct {
+			Name         string `yaml:"name"`
+			GateWayId    string `yaml:"gateway_id"`
+			AdminStateUp bool   `yaml:"adminstatup"`
+		} `yaml:"router_info"`
 	} `yaml:"openstack"`
 }
 

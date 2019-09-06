@@ -26,7 +26,7 @@ func (OpenStackDriver) GetDriverVersion() string {
 
 func (OpenStackDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	var drvCapabilityInfo idrv.DriverCapabilityInfo
-	
+
 	drvCapabilityInfo.ImageHandler = true
 	drvCapabilityInfo.VNetworkHandler = true
 	drvCapabilityInfo.SecurityHandler = true
@@ -34,7 +34,7 @@ func (OpenStackDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	drvCapabilityInfo.VNicHandler = false
 	drvCapabilityInfo.PublicIPHandler = true
 	drvCapabilityInfo.VMHandler = true
-	
+
 	return drvCapabilityInfo
 }
 
@@ -59,9 +59,9 @@ func (driver *OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) 
 	// 2. create a client object(or service  object) of Test A Cloud with credential info.
 	// 3. create CloudConnection Instance of "connect/TDA_CloudConnection".
 	// 4. return CloudConnection Interface of TDA_CloudConnection.
-	
+
 	// sample code, do not user like this^^
-	
+
 	Client, err := getServiceClient(connectionInfo)
 	if err != nil {
 		panic(err)
@@ -74,9 +74,9 @@ func (driver *OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) 
 	if err != nil {
 		panic(err)
 	}
-	
+
 	iConn := oscon.OpenStackCloudConnection{Client, ImageClient, NetworkClient}
-	
+
 	return &iConn, nil // return type: (icon.CloudConnection, error)
 }
 
@@ -115,7 +115,7 @@ func (driver *OpenStackDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) 
 
 // moved by powerkim, 2019.07.29.
 func getServiceClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient, error) {
-	
+
 	authOpts := gophercloud.AuthOptions{
 		IdentityEndpoint: connInfo.CredentialInfo.IdentityEndpoint,
 		Username:         connInfo.CredentialInfo.Username,
@@ -123,47 +123,47 @@ func getServiceClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient,
 		DomainName:       connInfo.CredentialInfo.DomainName,
 		TenantID:         connInfo.CredentialInfo.ProjectID,
 	}
-	
+
 	provider, err := openstack.AuthenticatedClient(authOpts)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	client, err := openstack.NewComputeV2(provider, gophercloud.EndpointOpts{
 		Region: connInfo.RegionInfo.Region,
 	})
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return client, err
 }
 
 func getImageClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient, error) {
-	
+
 	client, err := openstack.NewClient(connInfo.CredentialInfo.IdentityEndpoint)
-	
+
 	authOpts := gophercloud.AuthOptions{
 		//IdentityEndpoint: connInfo.CredentialInfo.IdentityEndpoint,
-		Username:         connInfo.CredentialInfo.Username,
-		Password:         connInfo.CredentialInfo.Password,
-		DomainName:       connInfo.CredentialInfo.DomainName,
-		TenantID:         connInfo.CredentialInfo.ProjectID,
+		Username:   connInfo.CredentialInfo.Username,
+		Password:   connInfo.CredentialInfo.Password,
+		DomainName: connInfo.CredentialInfo.DomainName,
+		TenantID:   connInfo.CredentialInfo.ProjectID,
 	}
 	err = openstack.AuthenticateV3(client, authOpts)
-	
+
 	c, err := openstack.NewImageServiceV2(client, gophercloud.EndpointOpts{
 		Region: connInfo.RegionInfo.Region,
 	})
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return c, err
 }
 
 func getNetworkClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient, error) {
-	
+
 	authOpts := gophercloud.AuthOptions{
 		IdentityEndpoint: connInfo.CredentialInfo.IdentityEndpoint,
 		Username:         connInfo.CredentialInfo.Username,
@@ -171,12 +171,12 @@ func getNetworkClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient,
 		DomainName:       connInfo.CredentialInfo.DomainName,
 		TenantID:         connInfo.CredentialInfo.ProjectID,
 	}
-	
+
 	provider, err := openstack.AuthenticatedClient(authOpts)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
 		Name:   "neutron",
 		Region: connInfo.RegionInfo.Region,
@@ -184,7 +184,7 @@ func getNetworkClient(connInfo idrv.ConnectionInfo) (*gophercloud.ServiceClient,
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return client, err
 }
 

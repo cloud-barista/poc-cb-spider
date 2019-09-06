@@ -42,9 +42,9 @@ func testCreateVM() {
 	//imageHandler, _ := cloudConnection.CreateImageHandler()
 	vNetworkHandler, _ := cloudConnection.CreateVNetworkHandler()
 	securityHandler, _ := cloudConnection.CreateSecurityHandler()
+	//keyPairHandler, _ := cloudConnection.CreateKeyPairHandler()
 	vmHandler, _ := cloudConnection.CreateVMHandler()
 	publicIPHandler, _ := cloudConnection.CreatePublicIPHandler()
-	//vNicHandler, _ := cloudConnection.CreateVNicHandler()
 
 	// TODO: RouterHandler 인터페이스 추가
 	osConnection := cloudConnection.(*osconn.OpenStackCloudConnection)
@@ -59,13 +59,17 @@ func testCreateVM() {
 
 	// 2. Router 생성 및 인터페이스 등록
 	// Router 생성
-	routerReqInfo := irs.RouterReqInfo{Name: config.Openstack.Router.Name}
+	routerReqInfo := osrs.RouterReqInfo{
+		Name:         config.Openstack.Router.Name,
+		GateWayId:    config.Openstack.Router.GateWayId,
+		AdminStateUp: config.Openstack.Router.AdminStateUp,
+	}
 	router, err := routerHandler.CreateRouter(routerReqInfo)
 	if err != nil {
 		panic(err)
 	}
 	// 인터페이스 등록(연결)
-	irReqInfo := irs.InterfaceReqInfo{RouterId: router.Id, SubnetId: vNet.SubnetId}
+	irReqInfo := osrs.InterfaceReqInfo{RouterId: router.Id, SubnetId: vNet.SubnetId}
 	_, err = routerHandler.AddInterface(irReqInfo)
 	if err != nil {
 		panic(err)
@@ -79,6 +83,11 @@ func testCreateVM() {
 	}
 
 	// 4. KeyPair 생성
+	/*keypairReqInfo := irs.KeyPairReqInfo{Name: config.Openstack.KeyPair.Name}
+	keypair, err := keyPairHandler.CreateKey(keypairReqInfo)
+	if err != nil {
+		panic(err)
+	}*/
 
 	// 5. VM 생성
 	vmReqInfo := irs.VMReqInfo{
@@ -111,12 +120,14 @@ func testCreateVM() {
 	if err != nil {
 		panic(err)
 	}
-	
+
+	// 네트워크 초기화
 	time.Sleep(time.Second * 10)
-	
+
 	// PublicIP 할당
+	IP, err := publicIPHandler.GetPublicIP(publicIP.Id)
 	openStackPublicIPHandler := publicIPHandler.(*osrs.OpenStackPublicIPHandler)
-	_, err = openStackPublicIPHandler.AssociatePublicIP(vm.Id, publicIP.Id)
+	_, err = openStackPublicIPHandler.AssociatePublicIP(vm.Id, IP.Id)
 	if err != nil {
 		panic(err)
 	}
@@ -157,9 +168,10 @@ type Config struct {
 		} `yaml:"vnet_info"`
 
 		Router struct {
-			Name string `yaml:"name"`
+			Name         string `yaml:"name"`
+			GateWayId    string `yaml:"gateway_id"`
+			AdminStateUp bool   `yaml:"adminstatup"`
 		} `yaml:"router_info"`
-		
 	} `yaml:"openstack"`
 }
 

@@ -108,13 +108,6 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 		},
 		{
 			//ParentGroupID: group.ID,
-			FromPort:   3306,
-			ToPort:     3306,
-			IPProtocol: "TCP",
-			CIDR:       "0.0.0.0/0",
-		},
-		{
-			//ParentGroupID: group.ID,
 			FromPort:    3306,
 			ToPort:      3306,
 			IPProtocol:  "TCP",
@@ -122,10 +115,10 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 		},
 		{
 			//ParentGroupID: group.ID,
-			FromPort:    0,
-			ToPort:      0,
-			IPProtocol:  "ICMP",
-			FromGroupID: group.ID,
+			FromPort:   -1,
+			ToPort:     -1,
+			IPProtocol: "ICMP",
+			CIDR:       "0.0.0.0/0",
 		},
 	}
 
