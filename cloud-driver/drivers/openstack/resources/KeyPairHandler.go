@@ -32,7 +32,7 @@ func (keyPairInfo *KeyPairInfo) setter(keypair keypairs.KeyPair) *KeyPairInfo {
 }
 
 func (keyPairHandler *OpenStackKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReqInfo) (irs.KeyPairInfo, error) {
-	
+
 	create0pts := keypairs.CreateOpts{
 		Name: keyPairReqInfo.Name,
 	}
@@ -40,9 +40,9 @@ func (keyPairHandler *OpenStackKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyP
 	if err != nil {
 		return irs.KeyPairInfo{}, err
 	}
-	
+
 	spew.Dump(keyPairInfo)
-	return irs.KeyPairInfo{}, nil
+	return irs.KeyPairInfo{Name: keyPairInfo.Name}, nil
 }
 
 func (keyPairHandler *OpenStackKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {

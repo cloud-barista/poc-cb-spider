@@ -50,7 +50,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) CreatePublicIP(publicIPReqInfo 
 	}
 
 	spew.Dump(publicIPInfo)
-	return irs.PublicIPInfo{Id: publicIPInfo.IP}, nil
+	return irs.PublicIPInfo{Id: publicIPInfo.ID}, nil
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) ListPublicIP() ([]*irs.PublicIPInfo, error) {
@@ -87,7 +87,7 @@ func (publicIPHandler *OpenStackPublicIPHandler) GetPublicIP(publicIPID string) 
 	publicIPInfo := new(PublicIPInfo).setter(*floatingIP)
 
 	spew.Dump(publicIPInfo)
-	return irs.PublicIPInfo{}, nil
+	return irs.PublicIPInfo{Id: publicIPInfo.IP}, nil
 }
 
 func (publicIPHandler *OpenStackPublicIPHandler) DeletePublicIP(publicIPID string) (bool, error) {
