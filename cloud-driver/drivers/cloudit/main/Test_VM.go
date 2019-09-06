@@ -62,7 +62,6 @@ func testVMHandler() {
 				fmt.Println("Start Get VM ...")
 				vmInfo := vmHandler.GetVM(config.Cloudit.ServerId)
 				spew.Dump(vmInfo)
-				//vmHandler.GetVM(config.Cloudit.ServerId)
 				fmt.Println("Finish Get VM")
 			case 3:
 				fmt.Println("Start List VMStatus ...")
@@ -78,7 +77,7 @@ func testVMHandler() {
 				fmt.Println("Finish Get VMStatus")
 			case 5:
 				fmt.Println("Start Create VM ...")
-				createVM(config, vmHandler)
+				//createVM(config, vmHandler)
 				fmt.Println("Finish Create VM")
 			case 6:
 				fmt.Println("Start Suspend VM ...")
@@ -146,13 +145,11 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-
+	
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Println("Loaded ConfigFile...")
-	spew.Dump(config)
 	return config
 }

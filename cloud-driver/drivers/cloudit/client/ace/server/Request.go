@@ -6,73 +6,83 @@ import (
 )
 
 type ServerInfo struct {
-	VolumeInfoList struct{}
-	VmNicInfoList  struct{}
+	VolumeInfoList interface{}
+	VmNicInfoList  interface{}
 	NicMapInfo     []struct {
 		Name    string
 		Count   int
-		Address string
+		Address string `json:"addr"`
 	}
 	PoolMapInfo []struct {
 		Name       string
 		Count      int
-		PoolID     string
-		Filesystem string
+		PoolID     string `json:"pool_id"`
+		FileSystem string
 	}
-	ID           string
-	TenantID     string
-	CpuNum       float32
-	MemSize      float32
-	VncPort      int
-	RepeaterPort int
-	State        string
-	NodeIp       string
-	NodeHostName string
-	Name         string
-	//Protection        int
-	//CreatedAt         time.Time
-	//CreatedAt         string
-	//IsoId             string
-	//IsoPath           string
-	//Iso               string
-	//Template          string
-	//TemplateID        string
-	//OsType            string
-	//RootPassword      string
-	//HostName          string
-	//Creator           string
-	//VolumeId          string
-	//VolumeSize        int
-	//VolumeMode        string
-	//MacAddr           string
-	//Spec              string
-	//SpecId            string
-	//Pool              string
-	//PoolId            string
-	//Cycle             int
-	//Metric            int
-	//MigrationPort     int
-	//MigrationIp       string
-	//Cloudinit         bool
-	//DeleteVolume      bool
-	//ServerCount       int
-	//PrivateIp         string
-	//AdaptiveIp        string
-	//InitCloud         int
-	//ClusterId         string
-	//ClusterName       string
-	//NicType           string
-	//Secgroups         string
-	//Ip                string
-	//SubnetAddr        string
-	//DeviceId          string
-	//Description       string
-	//DiskSize          int
-	//DiskCount         int
-	//IsoInsertedAt     time.Time
-	//Puppet            int
-	//TemplateOwnership string
-	VmStatInfo string
+	AdaptiveIpMapInfo []struct {
+		IP        string
+		Count     int
+		PrivateIP string `json:"private_ip"`
+	}
+	ID                string
+	TenantID          string
+	CpuNum            float32
+	MemSize           float32
+	VncPort           int
+	RepeaterPort      int
+	State             string
+	NodeIp            string
+	NodeHostName      string
+	Name              string
+	Protection        int
+	CreatedAt         string // time.Time
+	IsoId             string
+	IsoPath           string
+	Iso               string
+	Template          string
+	TemplateID        string
+	OsType            string
+	RootPassword      string
+	HostName          string
+	Creator           string
+	VolumeId          string
+	VolumeSize        int
+	VolumeMode        string
+	MacAddr           string
+	Spec              string
+	SpecId            string
+	Pool              string
+	PoolId            string
+	Cycle             int
+	Metric            int
+	MigrationPort     int
+	MigrationIp       string
+	Cloudinit         bool
+	DeleteVolume      bool
+	ServerCount       int
+	PrivateIp         string
+	AdaptiveIp        string
+	InitCloud         int
+	ClusterId         string
+	ClusterName       string
+	NicType           string
+	Secgroups         string
+	Ip                string
+	SubnetAddr        string
+	DeviceId          string
+	Gpu               string
+	GpuCount          int
+	GpuId             string
+	Description       string
+	DiskSize          int
+	DiskCount         int
+	IsoInsertedAt     string
+	Puppet            int
+	SshKeyName        string
+	SshPublicKey      string
+	TemplateOwnership string
+	TemplateType      string
+	VmStatInfo        string
 }
 
 // create
@@ -110,150 +120,53 @@ func Start(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]S
 
 //shutdown
 // TODO: 테스트 완료
-func Suspend(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
+func Suspend(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) error {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "shutdown")
 	fmt.Println(requestURL)
 
 	var result client.Result
-	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
-		return nil, result.Err
+	if _, result.Err = restClient.Post(requestURL, nil, nil, requestOpts); result.Err != nil {
+		return result.Err
 	}
-
-	var server []ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-
-	return &server, nil
+	return nil
 }
 
 //start
 // TODO: 테스트 완료
-func Resume(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
+func Resume(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) error {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "start")
 	fmt.Println(requestURL)
 
 	var result client.Result
-	//post  2번재 body interface -> result.Body?
-	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
-		return nil, result.Err
+	if _, result.Err = restClient.Post(requestURL, nil, nil, requestOpts); result.Err != nil {
+		return result.Err
 	}
-
-	var server []ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-
-	return &server, nil
+	return nil
 }
 
 //reboot
-func Reboot(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
+func Reboot(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) error {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "reboot")
 	fmt.Println(requestURL)
 
 	var result client.Result
-	//post  2번재 body interface -> result.Body?
-	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
-		return nil, result.Err
+	if _, result.Err = restClient.Post(requestURL, nil, nil, requestOpts); result.Err != nil {
+		return result.Err
 	}
-
-	var server []ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-
-	return &server, nil
+	return nil
 }
 
 //delete
-func Terminate(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
+func Terminate(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) error {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
 	fmt.Println(requestURL)
 
 	var result client.Result
 	if _, result.Err = restClient.Delete(requestURL, requestOpts); result.Err != nil {
-		return nil, result.Err
+		return result.Err
 	}
-
-	var server []ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-
-	return &server, nil
+	return nil
 }
-
-//Todo 수정중
-func ListStatus(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", "state")
-	fmt.Println(requestURL)
-
-	var result client.Result
-	if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil {
-		return nil, result.Err
-	}
-
-	var server []ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-
-	return &server, nil
-}
-
-//Todo 수정중
-func GetStatus(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "state")
-	fmt.Println(requestURL)
-
-	statusInfo := ServerInfo{
-		//VolumeInfoList: struct{}{},
-		//VmNicInfoList:  struct{}{},
-		//NicMapInfo:     nil,
-		//PoolMapInfo:    nil,
-		ID:       "",
-		TenantID: "",
-		//CpuNum:         0,
-		//MemSize:        0,
-		//VncPort:        0,
-		//RepeaterPort:   0,
-		State: "",
-		//NodeIp:         "",
-		//NodeHostName:   "",
-		Name:       "",
-		VmStatInfo: "",
-	}
-
-	var result client.Result
-	_, result.Err = restClient.Get(requestURL, &result.Body, requestOpts)
-
-	server := statusInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-	return &server, nil
-
-	return nil, nil
-}
-
-/*
-func GetStatus(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "state")
-	fmt.Println(requestURL)
-
-	var result client.Result
-	_, result.Err = restClient.Get(requestURL, &result.Body, requestOpts)
-
-	var server ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-	return &server, nil
-
-
-	return nil , nil
-}*/
 
 func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
@@ -269,14 +182,6 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Se
 		return nil, err
 	}
 	return &server, nil
-
-	/*var serverList []ServerInfo
-	resultBody := result.Body.(map[string]string)
-	for _, body := range resultBody {
-		server := extractServer(body)
-	}
-
-	return nil*/
 }
 
 func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
@@ -291,13 +196,4 @@ func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOp
 		return nil, err
 	}
 	return &server, nil
-	//return extractServer(result)
-}
-
-func extractServer(result client.Result) (*ServerInfo, error) {
-	server := new(ServerInfo)
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-	return server, nil
 }
