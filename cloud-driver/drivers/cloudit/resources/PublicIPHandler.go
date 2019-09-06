@@ -26,9 +26,9 @@ func (publicIPHandler *ClouditPublicIPHandler) CreatePublicIP(publicIPReqInfo ir
 		Protection int    `json:"protection" required:"true"`
 	}
 	reqInfo := PublicIPReqInfo{
-		IP:         "182.252.135.59",
+		IP:         "182.252.135.54",
 		Name:       "test-dong1",
-		PrivateIP:  "10.0.0.2",
+		PrivateIP:  "10.0.8.2",
 		Protection: 0,
 	}
 
@@ -39,10 +39,10 @@ func (publicIPHandler *ClouditPublicIPHandler) CreatePublicIP(publicIPReqInfo ir
 
 	publicIP, err := adaptiveip.Create(publicIPHandler.Client, &createOpts)
 	if err != nil {
-		return irs.PublicIPInfo{}, err
+		panic(err)
 	}
-
 	spew.Dump(publicIP)
+
 	return irs.PublicIPInfo{}, nil
 }
 
@@ -51,10 +51,6 @@ func (publicIPHandler *ClouditPublicIPHandler) ListPublicIP() ([]*irs.PublicIPIn
 	authHeader := publicIPHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
@@ -70,27 +66,22 @@ func (publicIPHandler *ClouditPublicIPHandler) ListPublicIP() ([]*irs.PublicIPIn
 	return nil, nil
 }
 
-//Todo : GET 문서에 없음
 func (publicIPHandler *ClouditPublicIPHandler) GetPublicIP(publicIPID string) (irs.PublicIPInfo, error) {
-
 	return irs.PublicIPInfo{}, nil
 }
 
-//Todo : 테스트 필요  문서 API 포스트맨도 사용안됨(맞는 ip입력시 변화없음)
 func (publicIPHandler *ClouditPublicIPHandler) DeletePublicIP(publicIPID string) (bool, error) {
 	publicIPHandler.Client.TokenID = publicIPHandler.CredentialInfo.AuthToken
 	authHeader := publicIPHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
-	publicIP, _ := adaptiveip.Delete(publicIPHandler.Client, publicIPID, &requestOpts)
-	spew.Dump(publicIP)
+	err := adaptiveip.Delete(publicIPHandler.Client, publicIPID, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 
 	return true, nil
 }

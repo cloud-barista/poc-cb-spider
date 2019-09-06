@@ -15,16 +15,16 @@ type SecurityGroupRules struct {
 	Target     string
 	Protocol   string
 	Creator    string
-	//CreatedAt  time.Time
+	CreatedAt  string
 }
 
 type SecurityGroupInfo struct {
-	ID       string
-	Name     string
-	TenantID string
-	Creator  string
-	State    string
-	//CreatedAt  time.Time
+	ID         string
+	Name       string
+	TenantID   string
+	Creator    string
+	State      string
+	CreatedAt  string
 	Protection int
 	//Rules      []SecurityGroupRules
 	Rules []struct {
@@ -36,7 +36,7 @@ type SecurityGroupInfo struct {
 		Target     string
 		Protocol   string
 		Creator    string
-		//CreatedAt  time.Time
+		CreatedAt  string
 	}
 	RulesCount  int
 	Description string
@@ -78,27 +78,13 @@ func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOp
 	//return extractServer(result)
 }
 
-func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (SecurityGroupInfo, error) {
+func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SecurityGroupInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.IAM, "securitygroups")
 	fmt.Println(requestURL)
 
 	var result client.Result
-	_, result.Err = restClient.Post(requestURL, requestOpts.JSONBody, &result.Body, requestOpts)
 
-	var securityGroup SecurityGroupInfo
-	if err := result.ExtractInto(&securityGroup); err != nil {
-		return SecurityGroupInfo{}, nil
-	}
-
-	return securityGroup, nil
-}
-
-func Delete(restClient *client.RestClient, securitygroupId string, requestOpts *client.RequestOpts) (*[]SecurityGroupInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.IAM, "securitygroups", securitygroupId)
-	fmt.Println(requestURL)
-
-	var result client.Result
-	if _, result.Err = restClient.Delete(requestURL, requestOpts); result.Err != nil {
+	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
 		return nil, result.Err
 	}
 
@@ -110,10 +96,14 @@ func Delete(restClient *client.RestClient, securitygroupId string, requestOpts *
 	return &securityGroup, nil
 }
 
-/*func extractSecurityGroup(result client.Result) (*SecurityGroupInfo, error) {
-	securityGroup := new(SecurityGroupInfo)
-	if err := result.ExtractInto(&securityGroup); err != nil {
-		return nil, err
+func Delete(restClient *client.RestClient, securitygroupId string, requestOpts *client.RequestOpts) error {
+	requestURL := restClient.CreateRequestBaseURL(client.IAM, "securitygroups", securitygroupId)
+	fmt.Println(requestURL)
+
+	var result client.Result
+	if _, result.Err = restClient.Delete(requestURL, requestOpts); result.Err != nil {
+		return result.Err
 	}
-	return securityGroup, nil
-}*/
+
+	return nil
+}

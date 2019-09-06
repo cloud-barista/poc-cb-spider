@@ -28,12 +28,15 @@ type ClouditVMHandler struct {
 func (vmHandler *ClouditVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo, error) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-	
+
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
 
-	vm, _ := server.Start(vmHandler.Client, &requestOpts)
+	vm, err := server.Start(vmHandler.Client, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 	spew.Dump(vm)
 
 	return irs.VMInfo{}, nil
@@ -46,7 +49,7 @@ func (vmHandler *ClouditVMHandler) SuspendVM(vmID string) {
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
-	
+
 	err := server.Suspend(vmHandler.Client, vmID, &requestOpts)
 	if err != nil {
 		panic(err)
@@ -56,11 +59,11 @@ func (vmHandler *ClouditVMHandler) SuspendVM(vmID string) {
 func (vmHandler *ClouditVMHandler) ResumeVM(vmID string) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-	
+
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
-	
+
 	err := server.Resume(vmHandler.Client, vmID, &requestOpts)
 	if err != nil {
 		panic(err)
@@ -70,7 +73,7 @@ func (vmHandler *ClouditVMHandler) ResumeVM(vmID string) {
 func (vmHandler *ClouditVMHandler) RebootVM(vmID string) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-	
+
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
@@ -84,7 +87,7 @@ func (vmHandler *ClouditVMHandler) RebootVM(vmID string) {
 func (vmHandler *ClouditVMHandler) TerminateVM(vmID string) {
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
-	
+
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
@@ -102,22 +105,22 @@ func (vmHandler *ClouditVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
-	
+
 	vmList, err := server.List(vmHandler.Client, &requestOpts)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	var vmStatusList []*irs.VMStatusInfo
-	
+
 	for _, vm := range *vmList {
 		vmStatusInfo := irs.VMStatusInfo{
-			VmId: vm.ID,
+			VmId:     vm.ID,
 			VmStatus: irs.VMStatus(vm.State),
 		}
 		vmStatusList = append(vmStatusList, &vmStatusInfo)
 	}
-	
+
 	return vmStatusList
 }
 
@@ -128,7 +131,7 @@ func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
-	
+
 	vm, _ := server.Get(vmHandler.Client, vmID, &requestOpts)
 	return irs.VMStatus(vm.State)
 }

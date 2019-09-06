@@ -35,7 +35,7 @@ type ServerInfo struct {
 	NodeHostName      string
 	Name              string
 	Protection        int
-	CreatedAt         string // time.Time
+	CreatedAt         string
 	IsoId             string
 	IsoPath           string
 	Iso               string
@@ -86,25 +86,11 @@ type ServerInfo struct {
 }
 
 // create
-// TODO: 수정중
 func Start(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
 	fmt.Println(requestURL)
 
-	//vmCreate := ServerInfo{
-	//	ID: "id",
-	//	Name: "name",
-	//}
-
 	var result client.Result
-
-	//생성에 필요한 정보들 다 불러오기
-
-	//if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil{
-	//	errMsg := fmt.Sprintf("VirtualMachine with name already exist")
-	//	result.Err = errors.New(errMsg)
-	//	return nil, result.Err
-	//}
 
 	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
 		return nil, result.Err
@@ -119,7 +105,6 @@ func Start(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]S
 }
 
 //shutdown
-// TODO: 테스트 완료
 func Suspend(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) error {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "shutdown")
 	fmt.Println(requestURL)
@@ -132,7 +117,6 @@ func Suspend(restClient *client.RestClient, id string, requestOpts *client.Reque
 }
 
 //start
-// TODO: 테스트 완료
 func Resume(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) error {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id, "start")
 	fmt.Println(requestURL)

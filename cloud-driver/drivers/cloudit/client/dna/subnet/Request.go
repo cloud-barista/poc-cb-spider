@@ -6,36 +6,37 @@ import (
 )
 
 type SubnetInfo struct {
-	ID         string
-	TenantId   string
-	Addr       string
-	Prefix     string
-	Gateway    string
-	Creator    string
-	Protection int
-	Name       string
-	State      string
-	Vlan       int
-	//CreatedAt   time.Time
+	ID          string
+	TenantId    string
+	Addr        string
+	Prefix      string
+	Gateway     string
+	Creator     string
+	Protection  int
+	Name        string
+	State       string
+	Vlan        int
+	CreatedAt   string
 	NicCount    int
 	Description string
 }
 
-func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (SubnetInfo, error) {
+func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
 	fmt.Println(requestURL)
 
 	var result client.Result
-	_, result.Err = restClient.Post(requestURL, requestOpts.JSONBody, &result.Body, requestOpts)
-	if result.Err != nil {
-		return SubnetInfo{}, result.Err
+
+	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
+		return nil, result.Err
 	}
 
-	var subnet SubnetInfo
+	var subnet []SubnetInfo
 	if err := result.ExtractInto(&subnet); err != nil {
-		return SubnetInfo{}, err
+		return nil, err
 	}
-	return subnet, nil
+
+	return &subnet, nil
 }
 
 func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
@@ -54,19 +55,14 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Su
 	return &subnet, nil
 }
 
-func Delete(restClient *client.RestClient, addr string, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
+func Delete(restClient *client.RestClient, addr string, requestOpts *client.RequestOpts) error {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets", addr)
 	fmt.Println(requestURL)
 
 	var result client.Result
 	if _, result.Err = restClient.Delete(requestURL, requestOpts); result.Err != nil {
-		return nil, result.Err
+		return result.Err
 	}
 
-	var subnet []SubnetInfo
-	if err := result.ExtractInto(&subnet); err != nil {
-		return nil, err
-	}
-
-	return &subnet, nil
+	return nil
 }

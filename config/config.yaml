@@ -91,8 +91,10 @@ cloudit:
   user_id: cloudit
   password: cloudit
   identity_endpoint: http://stg.cloudit.co.kr:9090
-  auth_token: ddd8e54a5bac82eea3de7c347ff8a253d0dc563d
-  tenant_id: tnt0008
+#  auth_token: ddd8e54a5bac82eea3de7c347ff8a253d0dc563d
+  auth_token: 05ae4abeebf06cc29a1d5c96c5fc4459abf7ee1d
+#  tenant_id: tnt0008
+  tenant_id: tnt0009
   server_id: 7b35148e-b033-4749-a29e-12beddaebbfa
 
 

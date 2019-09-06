@@ -23,10 +23,16 @@ func (vNetworkHandler *ClouditVNetworkHandler) CreateVNetwork(vNetReqInfo irs.VN
 	type VNetworkReqInfo struct {
 		Name       string `json:"name" required:"true"`
 		Protection int    `json:"protection" required:"true"`
+		Prefix     string `json:"prefix" required:"true"`
+		Gateway    string `json:"gateway" required:"true"`
+		Addr       string `json:"addr" required:"true"`
 	}
 	reqInfo := VNetworkReqInfo{
-		Name:       "test-Dong222",
+		Name:       "test-Dong1",
 		Protection: 0,
+		Prefix:     "22",
+		Gateway:    "10.0.12.1",
+		Addr:       "10.0.12.0",
 	}
 
 	createOpts := client.RequestOpts{
@@ -36,10 +42,11 @@ func (vNetworkHandler *ClouditVNetworkHandler) CreateVNetwork(vNetReqInfo irs.VN
 
 	subnet, err := subnet.Create(vNetworkHandler.Client, &createOpts)
 	if err != nil {
-		return irs.VNetworkInfo{}, err
+		panic(err)
 	}
 
 	spew.Dump(subnet)
+
 	return irs.VNetworkInfo{}, nil
 }
 
@@ -48,10 +55,6 @@ func (vNetworkHandler *ClouditVNetworkHandler) ListVNetwork() ([]*irs.VNetworkIn
 	authHeader := vNetworkHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
@@ -67,7 +70,6 @@ func (vNetworkHandler *ClouditVNetworkHandler) ListVNetwork() ([]*irs.VNetworkIn
 	return nil, nil
 }
 
-//Todo : GET 없음
 func (vNetworkHandler *ClouditVNetworkHandler) GetVNetwork(vNetworkID string) (irs.VNetworkInfo, error) {
 	return irs.VNetworkInfo{}, nil
 }
@@ -77,15 +79,13 @@ func (vNetworkHandler *ClouditVNetworkHandler) DeleteVNetwork(vNetworkID string)
 	authHeader := vNetworkHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
-	vNet, _ := subnet.Delete(vNetworkHandler.Client, vNetworkID, &requestOpts)
-	spew.Dump(vNet)
+	err := subnet.Delete(vNetworkHandler.Client, vNetworkID, &requestOpts)
+	if err != nil {
+		panic(err)
+	}
 
 	return true, nil
 }

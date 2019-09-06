@@ -47,7 +47,7 @@ func (cloudConn *ClouditCloudConnection) CreateKeyPairHandler() (irs.KeyPairHand
 
 func (cloudConn ClouditCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateVNicHandler()!")
-	vNicHandler := cirs.ClouditNicHandler{Client: &cloudConn.Client}
+	vNicHandler := cirs.ClouditNicHandler{cloudConn.CredentialInfo, &cloudConn.Client}
 	return &vNicHandler, nil
 }
 
