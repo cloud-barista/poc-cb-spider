@@ -31,7 +31,7 @@ type VmNicInfo struct {
 		TenantId   string `json:"tenant_id"`
 		SecGroupId string `json:"secgroup_id"`
 		Name       string
-		//Created_At	string	`json:"created_at"`
+		Created_at int
 		Protection int
 		State      string
 		Mac        string
