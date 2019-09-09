@@ -29,13 +29,43 @@ func (vmHandler *ClouditVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo,
 	vmHandler.Client.TokenID = vmHandler.CredentialInfo.AuthToken
 	authHeader := vmHandler.Client.AuthenticatedHeaders()
 
-	requestOpts := client.RequestOpts{
-		MoreHeaders: authHeader,
+	// @TODO: VM 생성 요청 파라미터 정의 필요
+	type SecGroupInfo struct {
+		Id string `json:"id" required:"true"`
+	}
+	type VMReqInfo struct {
+		TemplateId   string         `json:"templateId" required:"true"`
+		SpecId       string         `json:"specId" required:"true"`
+		Name         string         `json:"name" required:"true"`
+		HostName     string         `json:"hostName" required:"true"`
+		RootPassword string         `json:"rootPassword" required:"true"`
+		SubnetAddr   string         `json:"subnetAddr" required:"true"`
+		Secgroups    []SecGroupInfo `json:"secgroups" required:"true"`
+		Description  int            `json:"description" required:"false"`
+		Protection   int            `json:"protection" required:"false"`
 	}
 
+	reqInfo := VMReqInfo{
+		TemplateId:   vmReqInfo.ImageInfo.Id,
+		SpecId:       vmReqInfo.SpecID,
+		Name:         vmReqInfo.Name,
+		HostName:     vmReqInfo.Name,
+		RootPassword: vmReqInfo.LoginInfo.AdminPassword,
+		SubnetAddr:   vmReqInfo.VNetworkInfo.Id,
+		Secgroups: []SecGroupInfo{
+			{Id: vmReqInfo.SecurityInfo.Id},
+		},
+	}
+
+	requestOpts := client.RequestOpts{
+		MoreHeaders: authHeader,
+		JSONBody:    reqInfo,
+	}
+
+	spew.Dump(requestOpts)
 	vm, err := server.Start(vmHandler.Client, &requestOpts)
 	if err != nil {
-		panic(err)
+		return irs.VMInfo{}, err
 	}
 	spew.Dump(vm)
 

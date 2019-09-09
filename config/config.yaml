@@ -97,6 +97,16 @@ cloudit:
   tenant_id: tnt0009
   server_id: 7b35148e-b033-4749-a29e-12beddaebbfa
 
+  #Cloudit VM Create Info
+  vm_info:
+    template_id: 2813a6ed-66f8-4041-9cfa-2cb5cb416520
+    spec_id: 1c38e438-ede9-4df5-8775-2ce791698924
+    name: mcb-test-vm
+    root_password: 1qa2ws3ed!A
+    subnet_addr: 10.0.8.0
+    sec_groups: b2be62e7-fd29-43ff-b008-08ae736e092a
+    description: mcb-test-vm
+    protection: 0
 
   # Cloudit VNet(Subnet) Info
   virtual_network:

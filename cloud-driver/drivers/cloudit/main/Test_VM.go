@@ -12,7 +12,25 @@ import (
 )
 
 func createVM(config Config, vmHandler irs.VMHandler) {
-	vmReqInfo := irs.VMReqInfo{}
+
+	vmReqInfo := irs.VMReqInfo{
+		Name: config.Cloudit.VMInfo.Name,
+		ImageInfo: irs.ImageInfo{
+			Id: config.Cloudit.VMInfo.TemplateId,
+		},
+		SpecID: config.Cloudit.VMInfo.SpecId,
+		VNetworkInfo: irs.VNetworkInfo{
+			Id: config.Cloudit.VMInfo.SubnetAddr,
+		},
+		SecurityInfo: irs.SecurityInfo{
+			Id: config.Cloudit.VMInfo.SecGroups,
+		},
+		LoginInfo: irs.LoginInfo{
+			AdminPassword: config.Cloudit.VMInfo.RootPassword,
+		},
+	}
+
+	spew.Dump(vmReqInfo)
 
 	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
@@ -77,7 +95,7 @@ func testVMHandler() {
 				fmt.Println("Finish Get VMStatus")
 			case 5:
 				fmt.Println("Start Create VM ...")
-				//createVM(config, vmHandler)
+				createVM(config, vmHandler)
 				fmt.Println("Finish Create VM")
 			case 6:
 				fmt.Println("Start Suspend VM ...")
@@ -135,6 +153,17 @@ type Config struct {
 		TenantID         string `yaml:"tenant_id"`
 		ServerId         string `yaml:"server_id"`
 		AuthToken        string `yaml:"auth_token"`
+
+		VMInfo struct {
+			TemplateId   string `yaml:"template_id"`
+			SpecId       string `yaml:"spec_id"`
+			Name         string `yaml:"name"`
+			RootPassword string `yaml:"root_password"`
+			SubnetAddr   string `yaml:"subnet_addr"`
+			SecGroups    string `yaml:"sec_groups"`
+			Description  string `yaml:"description"`
+			Protection   int    `yaml:"protection"`
+		} `yaml:"vm_info"`
 	} `yaml:"cloudit"`
 }
 
@@ -145,7 +174,7 @@ func readConfigFile() Config {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	var config Config
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {

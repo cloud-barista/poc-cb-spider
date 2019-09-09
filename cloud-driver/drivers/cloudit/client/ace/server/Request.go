@@ -86,17 +86,16 @@ type ServerInfo struct {
 }
 
 // create
-func Start(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
+func Start(restClient *client.RestClient, requestOpts *client.RequestOpts) (*ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
 	fmt.Println(requestURL)
 
 	var result client.Result
-
-	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
+	if _, result.Err = restClient.Post(requestURL, &requestOpts.JSONBody, &result.Body, requestOpts); result.Err != nil {
 		return nil, result.Err
 	}
 
-	var server []ServerInfo
+	var server ServerInfo
 	if err := result.ExtractInto(&server); err != nil {
 		return nil, err
 	}
