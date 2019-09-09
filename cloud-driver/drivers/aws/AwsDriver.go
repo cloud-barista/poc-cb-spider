@@ -21,9 +21,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	//"github.com/aws/aws-sdk-go/aws"
-	//"github.com/aws/aws-sdk-go/aws/session"
-	//"github.com/aws/aws-sdk-go/service/ec2"
 )
 import "fmt"
 
@@ -31,7 +28,7 @@ type AwsDriver struct {
 }
 
 func (AwsDriver) GetDriverVersion() string {
-	return "TEST AWS DRIVER Version 0.1"
+	return "TEST AWS DRIVER Version 0.5"
 }
 
 func (AwsDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
@@ -40,7 +37,7 @@ func (AwsDriver) GetDriverCapability() idrv.DriverCapabilityInfo {
 	drvCapabilityInfo.ImageHandler = false
 	drvCapabilityInfo.VNetworkHandler = false
 	drvCapabilityInfo.SecurityHandler = false
-	drvCapabilityInfo.KeyPairHandler = false
+	drvCapabilityInfo.KeyPairHandler = true
 	drvCapabilityInfo.VNicHandler = false
 	drvCapabilityInfo.PublicIPHandler = false
 	drvCapabilityInfo.VMHandler = true
@@ -52,7 +49,6 @@ func getVMClient(regionInfo idrv.RegionInfo) (*ec2.EC2, error) {
 	// setup Region
 	fmt.Println("AwsDriver : getVMClient() - Region : [" + regionInfo.Region + "]")
 
-	//sess, err := ec2session.NewSession(&aws.Config{
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(regionInfo.Region)},
 	)
@@ -87,9 +83,17 @@ func (driver *AwsDriver) ConnectCloud(connectionInfo idrv.ConnectionInfo) (icon.
 
 	//iConn = acon.AwsCloudConnection{}
 	iConn := acon.AwsCloudConnection{
-		Region:   connectionInfo.RegionInfo,
-		VMClient: vmClient,
+		Region:        connectionInfo.RegionInfo,
+		VMClient:      vmClient,
+		KeyPairClient: vmClient,
+
+		VNetworkClient: vmClient,
+		VNicClient:     vmClient,
+		ImageClient:    vmClient,
+		PublicIPClient: vmClient,
+		SecurityClient: vmClient,
 	}
+
 	return &iConn, nil // return type: (icon.CloudConnection, error)
 }
 

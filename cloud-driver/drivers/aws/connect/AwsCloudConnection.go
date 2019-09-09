@@ -11,10 +11,10 @@
 package connect
 
 import (
-	"fmt"
-
+	cblog "github.com/cloud-barista/cb-log"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"github.com/sirupsen/logrus"
 
 	ars "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/aws/resources"
 
@@ -24,50 +24,76 @@ import (
 
 //type AwsCloudConnection struct{}
 type AwsCloudConnection struct {
-	Region idrv.RegionInfo
-	//Client *ec2.EC2
-	VMClient *ec2.EC2
+	Region        idrv.RegionInfo
+	KeyPairClient *ec2.EC2
+	VMClient      *ec2.EC2
+
+	VNetworkClient *ec2.EC2
+	VNicClient     *ec2.EC2
+	ImageClient    *ec2.EC2
+	PublicIPClient *ec2.EC2
+	SecurityClient *ec2.EC2
 }
 
-func (AwsCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
-	fmt.Println("TEST AWS Cloud Driver: called CreateVNetworkHandler()!")
-	return nil, nil
+var cblogger *logrus.Logger
+
+func init() {
+	// cblog is a global variable.
+	cblogger = cblog.GetLogger("AWS Connect")
 }
 
-func (AwsCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
-	return nil, nil
-}
+func (cloudConn *AwsCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
+	cblogger.Info("Start CreateKeyPairHandler()")
 
-func (AwsCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
-	return nil, nil
-}
-func (AwsCloudConnection) CreateKeyPairHandler() (irs.KeyPairHandler, error) {
-	return nil, nil
-}
-func (AwsCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
-	return nil, nil
-}
-func (AwsCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
-	return nil, nil
-}
+	keyPairHandler := ars.AwsKeyPairHandler{cloudConn.Region, cloudConn.KeyPairClient}
 
-/*
-func (AwsCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
-	fmt.Println("TEST AWS Cloud Driver: called CreateVMHandler()!")
-	return nil, nil
+	return &keyPairHandler, nil
 }
-*/
 
 func (cloudConn *AwsCloudConnection) CreateVMHandler() (irs.VMHandler, error) {
-	fmt.Println("AWS Cloud Driver: called CreateVMHandler()!")
-	//vmHandler := ars.AzureVMHandler{cloudConn.Region, cloudConn.Ctx, cloudConn.VMClient}
+	cblogger.Info("Start CreateVMHandler()")
+
 	vmHandler := ars.AwsVMHandler{cloudConn.Region, cloudConn.VMClient}
 	return &vmHandler, nil
 }
 
-func (AwsCloudConnection) IsConnected() (bool, error) {
+func (cloudConn *AwsCloudConnection) IsConnected() (bool, error) {
 	return true, nil
 }
-func (AwsCloudConnection) Close() error {
+func (cloudConn *AwsCloudConnection) Close() error {
 	return nil
+}
+
+func (cloudConn *AwsCloudConnection) CreateVNetworkHandler() (irs.VNetworkHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsVNetworkHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+
+func (cloudConn *AwsCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsImageHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+
+func (cloudConn *AwsCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsSecurityHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+
+func (cloudConn *AwsCloudConnection) CreateVNicHandler() (irs.VNicHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsVNicHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
+}
+func (cloudConn *AwsCloudConnection) CreatePublicIPHandler() (irs.PublicIPHandler, error) {
+	cblogger.Info("Start")
+	handler := ars.AwsPublicIPHandler{cloudConn.Region, cloudConn.KeyPairClient}
+
+	return &handler, nil
 }
