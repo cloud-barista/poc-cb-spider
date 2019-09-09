@@ -17,8 +17,9 @@ type VNetworkReqInfo struct {
 }
 
 type VNetworkInfo struct {
-	Name string
-	Id   string
+	Name     string
+	Id       string
+	SubnetId string
 	// @todo
 }
 

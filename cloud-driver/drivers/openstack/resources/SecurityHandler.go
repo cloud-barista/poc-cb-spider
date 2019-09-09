@@ -113,6 +113,13 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 			IPProtocol:  "TCP",
 			FromGroupID: group.ID, // 방식 2) 보안그룹 기준 룰 적용
 		},
+		{
+			//ParentGroupID: group.ID,
+			FromPort:   -1,
+			ToPort:     -1,
+			IPProtocol: "ICMP",
+			CIDR:       "0.0.0.0/0",
+		},
 	}
 
 	// Create SecurityGroup Rules
@@ -142,7 +149,7 @@ func (securityHandler *OpenStackSecurityHandler) CreateSecurity(securityReqInfo 
 	}
 
 	spew.Dump(securityInfo)
-	return irs.SecurityInfo{Id: group.ID}, nil
+	return irs.SecurityInfo{Id: group.ID, Name: group.Name}, nil
 }
 
 func (securityHandler *OpenStackSecurityHandler) ListSecurity() ([]*irs.SecurityInfo, error) {
