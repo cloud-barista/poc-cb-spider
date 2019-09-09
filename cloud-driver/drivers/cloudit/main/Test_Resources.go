@@ -11,6 +11,67 @@ import (
 	"os"
 )
 
+func testImageHandler(config Config)  {
+	resourceHandler, err := getResourceHandler("image")
+	if err != nil {
+		panic(err)
+	}
+
+	imageHandler := resourceHandler.(irs.ImageHandler)
+
+	fmt.Println("Test ImageHandler")
+	fmt.Println("1. ListImage()")
+	fmt.Println("2. -----Image()")
+	fmt.Println("3. CreateImage()")
+	fmt.Println("4. DeleteImage()")
+	fmt.Println("5. Exit")
+
+	var imageId string
+	imageId = ""
+	var templateId string
+	templateId = "fe904ebd-2f7e-459a-8cd7-18374087af53"
+
+Loop:
+	for {
+		var commandNum int
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err!= nil{
+			panic(err)
+		}
+
+		if inputCnt ==1{
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListImage() ...")
+				imageHandler.ListImage()
+				fmt.Println("Finish ListImage()")
+			case 2:
+				fmt.Println("Start GetImage() ...")
+				imageHandler.GetImage(imageId)
+				fmt.Println("Finish GetImage()")
+			case 3:
+				fmt.Println("Start CreateImage() ...")
+				reqInfo := irs.ImageReqInfo{Name: config.Cloudit.image.Name}
+				image, err := imageHandler.CreateImage(reqInfo)
+				if err != nil {
+					panic(err)
+				}
+				imageId = image.Id
+				fmt.Println("Finish CreateImage()")
+			case 4:
+				fmt.Println("Start DeleteImage() ...")
+				imageHandler.DeleteImage(templateId)
+				fmt.Println("Finish DeleteImage()")
+			case 5:
+				fmt.Println("Exit")
+				break Loop
+			}
+		}
+	}
+
+
+}
+
 //AdaptiveIP
 func testPublicIPHanlder(config Config) {
 	resourceHandler, err := getResourceHandler("publicip")
@@ -29,7 +90,7 @@ func testPublicIPHanlder(config Config) {
 
 	var publicIPId string
 	var ip string
-	ip = "182.252.135.54"
+	ip = "182.252.135.58"
 
 Loop:
 	for {
@@ -299,7 +360,7 @@ Loop:
 		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
-				//testImageHandler(config)
+				testImageHandler(config)
 				showTestHandlerInfo()
 			case 2:
 				//testKeyPairHandler(config)
@@ -333,6 +394,11 @@ type Config struct {
 		ServerId         string `yaml:"server_id"`
 		AuthToken        string `yaml:"auth_token"`
 
+		image struct{
+			Name	string	`yaml:"name"`
+			ID		string	`yaml:"id"`
+		}
+
 		VirtualNetwork struct {
 			Name string `yaml:"name"`
 			Addr string `yaml:"addr"`
@@ -347,7 +413,7 @@ type Config struct {
 
 		securityGroup struct {
 			Name           string `yaml:"name"`
-			ID             string `yaml:"name"`
+			ID             string `yaml:"id"`
 			SecuiryGroupID string `yaml:"securitygroupid"`
 		}
 	} `yaml:"cloudit"`

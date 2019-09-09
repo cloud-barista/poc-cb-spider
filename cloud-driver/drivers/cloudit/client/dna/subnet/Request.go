@@ -21,24 +21,6 @@ type SubnetInfo struct {
 	Description string
 }
 
-func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
-	fmt.Println(requestURL)
-
-	var result client.Result
-
-	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
-		return nil, result.Err
-	}
-
-	var subnet []SubnetInfo
-	if err := result.ExtractInto(&subnet); err != nil {
-		return nil, err
-	}
-
-	return &subnet, nil
-}
-
 func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SubnetInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
 	fmt.Println(requestURL)
@@ -52,6 +34,24 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Su
 	if err := result.ExtractInto(&subnet); err != nil {
 		return nil, err
 	}
+	return &subnet, nil
+}
+
+func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*SubnetInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.DNA, "subnets")
+	fmt.Println(requestURL)
+
+	var result client.Result
+
+	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
+		return nil, result.Err
+	}
+
+	var subnet SubnetInfo
+	if err := result.ExtractInto(&subnet); err != nil {
+		return nil, err
+	}
+
 	return &subnet, nil
 }
 

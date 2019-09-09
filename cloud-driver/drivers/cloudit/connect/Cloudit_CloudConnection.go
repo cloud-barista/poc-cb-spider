@@ -31,7 +31,8 @@ func (cloudConn *ClouditCloudConnection) CreateVNetworkHandler() (irs.VNetworkHa
 
 func (cloudConn *ClouditCloudConnection) CreateImageHandler() (irs.ImageHandler, error) {
 	fmt.Println("Cloudit Cloud Driver: called CreateImageHandler()!")
-	return nil, nil
+	imageHandler := cirs.ClouditImageHandler{cloudConn.CredentialInfo, &cloudConn.Client}
+	return &imageHandler, nil
 }
 
 func (cloudConn ClouditCloudConnection) CreateSecurityHandler() (irs.SecurityHandler, error) {

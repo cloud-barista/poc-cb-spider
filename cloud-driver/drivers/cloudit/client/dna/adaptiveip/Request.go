@@ -37,7 +37,7 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Ad
 	return &adaptiveIP, nil
 }
 
-func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]AdaptiveIPInfo, error) {
+func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*AdaptiveIPInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "adaptive-ips")
 	fmt.Println(requestURL)
 
@@ -47,7 +47,7 @@ func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]
 		return nil, result.Err
 	}
 
-	var adaptiveIP []AdaptiveIPInfo
+	var adaptiveIP AdaptiveIPInfo
 	if err := result.ExtractInto(&adaptiveIP); err != nil {
 		return nil, err
 	}

@@ -78,7 +78,7 @@ func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOp
 	//return extractServer(result)
 }
 
-func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]SecurityGroupInfo, error) {
+func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*SecurityGroupInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.IAM, "securitygroups")
 	fmt.Println(requestURL)
 
@@ -88,7 +88,7 @@ func Create(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]
 		return nil, result.Err
 	}
 
-	var securityGroup []SecurityGroupInfo
+	var securityGroup SecurityGroupInfo
 	if err := result.ExtractInto(&securityGroup); err != nil {
 		return nil, err
 	}
