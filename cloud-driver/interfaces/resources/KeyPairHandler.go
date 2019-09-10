@@ -17,9 +17,11 @@ type KeyPairReqInfo struct {
 }
 
 type KeyPairInfo struct {
-	Name string
+	Name string // AWS
 	Id   string
 	// @todo
+	Fingerprint string //AWS
+	KeyMaterial string //AWS:RSA PRIVATE KEY
 }
 
 type KeyPairHandler interface {
