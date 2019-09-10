@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-func createVM(config Config, vmHandler irs.VMHandler) (irs.VMInfo, error){
+func createVM(config Config, vmHandler irs.VMHandler) (irs.VMInfo, error) {
 
 	vmReqInfo := irs.VMReqInfo{
 		Name: config.Cloudit.VMInfo.Name,
@@ -21,9 +21,11 @@ func createVM(config Config, vmHandler irs.VMHandler) (irs.VMInfo, error){
 		SpecID: config.Cloudit.VMInfo.SpecId,
 		VNetworkInfo: irs.VNetworkInfo{
 			Id: config.Cloudit.VMInfo.SubnetAddr,
+			// TODO: 생성된 Subnet Id 가져오가
 		},
 		SecurityInfo: irs.SecurityInfo{
 			Id: config.Cloudit.VMInfo.SecGroups,
+			// TODO: 생성된 SG Id 가져오가
 		},
 		LoginInfo: irs.LoginInfo{
 			AdminPassword: config.Cloudit.VMInfo.RootPassword,
@@ -55,7 +57,7 @@ func testVMHandler() {
 	fmt.Println("10. Exit")
 
 	var serverId string
-	
+
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -155,7 +157,7 @@ type Config struct {
 		TenantID         string `yaml:"tenant_id"`
 		ServerId         string `yaml:"server_id"`
 		AuthToken        string `yaml:"auth_token"`
-		VMInfo struct {
+		VMInfo           struct {
 			TemplateId   string `yaml:"template_id"`
 			SpecId       string `yaml:"spec_id"`
 			Name         string `yaml:"name"`
