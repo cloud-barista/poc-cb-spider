@@ -15,27 +15,35 @@ type ClouditSecurityHandler struct {
 	Client         *client.RestClient
 }
 
-//Todo 수정 중
 func (securityHandler *ClouditSecurityHandler) CreateSecurity(securityReqInfo irs.SecurityReqInfo) (irs.SecurityInfo, error) {
 	securityHandler.Client.TokenID = securityHandler.CredentialInfo.AuthToken
 	authHeader := securityHandler.Client.AuthenticatedHeaders()
-
+	
+	// @TODO: SecurityGroup 생성 요청 파라미터 정의 필요
 	type SecurityReqInfo struct {
-		Name       string `json:"name" required:"true"`
-		Protection int    `json:"protection" required:"false"`
-		/*Rules      []struct {
-			Name     string `json:"name" required:"false"`
-			Protocol string `json:"protocol" required:"false"`
-			Port     int    `json:"port" required:"false"`
-			Target   string `json:"target" required:"false"`
-			Type     string `json:"type" required:"false"`
-		} `json:"rules" required:"false"`*/
+		Name       string                             `json:"name" required:"true"`
+		Rules      []securitygroup.SecurityGroupRules `json:"rules" required:"false"`
+		Protection int                                `json:"protection" required:"false"`
 	}
-
+	
 	reqInfo := SecurityReqInfo{
-		Name:       "test-Dong1",
-		Protection: 0,
-		//Rules : "",
+		Name:       securityReqInfo.Name,
+		Rules: []securitygroup.SecurityGroupRules{
+			{
+				Name:     "SSH Inbound",
+				Protocol: "tcp",
+				Port:     "22",
+				Target:   "0.0.0.0/0",
+				Type:     "inbound",
+			},
+			{
+				Name:     "Default Outbound",
+				Protocol: "all",
+				Port:     "0",
+				Target:   "0.0.0.0/0",
+				Type:     "outbound",
+			},
+		},
 	}
 
 	createOpts := client.RequestOpts{
@@ -43,13 +51,12 @@ func (securityHandler *ClouditSecurityHandler) CreateSecurity(securityReqInfo ir
 		MoreHeaders: authHeader,
 	}
 
-	security, err := securitygroup.Create(securityHandler.Client, &createOpts)
-	if err != nil {
+	if securityGroup, err := securitygroup.Create(securityHandler.Client, &createOpts); err != nil {
 		return irs.SecurityInfo{}, err
+	} else {
+		spew.Dump(securityGroup)
+		return irs.SecurityInfo{Id: securityGroup.ID, Name: securityGroup.Name}, nil
 	}
-	spew.Dump(security)
-
-	return irs.SecurityInfo{}, nil
 }
 
 func (securityHandler *ClouditSecurityHandler) ListSecurity() ([]*irs.SecurityInfo, error) {
@@ -60,16 +67,24 @@ func (securityHandler *ClouditSecurityHandler) ListSecurity() ([]*irs.SecurityIn
 		MoreHeaders: authHeader,
 	}
 
-	securityList, err := securitygroup.List(securityHandler.Client, &requestOpts)
-	if err != nil {
-		panic(err)
+	if securityList, err := securitygroup.List(securityHandler.Client, &requestOpts); err != nil {
+		return nil, err
+	} else {
+		// SecurityGroup Rule 정보 가져오기
+		for i, sg := range *securityList {
+			if sgRules, err := securitygroup.ListRule(securityHandler.Client, sg.ID, &requestOpts); err != nil {
+				return nil, err
+			} else {
+				(*securityList)[i].Rules = *sgRules
+				(*securityList)[i].RulesCount = len(*sgRules)
+			}
+		}
+		for i, security := range *securityList {
+			fmt.Println("[" + strconv.Itoa(i) + "]")
+			spew.Dump(security)
+		}
+		return nil, nil
 	}
-
-	for i, security := range *securityList {
-		fmt.Println("[" + strconv.Itoa(i) + "]")
-		spew.Dump(security)
-	}
-	return nil, nil
 }
 
 func (securityHandler *ClouditSecurityHandler) GetSecurity(securityID string) (irs.SecurityInfo, error) {
@@ -77,24 +92,22 @@ func (securityHandler *ClouditSecurityHandler) GetSecurity(securityID string) (i
 	authHeader := securityHandler.Client.AuthenticatedHeaders()
 
 	requestOpts := client.RequestOpts{
-		//JSONBody:     nil,
-		//RawBody:      nil,
-		//JSONResponse: nil,
-		//OkCodes:      nil,
 		MoreHeaders: authHeader,
 	}
 
-	securityRuleList, err := securitygroup.Get(securityHandler.Client, securityID, &requestOpts)
-	if err != nil {
-		panic(err)
+	if securityInfo, err := securitygroup.Get(securityHandler.Client, securityID, &requestOpts); err != nil {
+		return irs.SecurityInfo{}, err
+	} else {
+		// SecurityGroup Rule 정보 가져오기
+		if sgRules, err := securitygroup.ListRule(securityHandler.Client, securityInfo.ID, &requestOpts); err != nil {
+			return irs.SecurityInfo{}, err
+		} else {
+			(*securityInfo).Rules = *sgRules
+			(*securityInfo).RulesCount = len(*sgRules)
+		}
+		spew.Dump(securityInfo)
+		return irs.SecurityInfo{Id: securityInfo.ID, Name: securityInfo.Name}, nil
 	}
-
-	for i, securityRule := range *securityRuleList {
-		fmt.Println("[" + strconv.Itoa(i) + "]")
-		spew.Dump(securityRule)
-	}
-
-	return irs.SecurityInfo{}, nil
 }
 
 func (securityHandler *ClouditSecurityHandler) DeleteSecurity(securityID string) (bool, error) {
@@ -105,10 +118,9 @@ func (securityHandler *ClouditSecurityHandler) DeleteSecurity(securityID string)
 		MoreHeaders: authHeader,
 	}
 
-	err := securitygroup.Delete(securityHandler.Client, securityID, &requestOpts)
-	if err != nil {
-		panic(err)
+	if err := securitygroup.Delete(securityHandler.Client, securityID, &requestOpts); err != nil {
+		return false, err
+	} else {
+		return true, nil
 	}
-
-	return true, nil
 }

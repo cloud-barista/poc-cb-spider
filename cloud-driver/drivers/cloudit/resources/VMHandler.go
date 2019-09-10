@@ -11,13 +11,11 @@
 package resources
 
 import (
-	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/ace/server"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
 	"github.com/davecgh/go-spew/spew"
-	"strconv"
 )
 
 type ClouditVMHandler struct {
@@ -61,15 +59,13 @@ func (vmHandler *ClouditVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo,
 		MoreHeaders: authHeader,
 		JSONBody:    reqInfo,
 	}
-
-	spew.Dump(requestOpts)
-	vm, err := server.Start(vmHandler.Client, &requestOpts)
-	if err != nil {
+	
+	if vm, err := server.Start(vmHandler.Client, &requestOpts);  err != nil {
 		return irs.VMInfo{}, err
+	} else {
+		spew.Dump(vm)
+		return irs.VMInfo{Id: vm.ID, Name: vm.Name}, nil
 	}
-	spew.Dump(vm)
-
-	return irs.VMInfo{}, nil
 }
 
 func (vmHandler *ClouditVMHandler) SuspendVM(vmID string) {
@@ -80,8 +76,7 @@ func (vmHandler *ClouditVMHandler) SuspendVM(vmID string) {
 		MoreHeaders: authHeader,
 	}
 
-	err := server.Suspend(vmHandler.Client, vmID, &requestOpts)
-	if err != nil {
+	if err := server.Suspend(vmHandler.Client, vmID, &requestOpts); err != nil {
 		panic(err)
 	}
 }
@@ -94,8 +89,7 @@ func (vmHandler *ClouditVMHandler) ResumeVM(vmID string) {
 		MoreHeaders: authHeader,
 	}
 
-	err := server.Resume(vmHandler.Client, vmID, &requestOpts)
-	if err != nil {
+	if err := server.Resume(vmHandler.Client, vmID, &requestOpts); err != nil {
 		panic(err)
 	}
 }
@@ -107,9 +101,8 @@ func (vmHandler *ClouditVMHandler) RebootVM(vmID string) {
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
-
-	err := server.Reboot(vmHandler.Client, vmID, &requestOpts)
-	if err != nil {
+	
+	if err := server.Reboot(vmHandler.Client, vmID, &requestOpts); err != nil {
 		panic(err)
 	}
 }
@@ -122,8 +115,7 @@ func (vmHandler *ClouditVMHandler) TerminateVM(vmID string) {
 		MoreHeaders: authHeader,
 	}
 
-	err := server.Terminate(vmHandler.Client, vmID, &requestOpts)
-	if err != nil {
+	if err := server.Terminate(vmHandler.Client, vmID, &requestOpts); err != nil {
 		panic(err)
 	}
 }
@@ -136,22 +128,19 @@ func (vmHandler *ClouditVMHandler) ListVMStatus() []*irs.VMStatusInfo {
 		MoreHeaders: authHeader,
 	}
 
-	vmList, err := server.List(vmHandler.Client, &requestOpts)
-	if err != nil {
+	if vmList, err := server.List(vmHandler.Client, &requestOpts); err != nil {
 		panic(err)
-	}
-
-	var vmStatusList []*irs.VMStatusInfo
-
-	for _, vm := range *vmList {
-		vmStatusInfo := irs.VMStatusInfo{
-			VmId:     vm.ID,
-			VmStatus: irs.VMStatus(vm.State),
+	} else {
+		var vmStatusList []*irs.VMStatusInfo
+		for _, vm := range *vmList {
+			vmStatusInfo := irs.VMStatusInfo{
+				VmId:     vm.ID,
+				VmStatus: irs.VMStatus(vm.State),
+			}
+			vmStatusList = append(vmStatusList, &vmStatusInfo)
 		}
-		vmStatusList = append(vmStatusList, &vmStatusInfo)
+		return vmStatusList
 	}
-
-	return vmStatusList
 }
 
 func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
@@ -162,8 +151,11 @@ func (vmHandler *ClouditVMHandler) GetVMStatus(vmID string) irs.VMStatus {
 		MoreHeaders: authHeader,
 	}
 
-	vm, _ := server.Get(vmHandler.Client, vmID, &requestOpts)
-	return irs.VMStatus(vm.State)
+	if vm, err := server.Get(vmHandler.Client, vmID, &requestOpts); err != nil {
+		panic(err)
+	} else {
+		return irs.VMStatus(vm.State)
+	}
 }
 
 func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
@@ -173,17 +165,17 @@ func (vmHandler *ClouditVMHandler) ListVM() []*irs.VMInfo {
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
-
-	vmList, err := server.List(vmHandler.Client, &requestOpts)
-	if err != nil {
+	
+	if vmList, err := server.List(vmHandler.Client, &requestOpts); err != nil {
 		panic(err)
+	} else {
+		var vmInfoList []*irs.VMInfo
+		for _, vm := range *vmList {
+			vmInfo := mappingServerInfo(vm)
+			vmInfoList = append(vmInfoList, &vmInfo)
+		}
+		return vmInfoList
 	}
-
-	for i, vm := range *vmList {
-		fmt.Println("[" + strconv.Itoa(i) + "]")
-		spew.Dump(vm)
-	}
-	return nil
 }
 
 func (vmHandler *ClouditVMHandler) GetVM(vmID string) irs.VMInfo {
@@ -193,8 +185,28 @@ func (vmHandler *ClouditVMHandler) GetVM(vmID string) irs.VMInfo {
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
+	
+	if vm, err := server.Get(vmHandler.Client, vmID, &requestOpts); err != nil {
+		panic(err)
+	} else {
+		vmInfo := mappingServerInfo(*vm)
+		return vmInfo
+	}
+}
 
-	vm, _ := server.Get(vmHandler.Client, vmID, &requestOpts)
-	spew.Dump(vm)
-	return irs.VMInfo{}
+func mappingServerInfo(server server.ServerInfo) irs.VMInfo {
+	
+	// Get Default VM Info
+	vmInfo := irs.VMInfo{
+		Name: server.Name,
+		Id:   server.ID,
+		ImageID: server.TemplateID,
+		SpecID: server.SpecId,
+		SubNetworkID: server.SubnetAddr,
+		PublicIP: server.AdaptiveIp,
+		PrivateIP: server.PrivateIp,
+		KeyPairID: server.RootPassword,
+	}
+	
+	return vmInfo
 }

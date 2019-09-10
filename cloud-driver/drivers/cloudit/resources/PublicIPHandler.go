@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"errors"
 	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/dna/adaptiveip"
@@ -19,31 +20,48 @@ func (publicIPHandler *ClouditPublicIPHandler) CreatePublicIP(publicIPReqInfo ir
 	publicIPHandler.Client.TokenID = publicIPHandler.CredentialInfo.AuthToken
 	authHeader := publicIPHandler.Client.AuthenticatedHeaders()
 
+	var availableIP adaptiveip.IPInfo
+
+	// 1. 사용 가능한 PublicIP 목록 가져오기
+	requestOpts := client.RequestOpts{
+		MoreHeaders: authHeader,
+	}
+	if availableIPList, err := adaptiveip.GetAvailableIPList(publicIPHandler.Client, &requestOpts); err != nil {
+		return irs.PublicIPInfo{}, err
+	} else {
+		if len(*availableIPList) == 0 {
+			allocateErr := errors.New(fmt.Sprintf("There is no PublicIPs to allocate"))
+			return irs.PublicIPInfo{}, allocateErr
+		} else {
+			availableIP = (*availableIPList)[0]
+		}
+	}
+
+	// 2. PublicIP 생성 및 할당
+	// @TODO: PublicIP 생성 요청 파라미터 정의 필요
 	type PublicIPReqInfo struct {
 		IP         string `json:"ip" required:"true"`
 		Name       string `json:"name" required:"true"`
-		PrivateIP  string `json:"privateIp" required:"true"`
-		Protection int    `json:"protection" required:"true"`
+		PrivateIP  string `json:"privateIp" required:"true"` // PublicIP가 적용되는 VM의 Private IP
+		Protection int    `json:"protection" required:"false"`
 	}
 	reqInfo := PublicIPReqInfo{
-		IP:         "182.252.135.54",
-		Name:       "test-dong1",
-		PrivateIP:  "10.0.8.2",
-		Protection: 0,
+		IP:        availableIP.IP,
+		Name:      publicIPReqInfo.Name,
+		PrivateIP: "10.0.8.4",
 	}
 
 	createOpts := client.RequestOpts{
 		JSONBody:    reqInfo,
 		MoreHeaders: authHeader,
 	}
-
 	publicIP, err := adaptiveip.Create(publicIPHandler.Client, &createOpts)
 	if err != nil {
 		panic(err)
+	} else {
+		spew.Dump(publicIP)
+		return irs.PublicIPInfo{Id: publicIP.IP, Name: publicIP.Name}, nil
 	}
-	spew.Dump(publicIP)
-
-	return irs.PublicIPInfo{}, nil
 }
 
 func (publicIPHandler *ClouditPublicIPHandler) ListPublicIP() ([]*irs.PublicIPInfo, error) {
@@ -56,18 +74,30 @@ func (publicIPHandler *ClouditPublicIPHandler) ListPublicIP() ([]*irs.PublicIPIn
 
 	publicIPList, err := adaptiveip.List(publicIPHandler.Client, &requestOpts)
 	if err != nil {
-		panic(err)
+		return nil, err
+	} else {
+		for i, publicIP := range *publicIPList {
+			fmt.Println("[" + strconv.Itoa(i) + "]")
+			spew.Dump(publicIP)
+		}
+		return nil, nil
 	}
-
-	for i, publicIP := range *publicIPList {
-		fmt.Println("[" + strconv.Itoa(i) + "]")
-		spew.Dump(publicIP)
-	}
-	return nil, nil
 }
 
 func (publicIPHandler *ClouditPublicIPHandler) GetPublicIP(publicIPID string) (irs.PublicIPInfo, error) {
-	return irs.PublicIPInfo{}, nil
+	publicIPHandler.Client.TokenID = publicIPHandler.CredentialInfo.AuthToken
+	authHeader := publicIPHandler.Client.AuthenticatedHeaders()
+
+	requestOpts := client.RequestOpts{
+		MoreHeaders: authHeader,
+	}
+
+	if publicIP, err := adaptiveip.Get(publicIPHandler.Client, publicIPID, &requestOpts); err != nil {
+		return irs.PublicIPInfo{}, err
+	} else {
+		spew.Dump(publicIP)
+		return irs.PublicIPInfo{Id: publicIP.ID, Name: publicIP.Name}, nil
+	}
 }
 
 func (publicIPHandler *ClouditPublicIPHandler) DeletePublicIP(publicIPID string) (bool, error) {
@@ -78,10 +108,9 @@ func (publicIPHandler *ClouditPublicIPHandler) DeletePublicIP(publicIPID string)
 		MoreHeaders: authHeader,
 	}
 
-	err := adaptiveip.Delete(publicIPHandler.Client, publicIPID, &requestOpts)
-	if err != nil {
-		panic(err)
+	if err := adaptiveip.Delete(publicIPHandler.Client, publicIPID, &requestOpts); err != nil {
+		return false, err
+	} else {
+		return true, nil
 	}
-
-	return true, nil
 }

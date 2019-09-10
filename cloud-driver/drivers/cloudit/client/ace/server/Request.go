@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
+	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/iam/securitygroup"
 )
 
 type ServerInfo struct {
@@ -66,7 +67,7 @@ type ServerInfo struct {
 	ClusterId         string
 	ClusterName       string
 	NicType           string
-	Secgroups         string
+	Secgroups         []securitygroup.SecurityGroupRules
 	Ip                string
 	SubnetAddr        string
 	DeviceId          string
@@ -85,13 +86,43 @@ type ServerInfo struct {
 	VmStatInfo        string
 }
 
+func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
+	fmt.Println(requestURL)
+	
+	var result client.Result
+	if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil {
+		return nil, result.Err
+	}
+	
+	var server []ServerInfo
+	if err := result.ExtractInto(&server); err != nil {
+		return nil, err
+	}
+	return &server, nil
+}
+
+func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
+	fmt.Println(requestURL)
+	
+	var result client.Result
+	_, result.Err = restClient.Get(requestURL, &result.Body, requestOpts)
+	
+	var server ServerInfo
+	if err := result.ExtractInto(&server); err != nil {
+		return nil, err
+	}
+	return &server, nil
+}
+
 // create
 func Start(restClient *client.RestClient, requestOpts *client.RequestOpts) (*ServerInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
 	fmt.Println(requestURL)
 
 	var result client.Result
-	if _, result.Err = restClient.Post(requestURL, &requestOpts.JSONBody, &result.Body, requestOpts); result.Err != nil {
+	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
 		return nil, result.Err
 	}
 
@@ -99,7 +130,7 @@ func Start(restClient *client.RestClient, requestOpts *client.RequestOpts) (*Ser
 	if err := result.ExtractInto(&server); err != nil {
 		return nil, err
 	}
-
+	
 	return &server, nil
 }
 
@@ -149,34 +180,4 @@ func Terminate(restClient *client.RestClient, id string, requestOpts *client.Req
 		return result.Err
 	}
 	return nil
-}
-
-func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]ServerInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers")
-	fmt.Println(requestURL)
-
-	var result client.Result
-	if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil {
-		return nil, result.Err
-	}
-
-	var server []ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-	return &server, nil
-}
-
-func Get(restClient *client.RestClient, id string, requestOpts *client.RequestOpts) (*ServerInfo, error) {
-	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", id)
-	fmt.Println(requestURL)
-
-	var result client.Result
-	_, result.Err = restClient.Get(requestURL, &result.Body, requestOpts)
-
-	var server ServerInfo
-	if err := result.ExtractInto(&server); err != nil {
-		return nil, err
-	}
-	return &server, nil
 }

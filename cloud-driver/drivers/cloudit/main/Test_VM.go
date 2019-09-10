@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-func createVM(config Config, vmHandler irs.VMHandler) {
+func createVM(config Config, vmHandler irs.VMHandler) (irs.VMInfo, error){
 
 	vmReqInfo := irs.VMReqInfo{
 		Name: config.Cloudit.VMInfo.Name,
@@ -32,11 +32,7 @@ func createVM(config Config, vmHandler irs.VMHandler) {
 
 	spew.Dump(vmReqInfo)
 
-	vm, err := vmHandler.StartVM(vmReqInfo)
-	if err != nil {
-		panic(err)
-	}
-	spew.Dump(vm)
+	return vmHandler.StartVM(vmReqInfo)
 }
 
 func testVMHandler() {
@@ -58,6 +54,8 @@ func testVMHandler() {
 	fmt.Println("9. Terminate VM")
 	fmt.Println("10. Exit")
 
+	var serverId string
+	
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
@@ -69,7 +67,6 @@ func testVMHandler() {
 			switch commandNum {
 			case 1:
 				fmt.Println("Start List VM ...")
-				//vmHandler.ListVM()
 				vmList := vmHandler.ListVM()
 				for i, vm := range vmList {
 					fmt.Println("[", i, "] ")
@@ -95,23 +92,28 @@ func testVMHandler() {
 				fmt.Println("Finish Get VMStatus")
 			case 5:
 				fmt.Println("Start Create VM ...")
-				createVM(config, vmHandler)
+				if vm, err := createVM(config, vmHandler); err != nil {
+					panic(err)
+				} else {
+					spew.Dump(vm)
+					serverId = vm.Id
+				}
 				fmt.Println("Finish Create VM")
 			case 6:
 				fmt.Println("Start Suspend VM ...")
-				vmHandler.SuspendVM(config.Cloudit.ServerId)
+				vmHandler.SuspendVM(serverId)
 				fmt.Println("Finish Suspend VM")
 			case 7:
 				fmt.Println("Start Resume  VM ...")
-				vmHandler.ResumeVM(config.Cloudit.ServerId)
+				vmHandler.ResumeVM(serverId)
 				fmt.Println("Finish Resume VM")
 			case 8:
 				fmt.Println("Start Reboot  VM ...")
-				vmHandler.RebootVM(config.Cloudit.ServerId)
+				vmHandler.RebootVM(serverId)
 				fmt.Println("Finish Reboot VM")
 			case 9:
 				fmt.Println("Start Terminate  VM ...")
-				vmHandler.TerminateVM(config.Cloudit.ServerId)
+				vmHandler.TerminateVM(serverId)
 				fmt.Println("Finish Terminate VM")
 			}
 		}
@@ -153,7 +155,6 @@ type Config struct {
 		TenantID         string `yaml:"tenant_id"`
 		ServerId         string `yaml:"server_id"`
 		AuthToken        string `yaml:"auth_token"`
-
 		VMInfo struct {
 			TemplateId   string `yaml:"template_id"`
 			SpecId       string `yaml:"spec_id"`

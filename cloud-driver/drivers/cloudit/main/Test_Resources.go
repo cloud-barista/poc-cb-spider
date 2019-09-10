@@ -5,62 +5,65 @@ import (
 	cidrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	//"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 )
 
-func testImageHandler(config Config)  {
-	resourceHandler, err := getResourceHandler("image")
-	if err != nil {
-		panic(err)
-	}
+func testImageHandler(config Config) {
 
-	imageHandler := resourceHandler.(irs.ImageHandler)
+	var imageHandler irs.ImageHandler
+	if resourceHandler, err := getResourceHandler("image"); err != nil {
+		panic(err)
+	} else {
+		imageHandler = resourceHandler.(irs.ImageHandler)
+	}
 
 	fmt.Println("Test ImageHandler")
 	fmt.Println("1. ListImage()")
-	fmt.Println("2. -----Image()")
+	fmt.Println("2. GetImage()")
 	fmt.Println("3. CreateImage()")
 	fmt.Println("4. DeleteImage()")
 	fmt.Println("5. Exit")
 
 	var imageId string
-	imageId = ""
-	var templateId string
-	templateId = "fe904ebd-2f7e-459a-8cd7-18374087af53"
 
 Loop:
 	for {
 		var commandNum int
 		inputCnt, err := fmt.Scan(&commandNum)
-		if err!= nil{
+		if err != nil {
 			panic(err)
 		}
 
-		if inputCnt ==1{
+		if inputCnt == 1 {
 			switch commandNum {
 			case 1:
 				fmt.Println("Start ListImage() ...")
-				imageHandler.ListImage()
+				if _, err := imageHandler.ListImage(); err != nil {
+					panic(err)
+				}
 				fmt.Println("Finish ListImage()")
 			case 2:
 				fmt.Println("Start GetImage() ...")
-				imageHandler.GetImage(imageId)
+				if _, err := imageHandler.GetImage(imageId); err != nil {
+					panic(err)
+				}
 				fmt.Println("Finish GetImage()")
 			case 3:
 				fmt.Println("Start CreateImage() ...")
-				reqInfo := irs.ImageReqInfo{Name: config.Cloudit.image.Name}
-				image, err := imageHandler.CreateImage(reqInfo)
-				if err != nil {
+				reqInfo := irs.ImageReqInfo{Name: config.Cloudit.Resource.Image.Name}
+				if image, err := imageHandler.CreateImage(reqInfo); err != nil {
 					panic(err)
+				} else {
+					imageId = image.Id
 				}
-				imageId = image.Id
 				fmt.Println("Finish CreateImage()")
 			case 4:
 				fmt.Println("Start DeleteImage() ...")
-				imageHandler.DeleteImage(templateId)
+				if ok, err := imageHandler.DeleteImage(imageId); !ok {
+					panic(err)
+				}
 				fmt.Println("Finish DeleteImage()")
 			case 5:
 				fmt.Println("Exit")
@@ -68,7 +71,6 @@ Loop:
 			}
 		}
 	}
-
 
 }
 
@@ -83,14 +85,12 @@ func testPublicIPHanlder(config Config) {
 
 	fmt.Println("Test PublicIPHandler")
 	fmt.Println("1. ListPublicIP()")
-	fmt.Println("2. -----PublicIP()")
+	fmt.Println("2. GetPublicIP()")
 	fmt.Println("3. CreatePublicIP()")
 	fmt.Println("4. DeletePublicIP()")
 	fmt.Println("5. Exit")
 
 	var publicIPId string
-	var ip string
-	ip = "182.252.135.58"
 
 Loop:
 	for {
@@ -107,21 +107,21 @@ Loop:
 				publicIPHandler.ListPublicIP()
 				fmt.Println("Finish ListPublicIP()")
 			case 2:
-				fmt.Println("Start UpdatePublicIP() ...")
+				fmt.Println("Start GetPublicIP() ...")
 				publicIPHandler.GetPublicIP(publicIPId)
 				fmt.Println("Finish GetPublicIP()")
 			case 3:
 				fmt.Println("Start CreatePublicIP() ...")
-				reqInfo := irs.PublicIPReqInfo{Name: config.Cloudit.publicIp.Name}
-				publicIP, err := publicIPHandler.CreatePublicIP(reqInfo)
-				if err != nil {
+				reqInfo := irs.PublicIPReqInfo{Name: config.Cloudit.Resource.PublicIP.Name}
+				if publicIP, err := publicIPHandler.CreatePublicIP(reqInfo); err != nil {
 					panic(err)
+				} else {
+					publicIPId = publicIP.Id
 				}
-				publicIPId = publicIP.Id
 				fmt.Println("Finish CreatePublicIP()")
 			case 4:
 				fmt.Println("Start DeletePublicIP() ...")
-				publicIPHandler.DeletePublicIP(ip)
+				publicIPHandler.DeletePublicIP(publicIPId)
 				fmt.Println("Finish DeletePublicIP()")
 			case 5:
 				fmt.Println("Exit")
@@ -146,11 +146,9 @@ func testSecurityHandler(config Config) {
 	fmt.Println("3. CreateSecurity()")
 	fmt.Println("4. DeleteSecurity()")
 	fmt.Println("5. Exit")
-
-	//var securityId string
-	securityId := "83c9a5ca-4f90-447f-8cc6-97645fb1a63e"
-	securityGroupId := "f27f9d91-5c77-4016-b548-dbdab31f2662"
-
+	
+	var securityGroupId string
+	
 Loop:
 	for {
 		var commandNum int
@@ -167,16 +165,16 @@ Loop:
 				fmt.Println("Finish ListSecurity()")
 			case 2:
 				fmt.Println("Start GetSecurity() ...")
-				securityHandler.GetSecurity(securityId)
+				securityHandler.GetSecurity(securityGroupId)
 				fmt.Println("Finish GetSecurity()")
 			case 3:
 				fmt.Println("Start CreateSecurity() ...")
-				reqInfo := irs.SecurityReqInfo{Name: config.Cloudit.securityGroup.Name}
-				security, err := securityHandler.CreateSecurity(reqInfo)
-				if err != nil {
+				reqInfo := irs.SecurityReqInfo{Name: config.Cloudit.Resource.Security.Name}
+				if security, err := securityHandler.CreateSecurity(reqInfo); err != nil {
 					panic(err)
+				} else {
+					securityGroupId = security.Id
 				}
-				securityId = security.Id
 				fmt.Println("Finish CreateSecurity()")
 			case 4:
 				fmt.Println("Start DeleteSecurity() ...")
@@ -334,12 +332,11 @@ func showTestHandlerInfo() {
 	fmt.Println("==========================================================")
 	fmt.Println("[Test ResourceHandler]")
 	fmt.Println("1. ImageHandler")
-	fmt.Println("2. KeyPairHandler")
-	fmt.Println("3. PublicIPHandler")
-	fmt.Println("4. SecurityHandler")
-	fmt.Println("5. VNetworkHandler")
-	fmt.Println("6. VNicHandler")
-	fmt.Println("7. Exit")
+	fmt.Println("2. PublicIPHandler")
+	fmt.Println("3. SecurityHandler")
+	fmt.Println("4. VNetworkHandler")
+	fmt.Println("5. VNicHandler")
+	fmt.Println("6. Exit")
 	fmt.Println("==========================================================")
 }
 
@@ -363,21 +360,18 @@ Loop:
 				testImageHandler(config)
 				showTestHandlerInfo()
 			case 2:
-				//testKeyPairHandler(config)
-				showTestHandlerInfo()
-			case 3:
 				testPublicIPHanlder(config)
 				showTestHandlerInfo()
-			case 4:
+			case 3:
 				testSecurityHandler(config)
 				showTestHandlerInfo()
-			case 5:
+			case 4:
 				testVNetworkHandler(config)
 				showTestHandlerInfo()
-			case 6:
+			case 5:
 				testVNicHandler(config)
 				showTestHandlerInfo()
-			case 7:
+			case 6:
 				fmt.Println("Exit Test ResourceHandler Program")
 				break Loop
 			}
@@ -394,10 +388,10 @@ type Config struct {
 		ServerId         string `yaml:"server_id"`
 		AuthToken        string `yaml:"auth_token"`
 
-		image struct{
-			Name	string	`yaml:"name"`
-			ID		string	`yaml:"id"`
-		}
+		Image struct {
+			Name string `yaml:"name"`
+			ID   string `yaml:"id"`
+		} `yaml:"image_info"`
 
 		VirtualNetwork struct {
 			Name string `yaml:"name"`
@@ -416,6 +410,18 @@ type Config struct {
 			ID             string `yaml:"id"`
 			SecuiryGroupID string `yaml:"securitygroupid"`
 		}
+
+		Resource struct {
+			Image struct {
+				Name string `yaml:"name"`
+			} `yaml:"image"`
+			PublicIP struct {
+				Name string `yaml:"name"`
+			} `yaml:"public_ip"`
+			Security struct {
+				Name string `yaml:"name"`
+			} `yaml:"security_group"`
+		} `yaml:"resource"`
 	} `yaml:"cloudit"`
 }
 
