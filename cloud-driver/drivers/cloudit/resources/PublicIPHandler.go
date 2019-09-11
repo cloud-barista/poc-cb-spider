@@ -26,7 +26,7 @@ func (publicIPHandler *ClouditPublicIPHandler) CreatePublicIP(publicIPReqInfo ir
 	requestOpts := client.RequestOpts{
 		MoreHeaders: authHeader,
 	}
-	if availableIPList, err := adaptiveip.GetAvailableIPList(publicIPHandler.Client, &requestOpts); err != nil {
+	if availableIPList, err := adaptiveip.ListAvailableIP(publicIPHandler.Client, &requestOpts); err != nil {
 		return irs.PublicIPInfo{}, err
 	} else {
 		if len(*availableIPList) == 0 {

@@ -44,7 +44,7 @@ func testCreateVM() {
 	// 1. Virtual Network 생성
 	fmt.Println("start CreateVNetwork() ...")
 	vNetReqInfo := irs.VNetworkReqInfo{Name: config.Cloudit.VirtualNetwork.Name}
-	_, err := vNetworkHandler.CreateVNetwork(vNetReqInfo)
+	vNetwork, err := vNetworkHandler.CreateVNetwork(vNetReqInfo)
 	if err != nil {
 		panic(err)
 	}
@@ -68,9 +68,10 @@ func testCreateVM() {
 		},
 		SpecID: config.Cloudit.VMInfo.SpecId,
 		VNetworkInfo: irs.VNetworkInfo{
-			Id: config.Cloudit.VMInfo.SubnetAddr,
+			//Id: config.Cloudit.VMInfo.SubnetAddr,
 			// TODO: 생성된 Subnet Id 가져오가
 			//Name: config.Cloudit.VirtualNetwork.Name,
+			Id: vNetwork.Id,
 		},
 		SecurityInfo: irs.SecurityInfo{
 			Id: config.Cloudit.VMInfo.SecGroups,

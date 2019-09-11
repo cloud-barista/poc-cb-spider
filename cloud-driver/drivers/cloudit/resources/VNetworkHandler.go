@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"errors"
 	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/dna/subnet"
@@ -19,20 +20,36 @@ func (vNetworkHandler *ClouditVNetworkHandler) CreateVNetwork(vNetReqInfo irs.VN
 	vNetworkHandler.Client.TokenID = vNetworkHandler.CredentialInfo.AuthToken
 	authHeader := vNetworkHandler.Client.AuthenticatedHeaders()
 
+	var creatableSubnet subnet.SubnetInfo
+
+	// 1. 사용 가능한 Subnet 목록 가져오기
+	requestOpts := client.RequestOpts{
+		MoreHeaders: authHeader,
+	}
+	if creatableSubnetList, err := subnet.ListCreatableSubnet(vNetworkHandler.Client, &requestOpts); err != nil {
+		return irs.VNetworkInfo{}, err
+	} else {
+		if len(*creatableSubnetList) == 0 {
+			allocateErr := errors.New(fmt.Sprintf("There is no PublicIPs to allocate"))
+			return irs.VNetworkInfo{}, allocateErr
+		} else {
+			creatableSubnet = (*creatableSubnetList)[0]
+		}
+	}
+
+	// 2. Subnet 생성
 	// @TODO: Subnet 생성 요청 파라미터 정의 필요
 	type VNetworkReqInfo struct {
 		Name       string `json:"name" required:"true"`
-		Protection int    `json:"protection" required:"true"`
-		Prefix     string `json:"prefix" required:"true"`
-		Gateway    string `json:"gateway" required:"true"`
 		Addr       string `json:"addr" required:"true"`
+		Prefix     string `json:"prefix" required:"true"`
+		Gateway    string `json:"gateway" required:"false"`
+		Protection int    `json:"protection" required:"false"`
 	}
 	reqInfo := VNetworkReqInfo{
-		Name:       "test-Dong1",
-		Protection: 0,
-		Prefix:     "22",
-		Gateway:    "10.0.12.1",
-		Addr:       "10.0.12.0",
+		Name:   vNetReqInfo.Name,
+		Addr:   creatableSubnet.Addr,
+		Prefix: creatableSubnet.Prefix,
 	}
 
 	createOpts := client.RequestOpts{
@@ -40,14 +57,12 @@ func (vNetworkHandler *ClouditVNetworkHandler) CreateVNetwork(vNetReqInfo irs.VN
 		MoreHeaders: authHeader,
 	}
 
-	subnet, err := subnet.Create(vNetworkHandler.Client, &createOpts)
-	if err != nil {
-		panic(err)
+	if subnet, err := subnet.Create(vNetworkHandler.Client, &createOpts); err != nil {
+		return irs.VNetworkInfo{}, err
+	} else {
+		spew.Dump(subnet)
+		return irs.VNetworkInfo{Id: subnet.Addr, Name: subnet.Name}, nil
 	}
-
-	spew.Dump(subnet)
-
-	return irs.VNetworkInfo{}, nil
 }
 
 func (vNetworkHandler *ClouditVNetworkHandler) ListVNetwork() ([]*irs.VNetworkInfo, error) {
@@ -58,20 +73,31 @@ func (vNetworkHandler *ClouditVNetworkHandler) ListVNetwork() ([]*irs.VNetworkIn
 		MoreHeaders: authHeader,
 	}
 
-	vNetList, err := subnet.List(vNetworkHandler.Client, &requestOpts)
-	if err != nil {
-		panic(err)
+	if vNetList, err := subnet.List(vNetworkHandler.Client, &requestOpts); err != nil {
+		return nil, err
+	} else {
+		for i, vNet := range *vNetList {
+			fmt.Println("[" + strconv.Itoa(i) + "]")
+			spew.Dump(vNet)
+		}
+		return nil, nil
 	}
-
-	for i, vNet := range *vNetList {
-		fmt.Println("[" + strconv.Itoa(i) + "]")
-		spew.Dump(vNet)
-	}
-	return nil, nil
 }
 
 func (vNetworkHandler *ClouditVNetworkHandler) GetVNetwork(vNetworkID string) (irs.VNetworkInfo, error) {
-	return irs.VNetworkInfo{}, nil
+	vNetworkHandler.Client.TokenID = vNetworkHandler.CredentialInfo.AuthToken
+	authHeader := vNetworkHandler.Client.AuthenticatedHeaders()
+
+	requestOpts := client.RequestOpts{
+		MoreHeaders: authHeader,
+	}
+
+	if vNetwork, err := subnet.Get(vNetworkHandler.Client, vNetworkID, &requestOpts); err != nil {
+		return irs.VNetworkInfo{}, err
+	} else {
+		spew.Dump(vNetwork)
+		return irs.VNetworkInfo{Id: vNetwork.ID, Name: vNetwork.Name}, nil
+	}
 }
 
 func (vNetworkHandler *ClouditVNetworkHandler) DeleteVNetwork(vNetworkID string) (bool, error) {
@@ -82,10 +108,9 @@ func (vNetworkHandler *ClouditVNetworkHandler) DeleteVNetwork(vNetworkID string)
 		MoreHeaders: authHeader,
 	}
 
-	err := subnet.Delete(vNetworkHandler.Client, vNetworkID, &requestOpts)
-	if err != nil {
-		panic(err)
+	if err := subnet.Delete(vNetworkHandler.Client, vNetworkID, &requestOpts); err != nil {
+		return false, err
+	} else {
+		return true, nil
 	}
-
-	return true, nil
 }

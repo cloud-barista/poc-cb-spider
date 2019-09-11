@@ -45,7 +45,7 @@ func List(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]Ad
 	return &adaptiveIP, nil
 }
 
-func GetAvailableIPList(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]IPInfo, error) {
+func ListAvailableIP(restClient *client.RestClient, requestOpts *client.RequestOpts) (*[]IPInfo, error) {
 	requestURL := restClient.CreateRequestBaseURL(client.DNA, "ips")
 	fmt.Println(requestURL)
 

@@ -3,6 +3,7 @@ package nic
 import (
 	"fmt"
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client"
+	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/iam/securitygroup"
 )
 
 type VmNicInfo struct {
@@ -25,18 +26,7 @@ type VmNicInfo struct {
 	MemSize     string
 	VolumeSize  string
 	Qos         int
-	SecGroups   string
-	//SecGroupMapInfo map[string]string
-	SecGroupMapInfo []struct {
-		TenantId   string `json:"tenant_id"`
-		SecGroupId string `json:"secgroup_id"`
-		Name       string
-		Created_at int
-		Protection int
-		State      string
-		Mac        string
-	}
-	//AdaptiveMapInfo map[string]string
+	SecGroups   []securitygroup.SecurityGroupRules
 	AdaptiveMapInfo interface{}
 }
 
@@ -54,4 +44,46 @@ func List(restClient *client.RestClient, serverId string, requestOpts *client.Re
 		return nil, err
 	}
 	return &nic, nil
+}
+
+func Get(restClient *client.RestClient, serverId string, macAddr string, requestOpts *client.RequestOpts) (*VmNicInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", serverId, "nics", macAddr)
+	fmt.Println(requestURL)
+
+	var result client.Result
+	if _, result.Err = restClient.Get(requestURL, &result.Body, requestOpts); result.Err != nil {
+		return nil, result.Err
+	}
+
+	var nic VmNicInfo
+	if err := result.ExtractInto(&nic); err != nil {
+		return nil, err
+	}
+	return &nic, nil
+}
+
+func Create(restClient *client.RestClient, serverId string, requestOpts *client.RequestOpts) (*VmNicInfo, error) {
+	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", serverId, "nics")
+	
+	var result client.Result
+	if _, result.Err = restClient.Post(requestURL, nil, &result.Body, requestOpts); result.Err != nil {
+		return nil, result.Err
+	}
+	
+	var nicInfo VmNicInfo
+	if err := result.ExtractInto(&nicInfo); err != nil {
+		return nil, err
+	} else {
+		return &nicInfo, nil
+	}
+
+}
+func Delete(restClient *client.RestClient, serverId string, macAddr string, requestOpts *client.RequestOpts) error {
+	requestURL := restClient.CreateRequestBaseURL(client.ACE, "servers", serverId, "nics", macAddr)
+
+	var result client.Result
+	if _, result.Err = restClient.Delete(requestURL, requestOpts); result.Err != nil {
+		return result.Err
+	}
+	return nil
 }

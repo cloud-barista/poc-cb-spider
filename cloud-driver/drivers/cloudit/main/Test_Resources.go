@@ -104,11 +104,15 @@ Loop:
 			switch commandNum {
 			case 1:
 				fmt.Println("Start ListPublicIP() ...")
-				publicIPHandler.ListPublicIP()
+				if _, err := publicIPHandler.ListPublicIP(); err != nil {
+					panic(err)
+				}
 				fmt.Println("Finish ListPublicIP()")
 			case 2:
 				fmt.Println("Start GetPublicIP() ...")
-				publicIPHandler.GetPublicIP(publicIPId)
+				if _, err := publicIPHandler.GetPublicIP(publicIPId); err != nil {
+					panic(err)
+				}
 				fmt.Println("Finish GetPublicIP()")
 			case 3:
 				fmt.Println("Start CreatePublicIP() ...")
@@ -121,7 +125,9 @@ Loop:
 				fmt.Println("Finish CreatePublicIP()")
 			case 4:
 				fmt.Println("Start DeletePublicIP() ...")
-				publicIPHandler.DeletePublicIP(publicIPId)
+				if ok, err := publicIPHandler.DeletePublicIP(publicIPId); !ok {
+					panic(err)
+				}
 				fmt.Println("Finish DeletePublicIP()")
 			case 5:
 				fmt.Println("Exit")
@@ -146,9 +152,9 @@ func testSecurityHandler(config Config) {
 	fmt.Println("3. CreateSecurity()")
 	fmt.Println("4. DeleteSecurity()")
 	fmt.Println("5. Exit")
-	
+
 	var securityGroupId string
-	
+
 Loop:
 	for {
 		var commandNum int
@@ -161,11 +167,15 @@ Loop:
 			switch commandNum {
 			case 1:
 				fmt.Println("Start ListSecurity() ...")
-				securityHandler.ListSecurity()
+				if _, err := securityHandler.ListSecurity(); err != nil {
+					panic(err)
+				}
 				fmt.Println("Finish ListSecurity()")
 			case 2:
 				fmt.Println("Start GetSecurity() ...")
-				securityHandler.GetSecurity(securityGroupId)
+				if _, err := securityHandler.GetSecurity(securityGroupId); err != nil {
+					panic(err)
+				}
 				fmt.Println("Finish GetSecurity()")
 			case 3:
 				fmt.Println("Start CreateSecurity() ...")
@@ -178,7 +188,9 @@ Loop:
 				fmt.Println("Finish CreateSecurity()")
 			case 4:
 				fmt.Println("Start DeleteSecurity() ...")
-				securityHandler.DeleteSecurity(securityGroupId)
+				if ok, err := securityHandler.DeleteSecurity(securityGroupId); !ok {
+					panic(err)
+				}
 				fmt.Println("Finish DeleteSecurity()")
 			case 5:
 				fmt.Println("Exit")
@@ -199,15 +211,12 @@ func testVNetworkHandler(config Config) {
 
 	fmt.Println("Test vNetworkHandler")
 	fmt.Println("1. ListVNetwork()")
-	fmt.Println("2. CreateVNetwork()")
-	fmt.Println("3. -----VNetwork()")
+	fmt.Println("2. GetVNetwork()")
+	fmt.Println("3. CreateVNetwork()")
 	fmt.Println("4. DeleteVNetwork()")
 	fmt.Println("5. Exit")
 
 	var vNetworkId string
-	//vNetworkId := ""
-	var addr string
-	addr = "10.0.12.0"
 
 Loop:
 	for {
@@ -221,26 +230,30 @@ Loop:
 			switch commandNum {
 			case 1:
 				fmt.Println("Start ListVNetwork() ...")
-				vNetworkHandler.ListVNetwork()
-				fmt.Println("Finish ListVNetwork()")
-			case 2:
-				fmt.Println("Start CreateVNetwork() ...")
-				reqInfo := irs.VNetworkReqInfo{Name: config.Cloudit.VirtualNetwork.Name}
-				vNetwork, err := vNetworkHandler.CreateVNetwork(reqInfo)
-				if err != nil {
+				if _, err := vNetworkHandler.ListVNetwork(); err != nil {
 					panic(err)
 				}
-				vNetworkId = vNetwork.Id
-				fmt.Println("Finish CreateVNetwork()")
-
+				fmt.Println("Finish ListVNetwork()")
+			case 2:
+				fmt.Println("Start GetVNetwork() ...")
+				if _, err := vNetworkHandler.GetVNetwork(vNetworkId); err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish GetVNetwork()")
 			case 3:
-				fmt.Println("Start UpdateVNetwork() ...")
-				vNetworkHandler.GetVNetwork(vNetworkId)
-				fmt.Println("Finish UpdateVNetwork()")
+				fmt.Println("Start CreateVNetwork() ...")
+				reqInfo := irs.VNetworkReqInfo{Name: config.Cloudit.Resource.VirtualNetwork.Name}
+				if vNetwork, err := vNetworkHandler.CreateVNetwork(reqInfo); err != nil {
+					panic(err)
+				} else {
+					vNetworkId = vNetwork.Id
+				}
+				fmt.Println("Finish CreateVNetwork()")
 			case 4:
 				fmt.Println("Start DeleteVNetwork() ...")
-				//vNetworkHandler.DeleteVNetwork(config.Cloudit.VirtualNetwork.Addr)
-				vNetworkHandler.DeleteVNetwork(addr)
+				if ok, err := vNetworkHandler.DeleteVNetwork(vNetworkId); !ok {
+					panic(err)
+				}
 				fmt.Println("Finish DeleteVNetwork()")
 			case 5:
 				fmt.Println("Exit")
@@ -258,13 +271,15 @@ func testVNicHandler(config Config) {
 
 	vNicHandler := resourceHandler.(irs.VNicHandler)
 
-	fmt.Println("Test vNicHandler")
-	fmt.Println("1. ListVNicwork()")
-	fmt.Println("2. Exit")
+	fmt.Println("Test vNetworkHandler")
+	fmt.Println("1. ListVNic()")
+	fmt.Println("2. GetVNic()")
+	fmt.Println("3. CreateVNic()")
+	fmt.Println("4. DeleteVNic()")
+	fmt.Println("5. Exit")
 
-	//var serverId string
-	//serverId = ""
-
+	nicId := config.Cloudit.Resource.VNic.Mac
+	
 Loop:
 	for {
 		var commandNum int
@@ -277,9 +292,30 @@ Loop:
 			switch commandNum {
 			case 1:
 				fmt.Println("Start ListVNic() ...")
-				vNicHandler.ListVNic()
+				if _, err := vNicHandler.ListVNic(); err != nil {
+					panic(err)
+				}
 				fmt.Println("Finish ListVNic()")
 			case 2:
+				fmt.Println("Start GetVNic() ...")
+				if _, err := vNicHandler.GetVNic(nicId); err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish GetVNic()")
+			case 3:
+				fmt.Println("Start CreateVNic() ...")
+				reqInfo := irs.VNicReqInfo{}
+				if _, err := vNicHandler.CreateVNic(reqInfo); err != nil {
+					panic(err)
+				}
+				fmt.Println("Finish CreateVNic()")
+			case 4:
+				fmt.Println("Start DeleteVNic() ...")
+				if ok, err := vNicHandler.DeleteVNic(nicId); !ok {
+					panic(err)
+				}
+				fmt.Println("Finish DeleteVNic()")
+			case 5:
 				fmt.Println("Exit")
 				break Loop
 			}
@@ -393,11 +429,11 @@ type Config struct {
 			ID   string `yaml:"id"`
 		} `yaml:"image_info"`
 
-		VirtualNetwork struct {
+		/*VirtualNetwork struct {
 			Name string `yaml:"name"`
 			Addr string `yaml:"addr"`
 			ID   string `yaml:"id"`
-		} `yaml:"vnet_info"`
+		} `yaml:"vnet_info"`*/
 
 		publicIp struct {
 			Name string `yaml:"name"`
@@ -415,12 +451,23 @@ type Config struct {
 			Image struct {
 				Name string `yaml:"name"`
 			} `yaml:"image"`
+
 			PublicIP struct {
 				Name string `yaml:"name"`
 			} `yaml:"public_ip"`
+
 			Security struct {
 				Name string `yaml:"name"`
 			} `yaml:"security_group"`
+
+			VirtualNetwork struct {
+				Name string `yaml:"name"`
+			} `yaml:"vnet_info"`
+			
+			VNic struct{
+				Mac string `yaml:"mac"`
+			} `yaml:"vnic_info"`
+			
 		} `yaml:"resource"`
 	} `yaml:"cloudit"`
 }
