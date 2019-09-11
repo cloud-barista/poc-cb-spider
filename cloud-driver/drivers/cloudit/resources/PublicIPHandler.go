@@ -48,7 +48,7 @@ func (publicIPHandler *ClouditPublicIPHandler) CreatePublicIP(publicIPReqInfo ir
 	reqInfo := PublicIPReqInfo{
 		IP:        availableIP.IP,
 		Name:      publicIPReqInfo.Name,
-		PrivateIP: "10.0.8.4",
+		PrivateIP: publicIPReqInfo.Id,
 	}
 
 	createOpts := client.RequestOpts{

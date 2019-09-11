@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -42,8 +44,8 @@ func testCreateVM() {
 	//vNicHandler, _ := cloudConnection.CreateVNicHandler()
 
 	// 1. Virtual Network 생성
-	fmt.Println("start CreateVNetwork() ...")
-	vNetReqInfo := irs.VNetworkReqInfo{Name: config.Cloudit.VirtualNetwork.Name}
+	fmt.Println("Start CreateVNetwork() ...")
+	vNetReqInfo := irs.VNetworkReqInfo{Name: config.Cloudit.Resource.VirtualNetwork.Name}
 	vNetwork, err := vNetworkHandler.CreateVNetwork(vNetReqInfo)
 	if err != nil {
 		panic(err)
@@ -52,8 +54,8 @@ func testCreateVM() {
 
 	// 2. Security Group 생성
 	fmt.Println("Start CreateSecurity() ...")
-	secReqInfo := irs.SecurityReqInfo{Name: config.Cloudit.securityGroup.Name}
-	_, err = securityHandler.CreateSecurity(secReqInfo)
+	secReqInfo := irs.SecurityReqInfo{Name: config.Cloudit.Resource.Security.Name}
+	securityGroup, err := securityHandler.CreateSecurity(secReqInfo)
 	if err != nil {
 		panic(err)
 	}
@@ -64,41 +66,54 @@ func testCreateVM() {
 	vmReqInfo := irs.VMReqInfo{
 		Name: config.Cloudit.VMInfo.Name,
 		ImageInfo: irs.ImageInfo{
-			Name: config.Cloudit.Resource.Image.Name,
+			Id: config.Cloudit.VMInfo.TemplateId,
 		},
 		SpecID: config.Cloudit.VMInfo.SpecId,
 		VNetworkInfo: irs.VNetworkInfo{
-			//Id: config.Cloudit.VMInfo.SubnetAddr,
-			// TODO: 생성된 Subnet Id 가져오가
-			//Name: config.Cloudit.VirtualNetwork.Name,
 			Id: vNetwork.Id,
 		},
 		SecurityInfo: irs.SecurityInfo{
-			Id: config.Cloudit.VMInfo.SecGroups,
-			// TODO: 생성된 SG Id 가져오가
-			//Id: config.Cloudit.securityGroup.Name,
+			Id: securityGroup.Id,
 		},
 		LoginInfo: irs.LoginInfo{
 			AdminPassword: config.Cloudit.VMInfo.RootPassword,
 		},
 	}
-
+	
+	spew.Dump(vmReqInfo)
+	
 	vm, err := vmHandler.StartVM(vmReqInfo)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("Finish Create VM")
-
+	
+	// VM 생성이 완료까지 대기
+	var vmInfo irs.VMInfo
+	vmCreated := false
+	for !vmCreated {
+		if status := vmHandler.GetVMStatus(vm.Id); strings.ToUpper(fmt.Sprint(status)) != "RUNNING" {
+			fmt.Println("Wait for VM Create finished...")
+			time.Sleep(3 * time.Second)
+		} else {
+			vmCreated = true
+			vmInfo = vmHandler.GetVM(vm.Id)
+		}
+	}
+	spew.Dump(vmInfo)
+	
 	// 4. Public IP 생성
 	fmt.Println("Start CreatePublicIP() ...")
-	publicIPReqInfo := irs.PublicIPReqInfo{Name: config.Cloudit.publicIp.Name}
-	_, err = publicIPHandler.CreatePublicIP(publicIPReqInfo)
+	publicIPReqInfo := irs.PublicIPReqInfo{
+		Name: config.Cloudit.Resource.PublicIP.Name,
+		Id: vmInfo.PrivateIP,
+	}
+	publicIP, err := publicIPHandler.CreatePublicIP(publicIPReqInfo)
 	if err != nil {
 		panic(err)
 	}
+	spew.Dump(publicIP)
 	fmt.Println("Finish CreatePublicIP()")
-
-	spew.Dump(vm)
 }
 
 func cleanResource() {
@@ -118,25 +133,13 @@ type Config struct {
 			Name string `yaml:"name"`
 			ID   string `yaml:"id"`
 		} `yaml:"image_info"`
-
-		VirtualNetwork struct {
-			Name string `yaml:"name"`
-			Addr string `yaml:"addr"`
-			ID   string `yaml:"id"`
-		} `yaml:"vnet_info"`
-
-		publicIp struct {
-			Name string `yaml:"name"`
-			ID   string `yaml:"id"`
-			IP   string `yaml:"ip"`
-		} `yaml:"publicIp_info"`
-
+		
 		securityGroup struct {
 			Name           string `yaml:"name"`
 			ID             string `yaml:"id"`
 			SecuiryGroupID string `yaml:"securitygroupid"`
-		}
-
+		} `yaml:"sg_info"`
+		
 		Resource struct {
 			Image struct {
 				Name string `yaml:"name"`
@@ -147,8 +150,16 @@ type Config struct {
 			Security struct {
 				Name string `yaml:"name"`
 			} `yaml:"security_group"`
+			VirtualNetwork struct {
+				Name string `yaml:"name"`
+			} `yaml:"vnet_info"`
+			VNic struct {
+				Mac string `yaml:"mac"`
+			} `yaml:"vnic_info"`
+			VM struct{
+				Name string `yaml:"name"`
+			} `yaml:"vm"`
 		} `yaml:"resource"`
-
 		VMInfo struct {
 			TemplateId   string `yaml:"template_id"`
 			SpecId       string `yaml:"spec_id"`

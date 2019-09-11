@@ -15,7 +15,6 @@ import (
 	"github.com/cloud-barista/poc-cb-spider/cloud-driver/drivers/cloudit/client/ace/server"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
-	"github.com/davecgh/go-spew/spew"
 )
 
 type ClouditVMHandler struct {
@@ -60,11 +59,16 @@ func (vmHandler *ClouditVMHandler) StartVM(vmReqInfo irs.VMReqInfo) (irs.VMInfo,
 		JSONBody:    reqInfo,
 	}
 	
+	//var vmInfo server.ServerInfo
 	if vm, err := server.Start(vmHandler.Client, &requestOpts);  err != nil {
 		return irs.VMInfo{}, err
 	} else {
-		spew.Dump(vm)
-		return irs.VMInfo{Id: vm.ID, Name: vm.Name}, nil
+		if vmDetailInfo, err := server.Get(vmHandler.Client, vm.ID, &requestOpts); err != nil {
+			return irs.VMInfo{}, err
+		} else {
+			 vmInfo := mappingServerInfo(*vmDetailInfo)
+			 return vmInfo, nil
+		}
 	}
 }
 
