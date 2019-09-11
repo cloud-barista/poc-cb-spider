@@ -20,8 +20,8 @@ type KeyPairInfo struct {
 	Name string // AWS
 	Id   string
 	// @todo
-	Fingerprint string //AWS
-	KeyMaterial string //AWS:RSA PRIVATE KEY
+	Fingerprint string // 추가 - AWS, OpenStack
+	KeyMaterial string // 추가 - AWS(PEM파일-RSA PRIVATE KEY)
 }
 
 type KeyPairHandler interface {
