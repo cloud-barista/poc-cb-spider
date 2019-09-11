@@ -36,7 +36,7 @@ openstack:
     name: mcb-test-vnet
 
   subnet_info:
-      id: {subnet_id}
+    id: {subnet_id}
 
   router_info:
     name: mcb-router
@@ -46,69 +46,94 @@ openstack:
 ## Config for AZURE ##
 azure:
 
+
   # Azure Credential Info
-  client_id: {client_id}
-  client_secret: {client_secret}
-  tenant_id: {tenant_id}
-  subscription_id: {subscription_id}
+  client_id: xxx
+  client_secret: xxx
+  tenant_id: xxx
+  subscription_id: xxx
 
   # Azure VM Deployment Info
-  location: {location}
-  vm_size: {vm_size}
+  location: koreacentral
+  vm_size: Standard_B1ls
   image:
-    publisher: {publisher}
-    offer: {offer}
-    sku: {sku}
-    version: {version}
+    publisher: Canonical
+    offer: UbuntuServer
+    sku: 16.04.0-LTS
+    version: latest
+
   os:
-    compute_name: {compute_name}
-    admin_username: {admin_username}
-    admin_password: {admin_password}
+    compute_name: mcb-test-vm
+    admin_username: cbarista
+    admin_password: xxx
+
   nic:
-    id: {id}
+    id: /subscriptions/f1548292-2be3-4acd-84a4-6df079160846/resourceGroups/cb-resource-group/providers/Microsoft.Network/networkInterfaces/cb-nic
 
   # Azure Test VM Info
-  group_name: {group_name}
-  vm_name: {vm_name}
+  group_name: cb-resource-group
+  vm_name: vm-name
 
   image_info:
-    group_name: {group_name}
-    name: {name}
+    group_name: cb-resource-group
+    name: image-name
 
   public_ip:
-    group_name: {group_name}
-    name: {name}
+    group_name: cb-resource-group
+    name: ip_name
 
   security_group:
-    group_name: {group_name}
-    name: {name}
+    group_name: cb-resource-group
+    name: sec_name
 
   virtual_network:
-    group_name: {group_name}
-    name: {name}
+    group_name: cb-resource-group
+    name: vnet_name
 
   network_interface:
-    group_name: {group_name}
-    name: {name}
+    group_name: cb-resource-group
+    name: nic_name
+
+
+
+aws:
+
+  # AWS Credential Info
+  aws_access_key_id: None
+  aws_secret_access_key: None
+  region: ap-northeast-2
+
+  # AMI
+  image_id: ami-047f7b46bd6dd5d84
+
+  # EC2
+  ec2_instance_id: i-04f1693f5e94c1c79
+  base_name: mcloud-barista
+  instance_type: t2.micro
+  #  key_name: mcloud-barista-keypair
+  key_name: powerkimkeypair
+  min_count: 1
+  max_count: 1
+
+  # Network
+  subnet_id: subnet-c3b446ab
+  security_group_id: sg-07ec42983dbc5e36e
 
 
 ## Config for Cloudit ##
 cloudit:
 
   # Cloudit Credential Info
-  identity_endpoint: {identity_endpoint}
-  auth_token: {token}
-  tenant_id: tnt0009
-  #  auth_token: ddd8e54a5bac82eea3de7c347ff8a253d0dc563d
-  #  tenant_id: tnt0008
-  server_id: 7b35148e-b033-4749-a29e-12beddaebbfa
-  
+  identity_endpoint: http://stg.cloudit.co.kr:9090
+  auth_token: xxx
+  tenant_id: xxx
+
   # Cloudit VM Create Info
   vm_info:
     template_id: 2813a6ed-66f8-4041-9cfa-2cb5cb416520
     spec_id: 1c38e438-ede9-4df5-8775-2ce791698924
     name: mcb-vm
-    root_password: 1qa2ws3ed!A
+    root_password: xxx
     subnet_addr: 10.0.8.0
     sec_groups: b2be62e7-fd29-43ff-b008-08ae736e092a
     description: mcb-test-vm
