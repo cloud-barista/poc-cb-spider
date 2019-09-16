@@ -36,7 +36,7 @@ openstack:
     name: mcb-test-vnet
 
   subnet_info:
-      id: {subnet_id}
+    id: {subnet_id}
 
   router_info:
     name: mcb-router
@@ -110,7 +110,7 @@ aws:
   ec2_instance_id: i-04f1693f5e94c1c79
   base_name: mcloud-barista
   instance_type: t2.micro
-#  key_name: mcloud-barista-keypair
+  #  key_name: mcloud-barista-keypair
   key_name: powerkimkeypair
   min_count: 1
   max_count: 1
@@ -124,9 +124,33 @@ aws:
 cloudit:
 
   # Cloudit Credential Info
-  identity_endpoint: http://localhost:9090
-  user_id: xxx
-  password: xxx
-  tenant_id: test-tenant
+  identity_endpoint: http://stg.cloudit.co.kr:9090
+  auth_token: xxx
+  tenant_id: xxx
 
-  server_id: test-server-id
+  # Cloudit VM Create Info
+  vm_info:
+    template_id: 2813a6ed-66f8-4041-9cfa-2cb5cb416520
+    spec_id: 1c38e438-ede9-4df5-8775-2ce791698924
+    name: mcb-vm
+    root_password: xxx
+    subnet_addr: 10.0.8.0
+    sec_groups: b2be62e7-fd29-43ff-b008-08ae736e092a
+    description: mcb-test-vm
+    protection: 0
+
+  # Cloudit Resource Create Info
+  resource:
+    image:
+      name: mcb-test-img
+    public_ip:
+      name: mcb-test-pubip
+    security_group:
+      name: mcb-test-sg
+    vnet_info:
+      name: mcb-test-vnet
+    vnic_info:
+      vm_id: 025e5edc-54ad-4b98-9292-6eeca4c36a6d
+      mac: AC:DE:48:00:08:05
+    vm_info:
+      name: mcb-test-vm
