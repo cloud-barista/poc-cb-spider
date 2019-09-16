@@ -200,7 +200,7 @@ func handleVNetwork() {
 func main() {
 	cblogger.Info("AWS Resource Test")
 	handleKeyPair()
-	//handlePublicIP()
+	//handlePublicIP() // PublicIP 생성 후 conf
 	//handleVNetwork()	//VPC
 	/*
 		KeyPairHandler, err := setKeyPairHandler()
