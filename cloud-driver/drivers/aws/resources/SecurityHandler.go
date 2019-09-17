@@ -30,7 +30,36 @@ func (securityHandler *AwsSecurityHandler) CreateSecurity(securityReqInfo irs.Se
 }
 
 func (securityHandler *AwsSecurityHandler) ListSecurity() ([]*irs.SecurityInfo, error) {
-	return nil, nil
+	input := &ec2.DescribeSecurityGroupsInput{
+		GroupIds: []*string{
+			nil,
+		},
+	}
+
+	result, err := securityHandler.Client.DescribeSecurityGroups(input)
+	//cblogger.Info("result : ", result)
+	if err != nil {
+		cblogger.Info("err : ", err)
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				cblogger.Error(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			cblogger.Error(err.Error())
+		}
+		return nil, err
+	}
+
+	var results []*irs.SecurityInfo
+	for _, securityGroup := range result.SecurityGroups {
+		securityInfo := ExtractSecurityInfo(securityGroup)
+		results = append(results, &securityInfo)
+	}
+
+	return results, nil
 }
 
 func (securityHandler *AwsSecurityHandler) GetSecurity(securityID string) (irs.SecurityInfo, error) {
@@ -58,30 +87,68 @@ func (securityHandler *AwsSecurityHandler) GetSecurity(securityID string) (irs.S
 		return irs.SecurityInfo{}, err
 	}
 
+	securityInfo := ExtractSecurityInfo(result.SecurityGroups[0])
+	/*
+		var ipPermissions []*irs.SecurityRuleInfo
+		var ipPermissionsEgress []*irs.SecurityRuleInfo
+
+		ipPermissions = ExtractIpPermissions(result.SecurityGroups[0].IpPermissions)
+		cblogger.Info("InBouds : ", ipPermissions)
+		ipPermissionsEgress = ExtractIpPermissions(result.SecurityGroups[0].IpPermissionsEgress)
+		cblogger.Info("OutBounds : ", ipPermissionsEgress)
+		//spew.Dump(ipPermissionsEgress)
+
+		securityInfo := irs.SecurityInfo{
+			GroupName: *result.SecurityGroups[0].GroupName,
+			GroupID:   *result.SecurityGroups[0].GroupId,
+
+			IPPermissions:       ipPermissions,       //AWS:InBounds
+			IPPermissionsEgress: ipPermissionsEgress, //AWS:OutBounds
+
+			Description: *result.SecurityGroups[0].Description,
+			VpcID:       *result.SecurityGroups[0].VpcId,
+			OwnerID:     *result.SecurityGroups[0].OwnerId,
+		}
+
+		//Name은 Tag의 "Name" 속성에만 저장됨
+		cblogger.Debug("Name Tag 찾기")
+		for _, t := range result.SecurityGroups[0].Tags {
+			if *t.Key == "Name" {
+				securityInfo.Name = *t.Value
+				cblogger.Debug("Name : ", securityInfo.Name)
+				break
+			}
+		}
+	*/
+	return securityInfo, nil
+}
+
+func ExtractSecurityInfo(securityGroupResult *ec2.SecurityGroup) irs.SecurityInfo {
 	var ipPermissions []*irs.SecurityRuleInfo
 	var ipPermissionsEgress []*irs.SecurityRuleInfo
 
-	ipPermissions = ExtractIpPermissions(result.SecurityGroups[0].IpPermissions)
+	cblogger.Info("===[그룹아이디:%s]===", *securityGroupResult.GroupId)
+	ipPermissions = ExtractIpPermissions(securityGroupResult.IpPermissions)
 	cblogger.Info("InBouds : ", ipPermissions)
-	ipPermissionsEgress = ExtractIpPermissions(result.SecurityGroups[0].IpPermissionsEgress)
+	ipPermissionsEgress = ExtractIpPermissions(securityGroupResult.IpPermissionsEgress)
 	cblogger.Info("OutBounds : ", ipPermissionsEgress)
 	//spew.Dump(ipPermissionsEgress)
 
 	securityInfo := irs.SecurityInfo{
-		GroupName: *result.SecurityGroups[0].GroupName,
-		GroupID:   *result.SecurityGroups[0].GroupId,
+		GroupName: *securityGroupResult.GroupName,
+		GroupID:   *securityGroupResult.GroupId,
 
 		IPPermissions:       ipPermissions,       //AWS:InBounds
 		IPPermissionsEgress: ipPermissionsEgress, //AWS:OutBounds
 
-		Description: *result.SecurityGroups[0].Description,
-		VpcID:       *result.SecurityGroups[0].VpcId,
-		OwnerID:     *result.SecurityGroups[0].OwnerId,
+		Description: *securityGroupResult.Description,
+		VpcID:       *securityGroupResult.VpcId,
+		OwnerID:     *securityGroupResult.OwnerId,
 	}
 
 	//Name은 Tag의 "Name" 속성에만 저장됨
 	cblogger.Debug("Name Tag 찾기")
-	for _, t := range result.SecurityGroups[0].Tags {
+	for _, t := range securityGroupResult.Tags {
 		if *t.Key == "Name" {
 			securityInfo.Name = *t.Value
 			cblogger.Debug("Name : ", securityInfo.Name)
@@ -89,7 +156,7 @@ func (securityHandler *AwsSecurityHandler) GetSecurity(securityID string) (irs.S
 		}
 	}
 
-	return securityInfo, nil
+	return securityInfo
 }
 
 func ExtractIpPermissions(ipPermissions []*ec2.IpPermission) []*irs.SecurityRuleInfo {
@@ -97,7 +164,7 @@ func ExtractIpPermissions(ipPermissions []*ec2.IpPermission) []*irs.SecurityRule
 	var results []*irs.SecurityRuleInfo
 
 	for _, ip := range ipPermissions {
-		cblogger.Info("Inbound 정보 조회 : ", *ip.IpProtocol)
+		cblogger.Info("Inbound/Outbound 정보 조회 : ", *ip.IpProtocol)
 		securityRuleInfo := new(irs.SecurityRuleInfo)
 
 		if !reflect.ValueOf(ip.FromPort).IsNil() {

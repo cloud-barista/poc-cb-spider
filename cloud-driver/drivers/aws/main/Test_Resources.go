@@ -47,12 +47,13 @@ func handleSecurity() {
 	config := readConfigFile()
 
 	securityId := config.Aws.SecurityGroupID
-	//cblogger.Infof(securityId)
+	cblogger.Infof(securityId)
 	//securityId = "sg-0fe21e070f09db954"
 
-	result, err := handler.GetSecurity(securityId)
-	//result, err := handler.GetSecurity("")
+	//result, err := handler.GetSecurity(securityId)
+	result, err := handler.GetSecurity("sg-0320a99e0c1bfcefc")
 	//result, err := handler.DeleteSecurity(securityId)
+	//result, err := handler.ListSecurity()
 	if err != nil {
 		cblogger.Infof("보안 그룹 조회 실패 : ", err)
 	} else {
