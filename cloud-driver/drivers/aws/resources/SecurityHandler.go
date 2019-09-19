@@ -88,38 +88,6 @@ func (securityHandler *AwsSecurityHandler) GetSecurity(securityID string) (irs.S
 	}
 
 	securityInfo := ExtractSecurityInfo(result.SecurityGroups[0])
-	/*
-		var ipPermissions []*irs.SecurityRuleInfo
-		var ipPermissionsEgress []*irs.SecurityRuleInfo
-
-		ipPermissions = ExtractIpPermissions(result.SecurityGroups[0].IpPermissions)
-		cblogger.Info("InBouds : ", ipPermissions)
-		ipPermissionsEgress = ExtractIpPermissions(result.SecurityGroups[0].IpPermissionsEgress)
-		cblogger.Info("OutBounds : ", ipPermissionsEgress)
-		//spew.Dump(ipPermissionsEgress)
-
-		securityInfo := irs.SecurityInfo{
-			GroupName: *result.SecurityGroups[0].GroupName,
-			GroupID:   *result.SecurityGroups[0].GroupId,
-
-			IPPermissions:       ipPermissions,       //AWS:InBounds
-			IPPermissionsEgress: ipPermissionsEgress, //AWS:OutBounds
-
-			Description: *result.SecurityGroups[0].Description,
-			VpcID:       *result.SecurityGroups[0].VpcId,
-			OwnerID:     *result.SecurityGroups[0].OwnerId,
-		}
-
-		//Name은 Tag의 "Name" 속성에만 저장됨
-		cblogger.Debug("Name Tag 찾기")
-		for _, t := range result.SecurityGroups[0].Tags {
-			if *t.Key == "Name" {
-				securityInfo.Name = *t.Value
-				cblogger.Debug("Name : ", securityInfo.Name)
-				break
-			}
-		}
-	*/
 	return securityInfo, nil
 }
 
@@ -173,33 +141,17 @@ func ExtractIpPermissionCommon(ip *ec2.IpPermission, securityRuleInfo *irs.Secur
 	securityRuleInfo.IPProtocol = *ip.IpProtocol
 }
 
-//@TODO : CIDR이 없는 경우 구조처 처리해야 함.(예: 타겟이 ELB거나 다른 보안 그룹일 경우))
-//@TODO : InBound / OutBound의 배열 처리및 테스트해야 함.
 func ExtractIpPermissions(ipPermissions []*ec2.IpPermission) []*irs.SecurityRuleInfo {
 
 	var results []*irs.SecurityRuleInfo
 
 	for _, ip := range ipPermissions {
-		//securityRuleInfo := new(irs.SecurityRuleInfo)
 
 		//ipv4 처리
 		for _, ipv4 := range ip.IpRanges {
 			cblogger.Info("Inbound/Outbound 정보 조회 : ", *ip.IpProtocol)
 			securityRuleInfo := new(irs.SecurityRuleInfo)
 			securityRuleInfo.Cidr = *ipv4.CidrIp
-
-			/*
-				//공통 정보
-				if !reflect.ValueOf(ip.FromPort).IsNil() {
-					securityRuleInfo.FromPort = *ip.FromPort
-				}
-
-				if !reflect.ValueOf(ip.ToPort).IsNil() {
-					securityRuleInfo.ToPort = *ip.ToPort
-				}
-
-				securityRuleInfo.IPProtocol = *ip.IpProtocol
-			*/
 
 			ExtractIpPermissionCommon(ip, securityRuleInfo)
 			results = append(results, securityRuleInfo)
@@ -224,18 +176,18 @@ func ExtractIpPermissions(ipPermissions []*ec2.IpPermission) []*irs.SecurityRule
 			results = append(results, securityRuleInfo)
 		}
 
-		/*
-			if !reflect.ValueOf(ip.IpRanges).IsNil() {
-				securityRuleInfo.Cidr = *ip.IpRanges[0].CidrIp
+		/*  @TODO : 미지원 방식 체크 로직 추가 여부 결정해야 함.
+		if !reflect.ValueOf(ip.IpRanges).IsNil() {
+			securityRuleInfo.Cidr = *ip.IpRanges[0].CidrIp
+		} else {
+			//ELB나 다른 보안그룹 참조처럼 IpRanges가 없고 UserIdGroupPairs가 있는 경우 처리
+			//https://docs.aws.amazon.com/ko_kr/elasticloadbalancing/latest/classic/elb-security-groups.html
+			if !reflect.ValueOf(ip.UserIdGroupPairs).IsNil() {
+				securityRuleInfo.Cidr = *ip.UserIdGroupPairs[0].GroupId
 			} else {
-				//ELB나 다른 보안그룹 참조처럼 IpRanges가 없고 UserIdGroupPairs가 있는 경우 처리
-				//https://docs.aws.amazon.com/ko_kr/elasticloadbalancing/latest/classic/elb-security-groups.html
-				if !reflect.ValueOf(ip.UserIdGroupPairs).IsNil() {
-					securityRuleInfo.Cidr = *ip.UserIdGroupPairs[0].GroupId
-				} else {
-					cblogger.Error("미지원 보안 그룹 형태 발견 - 구조 파악 필요 ", ip)
-				}
+				cblogger.Error("미지원 보안 그룹 형태 발견 - 구조 파악 필요 ", ip)
 			}
+		}
 		*/
 	}
 
