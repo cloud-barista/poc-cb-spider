@@ -51,7 +51,9 @@ func handleSecurity() {
 	//securityId = "sg-0fe21e070f09db954"
 
 	//result, err := handler.GetSecurity(securityId)
-	result, err := handler.GetSecurity("sg-0320a99e0c1bfcefc")
+	//result, err := handler.GetSecurity("sg-0320a99e0c1bfcefc")
+	result, err := handler.GetSecurity("sg-0fd2d90b269ebc082") // sgtest-mcloub-barista
+
 	//result, err := handler.DeleteSecurity(securityId)
 	//result, err := handler.ListSecurity()
 	if err != nil {
