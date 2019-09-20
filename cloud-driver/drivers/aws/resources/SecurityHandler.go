@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	idrv "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces"
 	irs "github.com/cloud-barista/poc-cb-spider/cloud-driver/interfaces/resources"
+	"github.com/davecgh/go-spew/spew"
 )
 
 type AwsSecurityHandler struct {
@@ -25,8 +26,95 @@ type AwsSecurityHandler struct {
 	Client *ec2.EC2
 }
 
+//@TODO : 존재하는 보안 그룹에 정책 추가하는 기능 필요
+//VPC 생략 시 활성화된 세션의 기본 VPC를 이용 함.
 func (securityHandler *AwsSecurityHandler) CreateSecurity(securityReqInfo irs.SecurityReqInfo) (irs.SecurityInfo, error) {
-	return irs.SecurityInfo{}, nil
+	cblogger.Infof("securityReqInfo : ", securityReqInfo)
+	spew.Dump(securityReqInfo)
+
+	// Create the security group with the VPC, name and description.
+	createRes, err := securityHandler.Client.CreateSecurityGroup(&ec2.CreateSecurityGroupInput{
+		GroupName:   aws.String(securityReqInfo.GroupName),
+		Description: aws.String(securityReqInfo.Description),
+		VpcId:       aws.String(securityReqInfo.VpcId),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case "InvalidVpcID.NotFound":
+				cblogger.Errorf("Unable to find VPC with ID %q.", securityReqInfo.VpcId)
+				return irs.SecurityInfo{}, err
+			case "InvalidGroup.Duplicate":
+				cblogger.Errorf("Security group %q already exists.", securityReqInfo.GroupName)
+				return irs.SecurityInfo{}, err
+			}
+		}
+		cblogger.Errorf("Unable to create security group %q, %v", securityReqInfo.GroupName, err)
+		return irs.SecurityInfo{}, err
+	}
+	cblogger.Debug("보안 그룹 생성완료")
+	spew.Dump(createRes)
+
+	cblogger.Infof("Created security group %s with VPC %s.\n",
+		aws.StringValue(createRes.GroupId), securityReqInfo.VpcId)
+
+	//newGroupId = *createRes.GroupId
+
+	//Ingress 처리
+	var ipPermissions []*ec2.IpPermission
+	for _, ip := range securityReqInfo.IPPermissions {
+		ipPermission := new(ec2.IpPermission)
+		ipPermission.SetIpProtocol(ip.IPProtocol)
+		ipPermission.SetFromPort(ip.FromPort)
+		ipPermission.SetToPort(ip.ToPort)
+		ipPermission.SetIpRanges([]*ec2.IpRange{
+			(&ec2.IpRange{}).
+				SetCidrIp(ip.Cidr),
+		})
+		ipPermissions = append(ipPermissions, ipPermission)
+	}
+
+	// Add permissions to the security group
+	_, err = securityHandler.Client.AuthorizeSecurityGroupIngress(&ec2.AuthorizeSecurityGroupIngressInput{
+		GroupName:     aws.String(securityReqInfo.GroupName),
+		IpPermissions: ipPermissions,
+	})
+	if err != nil {
+		cblogger.Errorf("Unable to set security group %q ingress, %v", securityReqInfo.GroupName, err)
+		return irs.SecurityInfo{}, err
+	}
+
+	cblogger.Info("Successfully set security group ingress")
+
+	//Egress 처리
+	var ipPermissionsEgress []*ec2.IpPermission
+	for _, ip := range securityReqInfo.IPPermissionsEgress {
+		ipPermission := new(ec2.IpPermission)
+		ipPermission.SetIpProtocol(ip.IPProtocol)
+		ipPermission.SetFromPort(ip.FromPort)
+		ipPermission.SetToPort(ip.ToPort)
+		ipPermission.SetIpRanges([]*ec2.IpRange{
+			(&ec2.IpRange{}).
+				SetCidrIp(ip.Cidr),
+		})
+		ipPermissionsEgress = append(ipPermissionsEgress, ipPermission)
+	}
+
+	// Add permissions to the security group
+	_, err = securityHandler.Client.AuthorizeSecurityGroupEgress(&ec2.AuthorizeSecurityGroupEgressInput{
+		GroupId:       createRes.GroupId,
+		IpPermissions: ipPermissionsEgress,
+	})
+	if err != nil {
+		cblogger.Errorf("Unable to set security group %q egress, %v", securityReqInfo.GroupName, err)
+		return irs.SecurityInfo{}, err
+	}
+
+	cblogger.Info("Successfully set security group egress")
+
+	//return securityInfo, nil
+	securityInfo, _ := securityHandler.GetSecurity(*createRes.GroupId)
+	return securityInfo, nil
 }
 
 func (securityHandler *AwsSecurityHandler) ListSecurity() ([]*irs.SecurityInfo, error) {

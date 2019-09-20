@@ -13,9 +13,14 @@ package resources
 type SecurityReqInfo struct {
 	Name string
 	Id   string
+
 	// @todo
-	GroupName string //AWS
-	GroupID   string //AWS
+	GroupName   string //AWS
+	Description string //AWS
+	VpcId       string //AWS
+
+	IPPermissions       []*SecurityRuleInfo //AWS:InBounds
+	IPPermissionsEgress []*SecurityRuleInfo //AWS:OutBounds
 }
 
 type SecurityInfo struct {

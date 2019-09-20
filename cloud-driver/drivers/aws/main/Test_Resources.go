@@ -52,7 +52,43 @@ func handleSecurity() {
 
 	//result, err := handler.GetSecurity(securityId)
 	//result, err := handler.GetSecurity("sg-0320a99e0c1bfcefc")
-	result, err := handler.GetSecurity("sg-0fd2d90b269ebc082") // sgtest-mcloub-barista
+	//result, err := handler.GetSecurity("sg-0fd2d90b269ebc082") // sgtest-mcloub-barista
+
+	securityReqInfo := irs.SecurityReqInfo{
+		GroupName:   "sgtest2-mcloub-barista",
+		Description: "this is desc",
+		VpcId:       "vpc-5a837e31",
+		IPPermissions: []*irs.SecurityRuleInfo{ //인바운드 정책 설정
+			{
+				FromPort:   80,
+				ToPort:     80,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+			{
+				FromPort:   8080,
+				ToPort:     8080,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+		},
+		IPPermissionsEgress: []*irs.SecurityRuleInfo{ //아웃바운드 정책 설정
+			{
+				FromPort:   443,
+				ToPort:     443,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+			{
+				FromPort:   9443,
+				ToPort:     9443,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+		},
+	}
+
+	result, err := handler.CreateSecurity(securityReqInfo)
 
 	//result, err := handler.DeleteSecurity(securityId)
 	//result, err := handler.ListSecurity()
