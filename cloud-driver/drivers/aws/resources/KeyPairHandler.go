@@ -14,12 +14,14 @@ type AwsKeyPairHandler struct {
 	Client *ec2.EC2
 }
 
+/*
 // @TODO: KeyPairInfo 리소스 프로퍼티 정의 필요
 type KeyPairInfo struct {
 	Name        string
 	Fingerprint string
 	KeyMaterial string //RSA PRIVATE KEY
 }
+*/
 
 func (keyPairHandler *AwsKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {
 	cblogger.Debug("Start ListKey()")
@@ -46,7 +48,7 @@ func (keyPairHandler *AwsKeyPairHandler) ListKey() ([]*irs.KeyPairInfo, error) {
 		cblogger.Debugf("%s: %s\n", *pair.KeyName, *pair.KeyFingerprint)
 		keyPairInfo := new(irs.KeyPairInfo)
 		keyPairInfo.Name = *pair.KeyName
-		keyPairInfo.Id = *pair.KeyFingerprint
+		keyPairInfo.Fingerprint = *pair.KeyFingerprint
 
 		keyPairList = append(keyPairList, keyPairInfo)
 	}
@@ -75,19 +77,12 @@ func (keyPairHandler *AwsKeyPairHandler) CreateKey(keyPairReqInfo irs.KeyPairReq
 	cblogger.Infof("Created key pair %q %s\n%s\n", *result.KeyName, *result.KeyFingerprint, *result.KeyMaterial)
 	spew.Dump(result)
 	keyPairInfo := irs.KeyPairInfo{
-		Name: *result.KeyName,
-		Id:   *result.KeyFingerprint,
+		Name:        *result.KeyName,
+		Fingerprint: *result.KeyFingerprint,
+		KeyMaterial: *result.KeyMaterial,
 	}
 
 	return keyPairInfo, nil
-}
-
-func Test() KeyPairInfo {
-	keyPairInfo := KeyPairInfo{
-		Name:        "키이름",
-		Fingerprint: "핑거프린트",
-	}
-	return keyPairInfo
 }
 
 //혼선을 피하기 위해 keyPairID 대신 keyPairName으로 변경 함.
@@ -127,16 +122,10 @@ func (keyPairHandler *AwsKeyPairHandler) GetKey(keyPairName string) (irs.KeyPair
 	cblogger.Info("Fingerprint : ", *result.KeyPairs[0].KeyFingerprint)
 
 	keyPairInfo := irs.KeyPairInfo{
-		Name: *result.KeyPairs[0].KeyName,
-		Id:   *result.KeyPairs[0].KeyFingerprint,
+		Name:        *result.KeyPairs[0].KeyName,
+		Fingerprint: *result.KeyPairs[0].KeyFingerprint,
 	}
 
-	/*
-		keyPairInfo := KeyPairInfo{
-			Name:        *result.KeyPairs[0].KeyName,
-			Fingerprint: *result.KeyPairs[0].KeyFingerprint,
-		}
-	*/
 	return keyPairInfo, nil
 }
 

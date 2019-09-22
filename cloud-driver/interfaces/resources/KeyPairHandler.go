@@ -17,14 +17,16 @@ type KeyPairReqInfo struct {
 }
 
 type KeyPairInfo struct {
-	Name string
+	Name string // AWS
 	Id   string
 	// @todo
+	Fingerprint string // 추가 - AWS, OpenStack
+	KeyMaterial string // 추가 - AWS(PEM파일-RSA PRIVATE KEY)
 }
 
 type KeyPairHandler interface {
 	CreateKey(keyPairReqInfo KeyPairReqInfo) (KeyPairInfo, error)
 	ListKey() ([]*KeyPairInfo, error)
-	GetKey(keyPairID string) (KeyPairInfo, error)
-	DeleteKey(keyPairID string) (bool, error)
+	GetKey(keyPairID string) (KeyPairInfo, error) // AWS는 keyPairName
+	DeleteKey(keyPairID string) (bool, error)     // AWS는 keyPairName
 }

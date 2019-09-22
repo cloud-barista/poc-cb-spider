@@ -33,6 +33,74 @@ func init() {
 	cblog.SetLevel("debug")
 }
 
+// Test SecurityHandler
+func handleSecurity() {
+	cblogger.Debug("Start handler")
+
+	ResourceHandler, err := getResourceHandler("Security")
+	if err != nil {
+		panic(err)
+	}
+
+	handler := ResourceHandler.(irs.SecurityHandler)
+
+	config := readConfigFile()
+
+	securityId := config.Aws.SecurityGroupID
+	cblogger.Infof(securityId)
+	//securityId = "sg-0fe21e070f09db954"
+
+	//result, err := handler.GetSecurity(securityId)
+	//result, err := handler.GetSecurity("sg-0320a99e0c1bfcefc")
+	//result, err := handler.GetSecurity("sg-0fd2d90b269ebc082") // sgtest-mcloub-barista
+
+	securityReqInfo := irs.SecurityReqInfo{
+		GroupName:   "sgtest2-mcloub-barista",
+		Description: "this is desc",
+		VpcId:       "vpc-5a837e31",
+		IPPermissions: []*irs.SecurityRuleInfo{ //인바운드 정책 설정
+			{
+				FromPort:   80,
+				ToPort:     80,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+			{
+				FromPort:   8080,
+				ToPort:     8080,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+		},
+		IPPermissionsEgress: []*irs.SecurityRuleInfo{ //아웃바운드 정책 설정
+			{
+				FromPort:   443,
+				ToPort:     443,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+			{
+				FromPort:   9443,
+				ToPort:     9443,
+				IPProtocol: "tcp",
+				Cidr:       "0.0.0.0/0",
+			},
+		},
+	}
+
+	result, err := handler.CreateSecurity(securityReqInfo)
+
+	//result, err := handler.DeleteSecurity(securityId)
+	//result, err := handler.ListSecurity()
+	if err != nil {
+		cblogger.Infof("보안 그룹 조회 실패 : ", err)
+	} else {
+		cblogger.Info("보안 그룹 조회 결과")
+		//cblogger.Info(result)
+		spew.Dump(result)
+	}
+}
+
 // Test PublicIp
 func handlePublicIP() {
 	cblogger.Debug("Start Publicip Resource Test")
@@ -199,9 +267,11 @@ func handleVNetwork() {
 
 func main() {
 	cblogger.Info("AWS Resource Test")
-	handleKeyPair()
+	//handleKeyPair()
 	//handlePublicIP() // PublicIP 생성 후 conf
 	//handleVNetwork()	//VPC
+	handleSecurity()
+
 	/*
 		KeyPairHandler, err := setKeyPairHandler()
 		if err != nil {

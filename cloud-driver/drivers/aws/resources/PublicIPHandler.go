@@ -56,6 +56,7 @@ func (publicIpHandler *AwsPublicIPHandler) CreatePublicIP(publicIPReqInfo irs.Pu
 		cblogger.Errorf("Unable to associate IP address with %s, %v", instanceID, err)
 		return irs.PublicIPInfo{}, err
 	}
+	spew.Dump(assocRes)
 	cblogger.Infof("[%s] EC2에 [%s] IP 할당 완료 - Allocation Id : [%s]", instanceID, *allocRes.PublicIp, *assocRes.AssociationId)
 
 	return irs.PublicIPInfo{}, nil

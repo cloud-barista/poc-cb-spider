@@ -56,24 +56,24 @@ type RegionInfo struct {
 }
 
 type VMInfo struct {
-	Name      string
-	Id        string
+	Name      string    // AWS,
+	Id        string    // AWS,
 	StartTime time.Time // Timezone: based on cloud-barista server location.
 
-	Region       RegionInfo // ex) {us-east1, us-east1-c} or {ap-northeast-2}
-	ImageID      string     // ex) ami-047f7b46bd6dd5d84 or projects/gce-uefi-images/global/images/centos-7-v20190326
-	SpecID       string     // instance type or flavour, etc... ex) t2.micro or f1-micro
-	VNetworkID   string     // ex) vpc-23ed0a4b
-	SubNetworkID string     // ex) subnet-8c4a53e4
-	SecurityID   string     // ex) sg-0b7452563e1121bb6
+	Region       RegionInfo // AWS, ex) {us-east1, us-east1-c} or {ap-northeast-2}
+	ImageID      string     // AWS, ex) ami-047f7b46bd6dd5d84 or projects/gce-uefi-images/global/images/centos-7-v20190326
+	SpecID       string     // AWS, instance type or flavour, etc... ex) t2.micro or f1-micro
+	VNetworkID   string     // AWS, ex) vpc-23ed0a4b
+	SubNetworkID string     // AWS, ex) subnet-8c4a53e4
+	SecurityID   string     // AWS, ex) sg-0b7452563e1121bb6 - @todo AWS는 배열임
 
 	VNIC       string // ex) eth0
-	PublicIP   string // ex) 13.125.43.21
-	PublicDNS  string // ex) ec2-13-125-43-0.ap-northeast-2.compute.amazonaws.com
-	PrivateIP  string // ex) ip-172-31-4-60.ap-northeast-2.compute.internal
-	PrivateDNS string // ex) 172.31.4.60
+	PublicIP   string // ex) AWS, 13.125.43.21
+	PublicDNS  string // ex) AWS, ec2-13-125-43-0.ap-northeast-2.compute.amazonaws.com
+	PrivateIP  string // ex) AWS, ip-172-31-4-60.ap-northeast-2.compute.internal
+	PrivateDNS string // ex) AWS, 172.31.4.60
 
-	KeyPairID    string // ex) powerkimKeyPair
+	KeyPairID    string // ex) AWS, powerkimKeyPair
 	GuestUserID  string // ex) user1
 	GuestUserPwd string
 

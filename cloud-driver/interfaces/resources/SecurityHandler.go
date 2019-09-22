@@ -13,13 +13,35 @@ package resources
 type SecurityReqInfo struct {
 	Name string
 	Id   string
+
 	// @todo
+	GroupName   string //AWS
+	Description string //AWS
+	VpcId       string //AWS
+
+	IPPermissions       []*SecurityRuleInfo //AWS:InBounds
+	IPPermissionsEgress []*SecurityRuleInfo //AWS:OutBounds
 }
 
 type SecurityInfo struct {
 	Name string
 	Id   string
 	// @todo
+	GroupName           string              //AWS
+	GroupID             string              //AWS
+	IPPermissions       []*SecurityRuleInfo //AWS:InBounds
+	IPPermissionsEgress []*SecurityRuleInfo //AWS:OutBounds
+
+	Description string //AWS
+	VpcID       string //AWS
+	OwnerID     string //AWS, Azure & OpenStack은 TenantId
+}
+
+type SecurityRuleInfo struct {
+	FromPort   int64
+	ToPort     int64
+	IPProtocol string
+	Cidr       string
 }
 
 type SecurityHandler interface {
