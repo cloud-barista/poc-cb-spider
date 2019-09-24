@@ -113,11 +113,108 @@ func handlePublicIP() {
 	handler := ResourceHandler.(irs.PublicIPHandler)
 
 	config := readConfigFile()
-	publicIPReqInfo := irs.PublicIPReqInfo{
-		Id: config.Aws.VmID,
-	}
-	handler.CreatePublicIP(publicIPReqInfo)
+	/*
+		publicIPReqInfo := irs.PublicIPReqInfo{
+			Id: config.Aws.VmID,
+		}
+	*/
 
+	//reqGetPublicIP := "13.124.140.207"
+	reqPublicIP := config.Aws.PublicIP
+	reqVmID := config.Aws.VmID
+
+	cblogger.Info("reqPublicIP : ", reqPublicIP)
+	cblogger.Info("reqVmID : ", reqVmID)
+	//handler.CreatePublicIP(publicIPReqInfo)
+	//handler.ListPublicIP()
+	//handler.GetPublicIP("13.124.140.207")
+
+	for {
+		fmt.Println("")
+		fmt.Println("Publicip Resource Test")
+		fmt.Println("1. ListPublicIP()")
+		fmt.Println("2. GetPublicIP()")
+		fmt.Println("3. CreatePublicIP()")
+		fmt.Println("4. DeletePublicIP()")
+		fmt.Println("5. Exit")
+
+		var commandNum int
+		var reqDelIP string
+
+		inputCnt, err := fmt.Scan(&commandNum)
+		if err != nil {
+			panic(err)
+		}
+
+		if inputCnt == 1 {
+			switch commandNum {
+			case 1:
+				fmt.Println("Start ListPublicIP() ...")
+				result, err := handler.ListPublicIP()
+				if err != nil {
+					cblogger.Error("PublicIP 목록 조회 실패 : ", err)
+				} else {
+					cblogger.Info("PublicIP 목록 조회 결과")
+					spew.Dump(result)
+				}
+
+				fmt.Println("Finish ListPublicIP()")
+
+			case 2:
+				fmt.Println("Start GetPublicIP() ...")
+				result, err := handler.GetPublicIP(reqPublicIP)
+				if err != nil {
+					cblogger.Error(reqPublicIP, " PublicIP 정보 조회 실패 : ", err)
+				} else {
+					cblogger.Info("PublicIP[%s]  정보 조회 결과", reqPublicIP)
+					spew.Dump(result)
+				}
+				fmt.Println("Finish GetPublicIP()")
+
+			case 3:
+				fmt.Println("Start CreatePublicIP() ...")
+				reqInfo := irs.PublicIPReqInfo{Id: reqVmID}
+				result, err := handler.CreatePublicIP(reqInfo)
+				if err != nil {
+					cblogger.Error("PublicIP 생성 실패 : ", err)
+				} else {
+					cblogger.Info("키 페어 생성 성공 ", result)
+					spew.Dump(result)
+				}
+				fmt.Println("Finish CreatePublicIP()")
+
+			case 4:
+				fmt.Println("Start DeletePublicIP() ...")
+				fmt.Print("삭제할 PublicIP를 입력하세요 : ")
+				inputCnt, err := fmt.Scan(&reqDelIP)
+				if err != nil {
+					panic(err)
+				}
+
+				if inputCnt == 1 {
+					cblogger.Info("삭제할 PublicIP : ", reqDelIP)
+				} else {
+					fmt.Println("삭제할 Public IP만 입력하세요.")
+				}
+
+				result, err := handler.DeletePublicIP(reqDelIP)
+				if err != nil {
+					cblogger.Error(reqDelIP, " PublicIP 삭제 실패 : ", err)
+				} else {
+					if result {
+						cblogger.Info("PublicIP[%s] 삭제 완료", reqDelIP)
+					} else {
+						cblogger.Errorf("PublicIP[%s] 삭제 실패", reqDelIP)
+					}
+				}
+				fmt.Println("Finish DeletePublicIP()")
+
+			case 5:
+				fmt.Println("Exit")
+				return
+			}
+		}
+	}
 }
 
 // Test KeyPair
@@ -268,9 +365,10 @@ func handleVNetwork() {
 func main() {
 	cblogger.Info("AWS Resource Test")
 	//handleKeyPair()
-	//handlePublicIP() // PublicIP 생성 후 conf
+	handlePublicIP() // PublicIP 생성 후 conf
+
 	//handleVNetwork()	//VPC
-	handleSecurity()
+	//handleSecurity()
 
 	/*
 		KeyPairHandler, err := setKeyPairHandler()
@@ -415,6 +513,8 @@ type Config struct {
 
 		SubnetID        string `yaml:"subnet_id"`
 		SecurityGroupID string `yaml:"security_group_id"`
+
+		PublicIP string `yaml:"public_ip"`
 	} `yaml:"aws"`
 }
 
