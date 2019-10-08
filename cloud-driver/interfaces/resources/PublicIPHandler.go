@@ -12,7 +12,7 @@ package resources
 
 type PublicIPReqInfo struct {
 	Name string
-	Id   string
+	Id   string // AWS:IP를 할당할 VM ID로 사용중
 	// @todo
 }
 
